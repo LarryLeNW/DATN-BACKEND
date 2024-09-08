@@ -1,5 +1,6 @@
  package com.backend.entity;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -15,22 +16,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "countpons")
+public class Coupon {
+	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
 
-	String username;
-
-	String password;
 	
-	String address; 
-	
-	String phone_number; 
-	
-	LocalDate dob;
-
-	@ManyToMany
-	Set<Role> roles;
 }

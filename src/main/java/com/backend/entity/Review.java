@@ -1,5 +1,6 @@
  package com.backend.entity;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -15,22 +16,32 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "reviews")
+public class Review {
+	
+	enum OrderStatus {
+	    PENDING,
+	    SHIPPED,
+	    DELIVERED,
+	    CANCELLED
+	}
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
 
-	String username;
-
-	String password;
+	@ManyToOne
+	User reviewBy;
 	
-	String address; 
+	@ManyToOne
+	Product product; 
 	
-	String phone_number; 
+	int rating;
 	
-	LocalDate dob;
-
-	@ManyToMany
-	Set<Role> roles;
+	String review_text; 
+	
+	Timestamp review_date;
+	
+	@Enumerated(EnumType.STRING)
+	OrderStatus status;
 }

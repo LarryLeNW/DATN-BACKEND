@@ -15,22 +15,25 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "brands")
+public class Brand {
+	
+	enum OrderStatus {
+	    PENDING,
+	    SHIPPED,
+	    DELIVERED,
+	    CANCELLED
+	}
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
 
-	String username;
+	String name;
+	
+	@ManyToOne
+	User orderBy; 
 
-	String password;
-	
-	String address; 
-	
-	String phone_number; 
-	
-	LocalDate dob;
-
-	@ManyToMany
-	Set<Role> roles;
+	@Enumerated(EnumType.STRING)
+	OrderStatus status;
 }
