@@ -19,7 +19,6 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "countpons")
 public class Coupon {
 	
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
