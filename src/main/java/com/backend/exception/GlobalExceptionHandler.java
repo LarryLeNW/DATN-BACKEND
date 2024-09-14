@@ -1,11 +1,14 @@
 package com.backend.exception;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import jakarta.validation.ConstraintViolation;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -56,34 +59,29 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException exception) {
-        String enumKey = exception.getFieldError().getDefaultMessage();
+    	  List<String> errorMessages = exception.getBindingResult()
+    	            .getFieldErrors()
+    	            .stream()
+    	            .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+    	            .collect(Collectors.toList());
 
-        ErrorCode errorCode = ErrorCode.INVALID_KEY;
-        Map<String, Object> attributes = null;
-        try {
-            errorCode = ErrorCode.valueOf(enumKey);
+    	    // Create a custom error response with the collected error messages
+    	    ApiResponse apiResponse = new ApiResponse();
+    	    apiResponse.setCode(ErrorCode.INVALID_KEY.getCode()); // Use your existing error code or create a new one
+    	    apiResponse.setMessage(String.join(", ", errorMessages)); // Return all error messages as a single string
 
-            var constraintViolation =
-                    exception.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
-
-            attributes = constraintViolation.getConstraintDescriptor().getAttributes();
-
-            log.info(attributes.toString());
-
-        } catch (IllegalArgumentException e) {
-
-        }
-
+    	    return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         ApiResponse apiResponse = new ApiResponse();
-
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(
-                Objects.nonNull(attributes)
-                        ? mapAttribute(errorCode.getMessage(), attributes)
-                        : errorCode.getMessage());
-
+        apiResponse.setCode(ErrorCode.INVALID_REQUEST_BODY.getCode());
+        apiResponse.setMessage(ErrorCode.INVALID_REQUEST_BODY.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
+
 
     private String mapAttribute(String message, Map<String, Object> attributes) {
         String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));

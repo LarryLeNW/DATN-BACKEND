@@ -1,4 +1,4 @@
-package com.backend.dto.request;
+package com.backend.dto.request.user;
 
 import java.time.LocalDate;
 

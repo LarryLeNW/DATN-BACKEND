@@ -7,8 +7,9 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.backend.dto.request.ApiResponse;
-import com.backend.dto.request.UserCreationRequest;
-import com.backend.dto.request.UserUpdateRequest;
+import com.backend.dto.request.product.ProductCreationRequest;
+import com.backend.dto.request.user.UserCreationRequest;
+import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.UserResponse;
 import com.backend.entity.Product;
 import com.backend.service.ProductService;
@@ -34,5 +35,12 @@ public class ProductController {
                 .result(productService.getProducts())
                 .build();
     }
-
+    
+    @PostMapping
+    ApiResponse<Product> createUser(@Valid @RequestBody ProductCreationRequest request) {
+    	        return ApiResponse.<Product>builder()
+                .result(productService.createProduct(request))
+                .build();
+    }
+    
 }
