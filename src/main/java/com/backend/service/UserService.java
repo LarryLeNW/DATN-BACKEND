@@ -43,6 +43,10 @@ public class UserService {
 
         HashSet<Role> roles = new HashSet<>();
         roleRepository.findById(PredefinedRole.USER_ROLE).ifPresent(roles::add);
+        
+        if(userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
 
         user.setRoles(roles);
 
