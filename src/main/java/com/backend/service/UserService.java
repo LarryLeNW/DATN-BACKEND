@@ -10,8 +10,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.backend.dto.request.UserCreationRequest;
-import com.backend.dto.request.UserUpdateRequest;
+import com.backend.dto.request.user.UserCreationRequest;
+import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
@@ -43,6 +43,7 @@ public class UserService {
 
         HashSet<Role> roles = new HashSet<>();
         roleRepository.findById(PredefinedRole.USER_ROLE).ifPresent(roles::add);
+
         
         if(userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new AppException(ErrorCode.USER_EXISTED);

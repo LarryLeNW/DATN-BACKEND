@@ -1,5 +1,6 @@
  package com.backend.entity;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -15,22 +16,33 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "payments")
+public class Payment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
-
-	String username;
-
-	String password;
 	
-	String address; 
-	
-	String phone_number; 
-	
-	LocalDate dob;
+	@ManyToOne
+	Order order;
 
-	@ManyToMany
-	Set<Role> roles;
+	Payment_Method method;
+	
+	Status_Payment status;
+	
+	Timestamp payment_date;
+	
+	enum Payment_Method {
+		CreditCard,
+		PayPal,
+		COD
+	}
+	
+	enum Status_Payment {
+		CreditCard,
+		PayPal,
+		COD
+	}
+	
+	
+
 }
