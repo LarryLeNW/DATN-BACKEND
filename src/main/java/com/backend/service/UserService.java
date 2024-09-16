@@ -50,7 +50,6 @@ public class UserService {
         }
 
         user.setRoles(roles);
-
         try {
             user = userRepository.save(user);
         } catch (DataIntegrityViolationException exception) {
