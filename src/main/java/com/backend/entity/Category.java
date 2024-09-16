@@ -24,4 +24,4 @@ public class Category {
 	String name;
 
 	String description;
-}
+}	

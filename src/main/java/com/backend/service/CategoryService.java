@@ -32,27 +32,23 @@ public class CategoryService {
 	public List<Category> getCategories() {
 		try {
 			List<Category> categories = categoryRepository.findAll();
-			if (categories.isEmpty()) {
-				throw new AppException(ErrorCode.CATEGORY_NOT_EXISTED);
-			}
 			return categories;
 		} catch (Exception e) {
+			System.out.println(e);
 			// TODO: handle exception
 			throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
 		}
-	
 	}
 	public Category createCategory(CategoryCreationRequest request) {
+		Category category = categoryMapper.toCategory(request);		
 		
-		Category category = categoryMapper.toCategory(request);
+		if(categoryRepository.existsByName(category.getName())) {
+			throw new AppException(ErrorCode.CATEGORY_NAME_EXISTED);
+		}
 		
 		try {
 		    //check for existence of the name
-			if(categoryRepository.existsByName(category.getName())) {
-				throw new AppException(ErrorCode.CATEGORY_NAME_EXISTED);
-			}
 			categoryRepository.save(category);
-			
 		} catch (Exception e) {
 			// TODO: handle exception
 			throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

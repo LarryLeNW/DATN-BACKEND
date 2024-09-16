@@ -18,7 +18,6 @@ import lombok.experimental.FieldDefaults;
 public class CategoryCreationRequest {
 
 	@Valid
-	@NotNull(message = "Id cannot be empty")
 	String id;
 	
 	@NotNull(message = "name cannot be empty")
