@@ -3,13 +3,16 @@ package com.backend.controller;
 import java.util.List;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.backend.dto.request.ApiResponse;
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
+import com.backend.dto.response.PagedResponse;
 import com.backend.dto.response.UserResponse;
 import com.backend.entity.Product;
 import com.backend.service.ProductService;
@@ -25,28 +28,24 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
+@Validated
 public class ProductController {
 	ProductService productService;
 
-    
-    @GetMapping
-    public ApiResponse<List<Product>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(required = false) String[] search) {
+	@GetMapping
+	public ApiResponse<PagedResponse<Product>> getAllProducts(
+			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
+			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
+			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
 
-        return ApiResponse.<List<Product>>builder()
-                .result(productService.getProducts(page, limit, sortBy, search))
-                .build();
-    }
-    
-    
-    @PostMapping
-    ApiResponse<Product> createUser(@Valid @RequestBody ProductCreationRequest request) {
-    	        return ApiResponse.<Product>builder()
-                .result(productService.createProduct(request))
-                .build();
-    }
-    
+		PagedResponse<Product> pagedResponse = productService.getProducts(page, limit, sort, search); 
+
+		return ApiResponse.<PagedResponse<Product>>builder().result(pagedResponse).build();
+	}
+
+	@PostMapping
+	ApiResponse<Product> createUser(@Valid @RequestBody ProductCreationRequest request) {
+		return ApiResponse.<Product>builder().result(productService.createProduct(request)).build();
+	}
+
 }

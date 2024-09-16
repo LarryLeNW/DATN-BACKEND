@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SearchCriteria {
+public class SearchType {
 	private String key ; 
 	private String operation;  
 	private Object value; 

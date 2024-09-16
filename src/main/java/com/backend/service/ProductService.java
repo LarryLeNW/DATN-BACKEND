@@ -13,10 +13,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
+import com.backend.dto.response.PagedResponse;
 import com.backend.dto.response.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
@@ -27,8 +29,9 @@ import com.backend.repository.CategoryRepository;
 import com.backend.repository.ProductRepository;
 import com.backend.repository.RoleRepository;
 import com.backend.repository.UserRepository;
-import com.backend.repository.common.SearchCriterQueryConsumer;
-import com.backend.repository.common.SearchCriteria;
+import com.backend.repository.common.ConsumerCondition;
+import com.backend.repository.common.CustomSearchRepository;
+import com.backend.repository.common.SearchType;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -60,32 +63,22 @@ public class ProductService {
 	ProductMapper productMapper;
 	EntityManager entityManager;
 
-	public List<Product> getProducts(int page, int limit, String sortBy, String... search) {
-		List<SearchCriteria> criteriaList = new ArrayList<>();
+	public PagedResponse<Product> getProducts(int page, int limit, String sort, String... search) {
 
-		// format search criteria
-		if (search != null) {
-			for (String s : search) {
-				Pattern pattern = Pattern.compile("(\\w+?)(=|>|<|:)(.*)");
-				Matcher matcher = pattern.matcher(s);
+		List<SearchType> criteriaList = new ArrayList<>();
+		CustomSearchRepository<Product> customSearchService = new CustomSearchRepository<>(entityManager);
 
-				if (matcher.find())
-					criteriaList.add(new SearchCriteria(matcher.group(1), matcher.group(2), matcher.group(3)));
-			}
-		}
+		CriteriaQuery<Product> query = customSearchService.buildSearchQuery(Product.class, search, sort);
 
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Product> query = criteriaBuilder.createQuery(Product.class);
-		Root<Product> root = query.from(Product.class);
+		List<Product> products = entityManager.createQuery(query).setFirstResult((page - 1) * limit)
+				.setMaxResults(limit).getResultList();
 
-		// handle search condition
-		Predicate predicate = criteriaBuilder.conjunction();
-		SearchCriterQueryConsumer queryConsumer = new SearchCriterQueryConsumer(criteriaBuilder, predicate, root);
-		criteriaList.forEach(queryConsumer);
-		predicate = queryConsumer.getPredicate();
-		query.where(predicate);
+		CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Product.class, search);
+		long totalElements = entityManager.createQuery(countQuery).getSingleResult();
 
-		return entityManager.createQuery(query).setFirstResult(page).setMaxResults(limit).getResultList();
+		int totalPages = (int) Math.ceil((double) totalElements / limit);
+
+		return new PagedResponse<>(products, page, totalPages, totalElements, limit);
 	}
 
 	public Product createProduct(ProductCreationRequest request) {

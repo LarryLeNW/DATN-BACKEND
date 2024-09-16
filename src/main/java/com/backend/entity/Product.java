@@ -28,6 +28,7 @@ public class Product {
 	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	String description;
 	
+	@Column(name = "price")
 	double price;
 	
 	int stock; 

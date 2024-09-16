@@ -16,14 +16,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SearchCriterQueryConsumer implements Consumer<SearchCriteria> {
+public class ConsumerCondition implements Consumer<SearchType> {
 
 	CriteriaBuilder builder; 
 	Predicate predicate; 
 	Root root ;
 	
     @Override
-    public void accept(SearchCriteria criteria) {
+    public void accept(SearchType criteria) {
         String key = criteria.getKey();
         String operation = criteria.getOperation();
         Object value = criteria.getValue();
