@@ -37,10 +37,10 @@ public class ProductCreationRequest {
 	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
 	String thumbnail_url;
 	
-	@NotNull(message = "Thumbnail URL cannot be null")
+	@NotNull(message = "CategoryId cannot be null")
 	String categoryId;
 
-	@NotNull(message = "Thumbnail URL cannot be null")
+	@NotNull(message = "BrandId cannot be null")
 	String brandId;
 
 }

@@ -10,8 +10,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,9 +21,11 @@ public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
-
+	
+	@Column(name = "name", columnDefinition = "NVARCHAR(255)")
 	String name;
 
+	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	String description;
 	
 	double price;

@@ -30,11 +30,17 @@ public class ProductController {
 
     
     @GetMapping
-    ApiResponse<List<Product>> getProducts() {
+    public ApiResponse<List<Product>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(required = false) String[] search) {
+
         return ApiResponse.<List<Product>>builder()
-                .result(productService.getProducts())
+                .result(productService.getProducts(page, limit, sortBy, search))
                 .build();
     }
+    
     
     @PostMapping
     ApiResponse<Product> createUser(@Valid @RequestBody ProductCreationRequest request) {
