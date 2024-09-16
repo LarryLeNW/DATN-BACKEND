@@ -15,7 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.backend.dto.request.ApiResponse;
+import com.backend.dto.response.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,11 +66,9 @@ public class GlobalExceptionHandler {
     	            .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
     	            .collect(Collectors.toList());
 
-    	    // Create a custom error response with the collected error messages
     	    ApiResponse apiResponse = new ApiResponse();
-    	    apiResponse.setCode(ErrorCode.INVALID_KEY.getCode()); // Use your existing error code or create a new one
-    	    apiResponse.setMessage(String.join(", ", errorMessages)); // Return all error messages as a single string
-
+    	    apiResponse.setCode(ErrorCode.INVALID_KEY.getCode());
+    	    apiResponse.setMessage(String.join(", ", errorMessages)); 
     	    return ResponseEntity.badRequest().body(apiResponse);
     }
     
@@ -96,6 +94,18 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(apiResponse);
     }
+    
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
+        log.error("IllegalArgumentException: ", exception);
+        
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setCode(ErrorCode.INVALID_FIELD_ACCESS.getCode());  
+        apiResponse.setMessage("Invalid field access: " + exception.getMessage());
+        
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
 
     private String mapAttribute(String message, Map<String, Object> attributes) {
         String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));

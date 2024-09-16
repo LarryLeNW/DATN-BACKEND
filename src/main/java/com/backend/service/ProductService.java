@@ -16,10 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.backend.dto.request.product.ProductCreationRequest;
+import com.backend.dto.request.product.ProductUpdateRequest;
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
-import com.backend.dto.response.PagedResponse;
-import com.backend.dto.response.UserResponse;
+import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.product.ProductResponse;
+import com.backend.dto.response.user.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
@@ -32,6 +34,7 @@ import com.backend.repository.UserRepository;
 import com.backend.repository.common.ConsumerCondition;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.utils.Helpers;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -49,6 +52,7 @@ import com.backend.entity.User;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.Helper;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -81,7 +85,7 @@ public class ProductService {
 		return new PagedResponse<>(products, page, totalPages, totalElements, limit);
 	}
 
-	public Product createProduct(ProductCreationRequest request) {
+	public ProductResponse createProduct(ProductCreationRequest request) {
 		Product product = productMapper.toProduct(request);
 
 		Category category = categoryRepository.findById(request.getCategoryId())
@@ -98,7 +102,32 @@ public class ProductService {
 			throw new AppException(ErrorCode.PRODUCT_EXISTED);
 		}
 
-		return product;
+		return productMapper.toProductResponse(product);
+	}
+
+	public ProductResponse updateProduct(String productId, ProductUpdateRequest request) {
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+
+		Helpers.updateEntityFields(request, product); 
+
+		if (request.getBrandId() != null && !request.getBrandId().equals(product.getBrand().getId())) {
+			var brand = brandRepository.findById(request.getBrandId())
+					.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
+			product.setBrand(brand);
+		}
+
+		if (request.getCategoryId() != null && !request.getCategoryId().equals(product.getCategory().getId())) {
+			var category = categoryRepository.findById(request.getCategoryId())
+					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
+			product.setCategory(category);
+		}
+
+		return productMapper.toProductResponse(productRepository.save(product));
+	}
+
+	public void deleteUser(String productId) {
+		productRepository.deleteById(productId);
 	}
 
 }

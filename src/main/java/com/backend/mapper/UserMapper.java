@@ -6,7 +6,7 @@ import org.mapstruct.MappingTarget;
 
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
-import com.backend.dto.response.UserResponse;
+import com.backend.dto.response.user.UserResponse;
 import com.backend.entity.User;
 
 @Mapper(componentModel = "spring")
