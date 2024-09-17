@@ -17,15 +17,15 @@ public enum ErrorCode {
     USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
     PRODUCT_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
+    CATEGORY_NAME_EXISTED(1005, "name Category existed", HttpStatus.NOT_FOUND),
     BRAND_NOT_EXISTED(1005, "Brand not existed", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     PRODUCT_EXISTED(1002, "Product existed", HttpStatus.BAD_REQUEST),
     CATEGORY_EXISTED(1002, "Category existed", HttpStatus.BAD_REQUEST),
-    BRAND_EXISTED(1002, "Brand existed", HttpStatus.BAD_REQUEST), 
-    INVALID_FIELD_ACCESS(1009 , "Invalid Access Field" ,HttpStatus.BAD_REQUEST)
-    ;
+    BRAND_EXISTED(1002, "Brand existed", HttpStatus.BAD_REQUEST),
+    INVALID_FIELD_ACCESS(1009, "Invalid Access Field", HttpStatus.BAD_REQUEST);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
