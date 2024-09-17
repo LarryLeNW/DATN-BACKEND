@@ -22,11 +22,11 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "brands")
 public class Brand {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
 
+	@Column(name = "name", columnDefinition = "NVARCHAR(255)", unique = true)
 	String name;
 
     @CreationTimestamp

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -104,6 +105,14 @@ public class GlobalExceptionHandler {
         apiResponse.setMessage("Invalid field access: " + exception.getMessage());
         
         return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setCode(ErrorCode.INVALID_FIELD_ACCESS.getCode());  
+    	apiResponse.setMessage( exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
     }
 
 
