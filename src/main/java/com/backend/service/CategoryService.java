@@ -40,7 +40,6 @@ public class CategoryService {
 	EntityManager entityManager;
 	
 	
-	// get all categories
 	public PagedResponse<Category> getCategories(int page, int limit, String sort, String... search) {
 		List<SearchType> criteriaList = new ArrayList<>();
 		CustomSearchRepository<Category> customSearchService = new CustomSearchRepository<>(entityManager);
