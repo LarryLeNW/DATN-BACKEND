@@ -23,8 +23,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BrandCreationRequest {
-	@NotNull
+public class BrandUpdateRequest {
 	@Size(min = 3 , max = 255 , message = "@Param be greater 3 characters")
 	String name;
 
