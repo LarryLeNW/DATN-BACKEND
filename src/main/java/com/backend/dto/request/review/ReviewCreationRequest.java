@@ -1,15 +1,22 @@
 package com.backend.dto.request.review;
 
-
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import com.backend.entity.Product;
+import com.backend.entity.User;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -20,31 +27,25 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReviewCreationRequest {
 
-   public enum OrderStatus {
-        PENDING,
-        SHIPPED,
-        DELIVERED,
-        CANCELLED
-    }
+	@NotNull
+	@NotBlank
+	String review_text;
 
-    String id;
+	@NotNull
+	String userId;
 
-    @NotNull(message = "riviewbyId cannot be null.")
-    String review_by_id;
+	@NotNull
+	String productId;
 
-    @NotNull(message = "productId cannot be null.")
-    String product_id;
+	@NotNull
+	@Min(value = 1, message = "Rating must be at least 1.")
+	@Max(value = 5, message = "Rating must be at most 5.")
+	int rating;
 
-    @Min(value = 1, message = "Rating must be at least 1.")
-    @Max(value = 5, message = "Rating must be at most 5.")
-    int rating;
+	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
+	String image_url;
 
-    @NotBlank(message = "Review text cannot be blank.")
-    String review_text;
-
-    Timestamp review_date;	
-
-    @NotNull(message = "Order status is required.")
-    @Enumerated(EnumType.STRING)
-    OrderStatus status;
+	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
+	String video_url;
+	
 }

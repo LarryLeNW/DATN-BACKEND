@@ -20,6 +20,7 @@ import com.backend.repository.ReviewRepository;
 import com.backend.repository.UserRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.utils.Helpers;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -60,20 +61,16 @@ public class ReviewService {
 	public ReviewResponse createReview(ReviewCreationRequest request) {
 		Review review = reviewMapper.toReview(request);
 
-		User user = userRepository.findById(request.getReview_by_id())
+		User user = userRepository.findById(request.getUserId())
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-		Product product = productRepository.findById(request.getProduct_id())
+		
+		Product product = productRepository.findById(request.getProductId())
 				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
 		review.setReviewBy(user);
 		review.setProduct(product);
 
-		try {
 			review = reviewRepository.save(review);
-		} catch (Exception e) {
-			// TODO: handle exception
-			throw new AppException(ErrorCode.PRODUCT_NOT_EXISTED);
-		}
 		return reviewMapper.toReviewResponse(review);
 
 	}
@@ -82,9 +79,9 @@ public class ReviewService {
 
 		Review review = reviewRepository.findById(reviewId)
 				.orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
-		review.setRating(request.getRating());
-		review.setReview_text(request.getReview_text());
-
+		
+		Helpers.updateEntityFields(request, review); 
+		
 		try {
 			review = reviewRepository.save(review);
 		} catch (Exception e) {
