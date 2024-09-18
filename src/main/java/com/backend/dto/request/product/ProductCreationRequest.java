@@ -1,8 +1,5 @@
 package com.backend.dto.request.product;
 
-
-
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
