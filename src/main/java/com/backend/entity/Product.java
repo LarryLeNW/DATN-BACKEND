@@ -1,6 +1,7 @@
- package com.backend.entity;
+package com.backend.entity;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,8 +11,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,26 +23,31 @@ public class Product {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
 
+	@Column(name = "name", columnDefinition = "NVARCHAR(255)")
 	String name;
 
+	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	String description;
-	
+
+	@Column(name = "price")
 	double price;
-	
-	int stock; 
-	
-	String thumbnail_url; 
+
+	@Column(name = "stock")
+	int stock;
+
+	@Column(name = "thumbnail_url")
+	String thumbnail_url;
 
 	@ManyToOne
 	Category category;
-	
+
 	@ManyToOne
 	Brand brand;
-	
+
 	@CreationTimestamp
-    LocalDateTime createdAt;
- 
-    @UpdateTimestamp
-    LocalDateTime updatedAt;
-	
+	LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	LocalDateTime updatedAt;
+
 }

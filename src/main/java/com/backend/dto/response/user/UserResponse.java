@@ -1,7 +1,9 @@
-package com.backend.dto.response;
+package com.backend.dto.response.user;
 
 import java.time.LocalDate;
 import java.util.Set;
+
+import com.backend.dto.response.auth.RoleResponse;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

@@ -7,9 +7,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.dto.request.*;
-import com.backend.dto.response.AuthenticationResponse;
-import com.backend.dto.response.IntrospectResponse;
+import com.backend.dto.request.auth.*;
+import com.backend.dto.request.auth.AuthenticationRequest;
+import com.backend.dto.request.auth.IntrospectRequest;
+import com.backend.dto.request.auth.LogoutRequest;
+import com.backend.dto.request.auth.RefreshRequest;
+import com.backend.dto.response.ApiResponse;
+import com.backend.dto.response.auth.AuthenticationResponse;
+import com.backend.dto.response.auth.IntrospectResponse;
 import com.backend.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 

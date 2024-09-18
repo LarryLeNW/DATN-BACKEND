@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
-import com.backend.dto.response.UserResponse;
+import com.backend.dto.response.user.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.UserMapper;

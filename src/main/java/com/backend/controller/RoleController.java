@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.backend.dto.request.ApiResponse;
-import com.backend.dto.request.RoleRequest;
-import com.backend.dto.response.RoleResponse;
+import com.backend.dto.request.auth.RoleRequest;
+import com.backend.dto.response.ApiResponse;
+import com.backend.dto.response.auth.RoleResponse;
 import com.backend.service.RoleService;
 
 import lombok.AccessLevel;
