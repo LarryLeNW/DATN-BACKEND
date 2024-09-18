@@ -1,13 +1,12 @@
 package com.backend.repository;
 
-import java.util.Optional;
-
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.backend.entity.Product;
+import com.backend.entity.Review;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, String> {
+public interface ReviewRepository extends JpaRepository<Review, String> {
+
+	
 }

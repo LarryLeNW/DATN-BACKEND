@@ -19,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "reviews")
 public class Review {
 	
-	enum OrderStatus {
+	public enum OrderStatus {
 	    PENDING,
 	    SHIPPED,
 	    DELIVERED,

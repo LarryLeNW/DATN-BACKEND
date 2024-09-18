@@ -1,10 +1,11 @@
-package com.backend.dto.request.category;
-
+package com.backend.dto.request.brand;
 
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.backend.dto.request.category.CategoryCreationRequest;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -16,21 +17,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CategoryCreationRequest {
-	@NotNull
+public class BrandUpdateRequest {
 	@Size(min = 3 , max = 255 , message = "@Param be greater 3 characters")
 	String name;
-	
-	String description;
-	
-	@CreationTimestamp
-	LocalDateTime createdAt;
 
-	@UpdateTimestamp
-	LocalDateTime updatedAt;
+    @CreationTimestamp
+    LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
 }

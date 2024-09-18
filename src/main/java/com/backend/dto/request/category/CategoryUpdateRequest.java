@@ -21,16 +21,11 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CategoryCreationRequest {
-	@NotNull
+public class CategoryUpdateRequest {
+
 	@Size(min = 3 , max = 255 , message = "@Param be greater 3 characters")
 	String name;
 	
 	String description;
-	
-	@CreationTimestamp
-	LocalDateTime createdAt;
 
-	@UpdateTimestamp
-	LocalDateTime updatedAt;
 }

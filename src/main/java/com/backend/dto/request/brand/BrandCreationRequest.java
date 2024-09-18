@@ -9,6 +9,7 @@ import com.backend.dto.request.category.CategoryCreationRequest;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,14 +24,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BrandCreationRequest {
-
-	
-	@Valid
-	String id;
-
-	@NotNull(message = "Name cannot be empty ")
+	@NotNull
+	@Size(min = 3 , max = 255 , message = "@Param be greater 3 characters")
 	String name;
-
 
     @CreationTimestamp
     LocalDateTime createdAt;
