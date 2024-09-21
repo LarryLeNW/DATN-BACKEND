@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.backend.repository.PermissionRepository;
-import com.backend.dto.request.PermissionRequest;
-import com.backend.dto.response.PermissionResponse;
+import com.backend.dto.request.auth.PermissionRequest;
+import com.backend.dto.response.auth.PermissionResponse;
 import com.backend.entity.Permission;
 import com.backend.mapper.PermissionMapper;
 

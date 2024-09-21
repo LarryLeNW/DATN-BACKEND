@@ -13,12 +13,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.backend.dto.request.AuthenticationRequest;
-import com.backend.dto.request.IntrospectRequest;
-import com.backend.dto.request.LogoutRequest;
-import com.backend.dto.request.RefreshRequest;
-import com.backend.dto.response.AuthenticationResponse;
-import com.backend.dto.response.IntrospectResponse;
+import com.backend.dto.request.auth.AuthenticationRequest;
+import com.backend.dto.request.auth.IntrospectRequest;
+import com.backend.dto.request.auth.LogoutRequest;
+import com.backend.dto.request.auth.RefreshRequest;
+import com.backend.dto.response.auth.AuthenticationResponse;
+import com.backend.dto.response.auth.IntrospectResponse;
 import com.backend.entity.InvalidatedToken;
 import com.backend.entity.User;
 import com.backend.exception.AppException;
@@ -75,6 +75,7 @@ public class AuthenticationService {
         var user = userRepository
                 .findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+     
 
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 

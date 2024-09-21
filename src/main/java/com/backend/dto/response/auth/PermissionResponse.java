@@ -1,4 +1,4 @@
-package com.backend.dto.request;
+package com.backend.dto.response.auth;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AuthenticationRequest {
-    String username;
-    String password;
+public class PermissionResponse {
+    String name;
+    String description;
 }

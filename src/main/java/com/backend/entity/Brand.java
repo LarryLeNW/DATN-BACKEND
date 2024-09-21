@@ -1,7 +1,12 @@
- package com.backend.entity;
+package com.backend.entity;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 
@@ -17,23 +22,17 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "brands")
 public class Brand {
-	
-	enum OrderStatus {
-	    PENDING,
-	    SHIPPED,
-	    DELIVERED,
-	    CANCELLED
-	}
-	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
 
+	@Column(name = "name", columnDefinition = "NVARCHAR(255)", unique = true)
 	String name;
-	
-	@ManyToOne
-	User orderBy; 
 
-	@Enumerated(EnumType.STRING)
-	OrderStatus status;
+    @CreationTimestamp
+    LocalDateTime createdAt;
+ 
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
+ 
 }

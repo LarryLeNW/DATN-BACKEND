@@ -22,7 +22,17 @@ import org.springframework.web.filter.CorsFilter;
 @EnableMethodSecurity
 public class SecurityConfig {
     private final String[] PUBLIC_ENDPOINTS = {
-        "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
+
+
+        "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh" , "/products",
+
+
+            "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh", "/products"
+
+    };
+
+    private final String[] PUBLIC_GET_ENDPOINTS = {
+            "/products", "/categories", "/brands"
     };
 
     @Autowired
@@ -30,14 +40,18 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                .permitAll()
+        httpSecurity.authorizeHttpRequests(request -> request
+                // for integration
+                // .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                // .permitAll()
+                // .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
                 .anyRequest()
-                .authenticated());
+                .permitAll());
+        // .authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                        .decoder(customJwtDecoder)
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .decoder(customJwtDecoder)
+                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 

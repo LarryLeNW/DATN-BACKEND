@@ -1,25 +1,23 @@
-package com.backend.dto.request;
+package com.backend.dto.response.user;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
-import com.backend.validator.DobConstraint;
+import com.backend.dto.response.auth.RoleResponse;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserUpdateRequest {
-    String password;
+public class UserResponse {
+    String id;
+    String username;
     String firstName;
     String lastName;
-
-    @DobConstraint(min = 18, message = "INVALID_DOB")
     LocalDate dob;
-
-    List<String> roles;
+    Set<RoleResponse> roles;
 }
