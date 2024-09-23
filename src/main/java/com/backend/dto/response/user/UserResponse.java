@@ -3,7 +3,10 @@ package com.backend.dto.response.user;
 import java.time.LocalDate;
 import java.util.Set;
 
+import com.backend.constant.Type.LoginType;
+import com.backend.constant.Type.UserStatusType;
 import com.backend.dto.response.auth.RoleResponse;
+import com.backend.entity.Address;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -16,8 +19,11 @@ import lombok.experimental.FieldDefaults;
 public class UserResponse {
     String id;
     String username;
-    String firstName;
-    String lastName;
-    LocalDate dob;
+    String phone_number;
+    String email;
+    int points; 
+    UserStatusType status; 
+    LoginType login_type; 
     Set<RoleResponse> roles;
+    Set<Address> address;
 }

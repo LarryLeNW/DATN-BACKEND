@@ -1,7 +1,11 @@
- package com.backend.entity;
+package com.backend.entity;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
+
+import com.backend.constant.Type.LoginType;
+import com.backend.constant.Type.UserStatusType;
 
 import jakarta.persistence.*;
 
@@ -17,20 +21,40 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "users")
 public class User {
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
 
-	String username;
+    @Column(name = "username")
+    String username;
 
-	String password;
-	
-	String address; 
-	
-	String phone_number; 
-	
-	LocalDate dob;
+    @Column(name = "password")
+    String password;
 
-	@ManyToMany
-	Set<Role> roles;
+    @Column(name = "phone_number")
+    String phone_number;
+
+    @Column(name = "email", nullable = false)
+    String email;
+
+    @Column(name = "refresh_token")
+    String refresh_token;
+    
+    
+    @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
+    int points;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    UserStatusType status = UserStatusType.INACTIVE;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "login_type", nullable = false)
+    LoginType login_type = LoginType.DEFAULT;
+    
+    @ManyToOne
+    Role role;
+    
+    @OneToMany
+    Set<Address> address;
 }

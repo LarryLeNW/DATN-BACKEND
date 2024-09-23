@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Set;
 
+import com.backend.constant.Type.OrderStatusType;
 
 import jakarta.persistence.*;
 
@@ -20,12 +21,6 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "orders")
 public class Order {
 	
-	public enum OrderStatus {
-	    PENDING,
-	    SHIPPED,
-	    DELIVERED,
-	    CANCELLED
-	}
 	
 	
 	@Id
@@ -37,6 +32,6 @@ public class Order {
 	double total_amount;
 	
 	@Enumerated(EnumType.STRING)
-	OrderStatus status;
+	OrderStatusType status;
 
 }

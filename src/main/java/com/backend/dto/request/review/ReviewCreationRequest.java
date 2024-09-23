@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -27,8 +28,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReviewCreationRequest {
 
-	@NotNull
-	@NotBlank
+	
+	@Size(min = 3)
 	String review_text;
 
 	@NotNull
@@ -38,8 +39,8 @@ public class ReviewCreationRequest {
 	String productId;
 
 	@NotNull
-	@Min(value = 1, message = "Rating must be at least 1.")
-	@Max(value = 5, message = "Rating must be at most 5.")
+	@Min(value = 1)
+	@Max(value = 5)
 	int rating;
 
 	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")

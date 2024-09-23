@@ -43,23 +43,21 @@ public class ApplicationInitConfig {
         log.info("Initializing application.....");
         return args -> {
             if (userRepository.findByUsername(ADMIN_USER_NAME).isEmpty()) {
-                roleRepository.save(Role.builder()
-                        .name(PredefinedRole.USER_ROLE)
+                Role userRole = roleRepository.save(Role.builder()
+                        .name(PredefinedRole.USER_NAME)
                         .description("User role")
                         .build());
 
                 Role adminRole = roleRepository.save(Role.builder()
-                        .name(PredefinedRole.ADMIN_ROLE)
+                        .name(PredefinedRole.ADMIN_NAME)
                         .description("Admin role")
                         .build());
 
-                var roles = new HashSet<Role>();
-                roles.add(adminRole);
 
                 User user = User.builder()
                         .username(ADMIN_USER_NAME)
                         .password(passwordEncoder.encode(ADMIN_PASSWORD))
-                        .roles(roles)
+                        .role(userRole)
                         .build();
 
                 userRepository.save(user);

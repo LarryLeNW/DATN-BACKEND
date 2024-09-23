@@ -17,10 +17,16 @@ import lombok.experimental.FieldDefaults;
 public class ReviewResponse {
 
 	String id;
+	
 	int rating;
+	
 	String review_text;
-	Timestamp review_date;
+
 	String review_by_id;
+	
 	String product_id;
 
+	String image_url;
+
+	String video_url;
 }

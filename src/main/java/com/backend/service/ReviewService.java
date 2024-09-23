@@ -39,7 +39,7 @@ public class ReviewService {
 	UserRepository userRepository;
 	ProductRepository productRepository;
 	EntityManager entityManager;
-	
+
 	public PagedResponse<Review> getReview(int page, int limit, String sort, String... search) {
 
 		List<SearchType> criteriaList = new ArrayList<>();
@@ -47,8 +47,8 @@ public class ReviewService {
 
 		CriteriaQuery<Review> query = customSearchService.buildSearchQuery(Review.class, search, sort);
 
-		List<Review> reviews = entityManager.createQuery(query).setFirstResult((page - 1) * limit)
-				.setMaxResults(limit).getResultList();
+		List<Review> reviews = entityManager.createQuery(query).setFirstResult((page - 1) * limit).setMaxResults(limit)
+				.getResultList();
 
 		CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Review.class, search);
 		long totalElements = entityManager.createQuery(countQuery).getSingleResult();
@@ -63,14 +63,14 @@ public class ReviewService {
 
 		User user = userRepository.findById(request.getUserId())
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-		
+
 		Product product = productRepository.findById(request.getProductId())
 				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
 		review.setReviewBy(user);
 		review.setProduct(product);
 
-			review = reviewRepository.save(review);
+		review = reviewRepository.save(review);
 		return reviewMapper.toReviewResponse(review);
 
 	}
@@ -79,17 +79,10 @@ public class ReviewService {
 
 		Review review = reviewRepository.findById(reviewId)
 				.orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
-		
-		Helpers.updateEntityFields(request, review); 
-		
-		try {
-			review = reviewRepository.save(review);
-		} catch (Exception e) {
-			// TODO: handle exception
-			throw new AppException(ErrorCode.REVIEW_NOT_FOUND);
-		}
-		
-		return reviewMapper.toReviewResponse(review);
+
+		Helpers.updateEntityFields(request, review);
+
+		return reviewMapper.toReviewResponse(reviewRepository.save(review));
 	}
 
 	public void deleteReview(String reviewId) {
