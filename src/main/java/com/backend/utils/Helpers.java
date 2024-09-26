@@ -1,9 +1,14 @@
 package com.backend.utils;
 
 import java.lang.reflect.Field;
+import java.util.Random;
 import java.util.function.Consumer;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class Helpers {
+
+
 
 	public static <T> void updateFieldEntityIfChanged(T newValue, T currentValue, Consumer<T> setter) {
 		if (newValue != null && !newValue.equals(currentValue)) {
@@ -44,4 +49,13 @@ public class Helpers {
 		}
 	}
 
+    public static String handleRandomOTP(int size) {
+        Random random = new Random();
+        StringBuilder randomNumber = new StringBuilder(5);
+        for (int i = 0; i < size; i++) {
+            int digit = random.nextInt(10); 
+            randomNumber.append(digit);
+        }
+        return randomNumber.toString();
+    }
 }

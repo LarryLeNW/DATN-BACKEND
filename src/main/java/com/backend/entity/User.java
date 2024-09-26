@@ -8,7 +8,7 @@ import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
 
 import jakarta.persistence.*;
-
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -40,6 +40,9 @@ public class User {
     @Column(name = "refresh_token")
     String refresh_token;
     
+    @Size(min = 5, max = 5, message = "OTP required 5 characters")
+    @Column(name = "otp")
+    String otp;
     
     @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
     int points;

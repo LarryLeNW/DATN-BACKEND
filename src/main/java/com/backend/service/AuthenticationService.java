@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Random;
 import java.util.StringJoiner;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.backend.constant.PredefinedRole;
+import com.backend.constant.Type.UserStatusType;
 import com.backend.dto.request.auth.AuthenticationRequest;
 import com.backend.dto.request.auth.IntrospectRequest;
 import com.backend.dto.request.auth.LogoutRequest;
@@ -38,6 +40,7 @@ import com.backend.mapper.UserMapper;
 import com.backend.repository.InvalidatedTokenRepository;
 import com.backend.repository.RoleRepository;
 import com.backend.repository.UserRepository;
+import com.backend.utils.Helpers;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -76,36 +79,54 @@ public class AuthenticationService {
 	@Value("${jwt.refreshable-duration}")
 	protected long REFRESHABLE_DURATION;
 
-	public UserResponse register(UserCreationRequest request) {
-		User user = userMapper.toUser(request);
-		user.setPassword(passwordEncoder.encode(request.getPassword()));
+	public String register(UserCreationRequest request) {
+	    // find user email
+	    Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+	    User user;
 
-		Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
+	    if (optionalUser.isPresent()) {
+	    	// update 
+	        user = optionalUser.get();
 
-		if (roleUser == null)
-			throw new RuntimeException("Role " + PredefinedRole.USER_NAME + " not creating");
+	        if (user.getStatus() != UserStatusType.INACTIVE) {
+	            throw new RuntimeException("Email has already been used.");
+	        }
 
-		user.setRole(roleUser); 
+	        user.setUsername(request.getUsername());
+	        user.setPassword(passwordEncoder.encode(request.getPassword()));
+	    } else {
+	    	// create 
+	    	user = userMapper.toUser(request);
+	        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-		if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-			throw new RuntimeException("Email exited");
-		}
+	        Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
+	        if (roleUser == null) {
+	            throw new RuntimeException("Role " + PredefinedRole.USER_NAME + " not created.");
+	        }
+	        user.setRole(roleUser);
+	    }
 
-		user = userRepository.save(user);
+	    String otpRamdom = Helpers.handleRandomOTP(5); 
+	    System.out.println("otpRamdom :" + otpRamdom );
+	    user.setOtp(otpRamdom);
+	    
+	    user = userRepository.save(user);
 
-		mailService.send("DATN Team", generateToken(user , VALID_DURATION_TOKEN), user.getEmail());
+	    // send otp
+	    mailService.send("DATN Team By FPT Education", "Verify your account with OTP is" + otpRamdom, user.getEmail());
 
-		return userMapper.toUserResponse(user);
+	    return user.getId();
 	}
 
+
 	public UserResponse verifyRegister(String token) throws JOSEException, ParseException {
-	    SignedJWT signedJWT = verifyToken(token, false); 
+		SignedJWT signedJWT = verifyToken(token, false);
 
-	    String userId = signedJWT.getJWTClaimsSet().getSubject();
+		String userId = signedJWT.getJWTClaimsSet().getSubject();
 
-	    User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-	    return userMapper.toUserResponse(user);
+		return userMapper.toUserResponse(user);
 	}
 
 	public UserResponse getMyInfo() {
@@ -147,7 +168,7 @@ public class AuthenticationService {
 		if (!authenticated)
 			throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-		var token = generateToken(user , VALID_DURATION_TOKEN);
+		var token = generateToken(user, VALID_DURATION_TOKEN);
 
 		return AuthenticationResponse.builder().token(token).authenticated(true).build();
 	}
