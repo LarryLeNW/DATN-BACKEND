@@ -2,10 +2,14 @@
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
-import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,14 +22,6 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "reviews")
 public class Review {
-	
-	enum OrderStatus {
-	    PENDING,
-	    SHIPPED,
-	    DELIVERED,
-	    CANCELLED
-	}
-	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
@@ -36,12 +32,18 @@ public class Review {
 	@ManyToOne
 	Product product; 
 	
+	@NotNull
 	int rating;
 	
 	String review_text; 
+
+	String image_url; 
 	
-	Timestamp review_date;
+	String video_url;
 	
-	@Enumerated(EnumType.STRING)
-	OrderStatus status;
+	@CreationTimestamp
+	LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	LocalDateTime updatedAt;
 }
