@@ -52,7 +52,7 @@ public class ProductController {
 
 	@DeleteMapping("/{productId}")
 	ApiResponse<String> deleteUser(@PathVariable String productId) {
-		productService.deleteUser(productId);
+		productService.deleteProduct(productId);
 		return ApiResponse.<String>builder().result("Product has been deleted").build();
 	}
 

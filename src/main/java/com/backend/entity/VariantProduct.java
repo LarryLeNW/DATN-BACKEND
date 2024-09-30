@@ -8,9 +8,6 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,11 +18,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "variant_products")
+public class VariantProduct {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
+
+	@Column(name = "name", columnDefinition = "NVARCHAR(255)")
+	String name;
 
 	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	String description;
@@ -38,28 +38,13 @@ public class Product {
 
 	@Column(name = "thumbnail_url")
 	String thumbnail_url;
-	
-	@ManyToOne
-	@JsonBackReference
-	Category category;
 
 	@ManyToOne
-	@JsonBackReference
-	Brand brand;
-	
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference 
-	List<AttributeProduct> attributes;
-
-	@ManyToOne(optional = true)
-	@JsonBackReference 
 	Product product;
 
-	@ManyToOne(optional = true)
-	@JsonManagedReference 
-	VariantProduct variant_product;
-
-
+	@OneToMany
+	List<AttributeProduct> attributes;
+	
 	@CreationTimestamp
 	LocalDateTime createdAt;
 

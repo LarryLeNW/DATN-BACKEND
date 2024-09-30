@@ -1,5 +1,9 @@
 package com.backend.dto.request.product;
 
+import java.util.List;
+
+import com.backend.entity.AttributeProduct;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
@@ -38,5 +42,8 @@ public class ProductCreationRequest {
 
 	@NotNull(message = "BrandId cannot be null")
 	String brandId;
+	
+	@NotNull
+	List<AttributeProduct> attributes ; 
 
 }
