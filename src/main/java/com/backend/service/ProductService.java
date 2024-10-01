@@ -1,7 +1,10 @@
 package com.backend.service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,7 +31,7 @@ import com.backend.utils.Helpers;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
-
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -79,46 +82,74 @@ public class ProductService {
 
 		Product productCreated = productRepository.save(product);
 
-		if (productCreated != null) {
-			List<AttributeProduct> attributes = request.getAttributes().stream().map(attrRequest -> {
-				boolean exists = attributeProductRepository.existsByNameAndProductId(attrRequest.getName(),
-						productCreated.getId());
-				if (!exists) {
-					return new AttributeProduct(attrRequest.getName(), attrRequest.getValue(), productCreated);
-				} else {
-					return null;
-				}
-			}).filter(attribute -> attribute != null).collect(Collectors.toList());
+		// Thêm lại thuộc tính từ request
+		if (request.getAttributes() != null && !request.getAttributes().isEmpty()) {
+			List<AttributeProduct> newAttributes = request.getAttributes().stream()
+					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue()))
+					.collect(Collectors.toList());
 
-			if (!attributes.isEmpty()) {
-				attributeProductRepository.saveAll(attributes);
-			}
+			// Lưu các thuộc tính mới vào product
+			product.setAttributes(newAttributes);
+//	        attributeProductRepository.saveAll(newAttributes);
 		}
 
 		// Return the product response
 		return productMapper.toProductResponse(productCreated);
 	}
-
-	// Update product
+	
+	@Transactional
 	public ProductResponse updateProduct(String productId, ProductUpdateRequest request) {
+		// Find the product to update
+		System.out.println("update product" + request.getCategoryId());
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-		Helpers.updateEntityFields(request, product);
+		// Backup the attributes from the request
+		List<AttributeProduct> updateAttributes = request.getAttributes();
 
+		// Clear attributes from request to avoid updating them in updateEntityFields
+
+		// Update the brand if it has changed
 		if (request.getBrandId() != null && !request.getBrandId().equals(product.getBrand().getId())) {
-			var brand = brandRepository.findById(request.getBrandId())
+			Brand brand = brandRepository.findById(request.getBrandId())
 					.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
 			product.setBrand(brand);
 		}
 
+		// Update the category if it has changed
 		if (request.getCategoryId() != null && !request.getCategoryId().equals(product.getCategory().getId())) {
-			var category = categoryRepository.findById(request.getCategoryId())
+			Category category = categoryRepository.findById(request.getCategoryId())
 					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 			product.setCategory(category);
 		}
+		// Update the fields in the product based on the request
+		Helpers.updateEntityFields(request, product);
 
-		return productMapper.toProductResponse(productRepository.save(product));
+		System.out.println("oke");
+
+		for(AttributeProduct att : product.getAttributes() ) { 
+			System.out.println(att.getId()) ;
+			attributeProductRepository.deleteById(att.getId());
+		}
+		
+		
+		// Thêm lại thuộc tính từ request
+		if (updateAttributes != null && !updateAttributes.isEmpty()) {
+			List<AttributeProduct> newAttributes = updateAttributes.stream()
+					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue()))
+					.collect(Collectors.toList());
+
+			// Lưu các thuộc tính mới vào product
+			product.setAttributes(newAttributes);
+//	        attributeProductRepository.saveAll(newAttributes);
+		}
+
+		System.out.println("heer");
+		// Save the updated product
+		Product updatedProduct = productRepository.save(product);
+
+		// Return the updated product response
+		return productMapper.toProductResponse(updatedProduct);
 	}
 
 	// Delete product

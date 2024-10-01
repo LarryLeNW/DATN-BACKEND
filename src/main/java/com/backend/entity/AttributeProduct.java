@@ -38,36 +38,15 @@ public class AttributeProduct {
 	@Column(name = "name", columnDefinition = "NVARCHAR(255)")
 	String name;
 
-	public AttributeProduct(String name, String value, Product product) {
-	    if (product != null && variant_product == null) {
-	        this.name = name;
-	        this.value = value;
-	        this.product = product;
-	    } else {
-	        throw new IllegalArgumentException("Product cannot be set when VariantProduct is also provided");
-	    }
-	}
-
-	public AttributeProduct(String name, String value, VariantProduct variant_product) {
-	    if (variant_product != null && product == null) {
-	        this.name = name;
-	        this.value = value;
-	        this.variant_product = variant_product;
-	    } else {
-	        throw new IllegalArgumentException("VariantProduct cannot be set when Product is also provided");
-	    }
+	
+	public AttributeProduct(String name, String value) {
+		super();
+		this.name = name;
+		this.value = value;
 	}
 
 	@Column(name = "value", columnDefinition = "NVARCHAR(255)")
 	String value;
-
-    @JsonIgnore
-	@ManyToOne(optional = true)
-	Product product ; 
-
-    @JsonIgnore
-	@ManyToOne(optional = true)
-	VariantProduct variant_product; 
 	
 	@CreationTimestamp
 	LocalDateTime createdAt;

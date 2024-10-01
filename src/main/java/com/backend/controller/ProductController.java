@@ -51,13 +51,13 @@ public class ProductController {
 	}
 
 	@DeleteMapping("/{productId}")
-	ApiResponse<String> deleteUser(@PathVariable String productId) {
+	ApiResponse<String> deleteProduct(@PathVariable String productId) { 
 		productService.deleteProduct(productId);
 		return ApiResponse.<String>builder().result("Product has been deleted").build();
 	}
-
+	
 	@PutMapping("/{productId}")
-	ApiResponse<ProductResponse> updateUser(@PathVariable String productId, @Valid @RequestBody ProductUpdateRequest request) {
+	ApiResponse<ProductResponse> updateProduct(@PathVariable String productId, @Valid @RequestBody ProductUpdateRequest request) {
 		return ApiResponse.<ProductResponse>builder().result(productService.updateProduct(productId, request)).build();
 	}
 

@@ -21,8 +21,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductCreationRequest {
-	@Valid
-	@NotNull(message = "Name cannot be empty")
+	@NotNull
 	String name;
 
 	String description;

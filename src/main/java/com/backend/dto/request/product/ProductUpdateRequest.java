@@ -3,6 +3,7 @@ package com.backend.dto.request.product;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.backend.entity.AttributeProduct;
 import com.backend.validator.DobConstraint;
 
 import jakarta.validation.Valid;
@@ -35,4 +36,6 @@ public class ProductUpdateRequest {
 	String categoryId;
 
 	String brandId;
+
+	List<AttributeProduct> attributes ; 
 }

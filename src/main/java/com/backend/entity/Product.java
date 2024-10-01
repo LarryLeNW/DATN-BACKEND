@@ -26,7 +26,10 @@ public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
-
+	
+	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
+	String name; 
+	
 	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	String description;
 
@@ -47,13 +50,9 @@ public class Product {
 	@JsonBackReference
 	Brand brand;
 	
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(cascade=CascadeType.ALL)
 	@JsonManagedReference 
 	List<AttributeProduct> attributes;
-
-	@ManyToOne(optional = true)
-	@JsonBackReference 
-	Product product;
 
 	@ManyToOne(optional = true)
 	@JsonManagedReference 
