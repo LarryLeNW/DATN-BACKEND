@@ -85,8 +85,7 @@ public class ProductService {
 		// Thêm lại thuộc tính từ request
 		if (request.getAttributes() != null && !request.getAttributes().isEmpty()) {
 			List<AttributeProduct> newAttributes = request.getAttributes().stream()
-					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue()))
-					.collect(Collectors.toList());
+					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue())).collect(Collectors.toList());
 
 			// Lưu các thuộc tính mới vào product
 			product.setAttributes(newAttributes);
@@ -96,60 +95,58 @@ public class ProductService {
 		// Return the product response
 		return productMapper.toProductResponse(productCreated);
 	}
-	
+
 	@Transactional
-	public ProductResponse updateProduct(String productId, ProductUpdateRequest request) {
-		// Find the product to update
-		System.out.println("update product" + request.getCategoryId());
+	public Product updateProduct(String productId, ProductUpdateRequest request) {
+		// Tìm sản phẩm để cập nhật
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-		// Backup the attributes from the request
+		System.out.println(product.toString());
+
 		List<AttributeProduct> updateAttributes = request.getAttributes();
-
-		// Clear attributes from request to avoid updating them in updateEntityFields
-
-		// Update the brand if it has changed
+		// Cập nhật Brand nếu thay đổi
 		if (request.getBrandId() != null && !request.getBrandId().equals(product.getBrand().getId())) {
 			Brand brand = brandRepository.findById(request.getBrandId())
 					.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
 			product.setBrand(brand);
 		}
 
-		// Update the category if it has changed
+		// Cập nhật Category nếu thay đổi
 		if (request.getCategoryId() != null && !request.getCategoryId().equals(product.getCategory().getId())) {
 			Category category = categoryRepository.findById(request.getCategoryId())
 					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 			product.setCategory(category);
 		}
-		// Update the fields in the product based on the request
-		Helpers.updateEntityFields(request, product);
 
-		System.out.println("oke");
+		Helpers.updateFieldEntityIfChanged(request.getName(), product.getName(), product::setName);
+		Helpers.updateFieldEntityIfChanged(request.getDescription(), product.getDescription(), product::setDescription);
+		Helpers.updateFieldEntityIfChanged(request.getPrice(), product.getPrice(), product::setPrice);
+		Helpers.updateFieldEntityIfChanged(request.getStock(), product.getStock(), product::setStock);
+		Helpers.updateFieldEntityIfChanged(request.getThumbnail_url(), product.getThumbnail_url(), product::setThumbnail_url);
 
-		for(AttributeProduct att : product.getAttributes() ) { 
-			System.out.println(att.getId()) ;
-			attributeProductRepository.deleteById(att.getId());
+
+		if (product.getAttributes() != null) {
+			for (AttributeProduct att : product.getAttributes()) {
+				attributeProductRepository.deleteById(att.getId());
+			}
 		}
-		
-		
-		// Thêm lại thuộc tính từ request
+
 		if (updateAttributes != null && !updateAttributes.isEmpty()) {
 			List<AttributeProduct> newAttributes = updateAttributes.stream()
-					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue()))
-					.collect(Collectors.toList());
-
+					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue())).collect(Collectors.toList());
 			// Lưu các thuộc tính mới vào product
 			product.setAttributes(newAttributes);
 //	        attributeProductRepository.saveAll(newAttributes);
 		}
 
-		System.out.println("heer");
-		// Save the updated product
+		// Lưu sản phẩm đã cập nhật
 		Product updatedProduct = productRepository.save(product);
 
-		// Return the updated product response
-		return productMapper.toProductResponse(updatedProduct);
+		System.out.println("èdsaf");
+
+		// Trả về ProductResponse
+		return updatedProduct;
 	}
 
 	// Delete product
