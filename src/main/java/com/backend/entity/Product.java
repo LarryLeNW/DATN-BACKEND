@@ -1,11 +1,15 @@
 package com.backend.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,10 +26,10 @@ public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	String id;
-
-	@Column(name = "name", columnDefinition = "NVARCHAR(255)")
-	String name;
-
+	
+	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
+	String name; 
+	
 	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	String description;
 
@@ -37,12 +41,23 @@ public class Product {
 
 	@Column(name = "thumbnail_url")
 	String thumbnail_url;
-
+	
 	@ManyToOne
+	@JsonBackReference
 	Category category;
 
 	@ManyToOne
+	@JsonBackReference
 	Brand brand;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	@JsonManagedReference 
+	List<AttributeProduct> attributes;
+
+	@ManyToOne(optional = true)
+	@JsonManagedReference 
+	VariantProduct variant_product;
+
 
 	@CreationTimestamp
 	LocalDateTime createdAt;

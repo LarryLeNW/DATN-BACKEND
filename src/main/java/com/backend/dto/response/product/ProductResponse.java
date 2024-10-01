@@ -2,9 +2,11 @@ package com.backend.dto.response.product;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import com.backend.dto.response.auth.RoleResponse;
+import com.backend.entity.AttributeProduct;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +23,7 @@ public class ProductResponse {
     double price;
 	int stock;
 	String thumbnail_url;
+	List<AttributeProduct> attributes;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 }

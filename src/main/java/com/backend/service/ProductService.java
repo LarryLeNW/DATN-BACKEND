@@ -1,74 +1,57 @@
 package com.backend.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductUpdateRequest;
-import com.backend.dto.request.user.UserCreationRequest;
-import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
-import com.backend.dto.response.user.UserResponse;
+import com.backend.entity.AttributeProduct;
+import com.backend.entity.Brand;
+import com.backend.entity.Category;
+import com.backend.entity.Product;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
-import com.backend.mapper.UserMapper;
+import com.backend.repository.AttributeProductRepository;
 import com.backend.repository.BrandRepository;
 import com.backend.repository.CategoryRepository;
 import com.backend.repository.ProductRepository;
-import com.backend.repository.RoleRepository;
-import com.backend.repository.UserRepository;
-import com.backend.repository.common.ConsumerCondition;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
 import com.backend.utils.Helpers;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-
-import com.backend.constant.PredefinedRole;
-import com.backend.entity.Brand;
-import com.backend.entity.Category;
-import com.backend.entity.Product;
-import com.backend.entity.Role;
-import com.backend.entity.User;
-
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.Helper;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
 public class ProductService {
 
-	CategoryRepository categoryRepository;
-	BrandRepository brandRepository;
-	ProductRepository productRepository;
-	ProductMapper productMapper;
-	EntityManager entityManager;
+	final CategoryRepository categoryRepository;
+	final BrandRepository brandRepository;
+	final ProductRepository productRepository;
+	final AttributeProductRepository attributeProductRepository;
+	final ProductMapper productMapper;
+	final EntityManager entityManager;
 
+	// Paginated retrieval of products
 	public PagedResponse<Product> getProducts(int page, int limit, String sort, String... search) {
-
 		List<SearchType> criteriaList = new ArrayList<>();
 		CustomSearchRepository<Product> customSearchService = new CustomSearchRepository<>(entityManager);
 
@@ -96,38 +79,81 @@ public class ProductService {
 
 		product.setCategory(category);
 		product.setBrand(brand);
-		try {
-			product = productRepository.save(product);
-		} catch (DataIntegrityViolationException exception) {
-			throw new AppException(ErrorCode.PRODUCT_EXISTED);
+
+		Product productCreated = productRepository.save(product);
+
+		// Thêm lại thuộc tính từ request
+		if (request.getAttributes() != null && !request.getAttributes().isEmpty()) {
+			List<AttributeProduct> newAttributes = request.getAttributes().stream()
+					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue()))
+					.collect(Collectors.toList());
+
+			// Lưu các thuộc tính mới vào product
+			product.setAttributes(newAttributes);
+//	        attributeProductRepository.saveAll(newAttributes);
 		}
 
-		return productMapper.toProductResponse(product);
+		// Return the product response
+		return productMapper.toProductResponse(productCreated);
 	}
-
+	
+	@Transactional
 	public ProductResponse updateProduct(String productId, ProductUpdateRequest request) {
+		// Find the product to update
+		System.out.println("update product" + request.getCategoryId());
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-		Helpers.updateEntityFields(request, product); 
+		// Backup the attributes from the request
+		List<AttributeProduct> updateAttributes = request.getAttributes();
 
+		// Clear attributes from request to avoid updating them in updateEntityFields
+
+		// Update the brand if it has changed
 		if (request.getBrandId() != null && !request.getBrandId().equals(product.getBrand().getId())) {
-			var brand = brandRepository.findById(request.getBrandId())
+			Brand brand = brandRepository.findById(request.getBrandId())
 					.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
 			product.setBrand(brand);
 		}
 
+		// Update the category if it has changed
 		if (request.getCategoryId() != null && !request.getCategoryId().equals(product.getCategory().getId())) {
-			var category = categoryRepository.findById(request.getCategoryId())
+			Category category = categoryRepository.findById(request.getCategoryId())
 					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 			product.setCategory(category);
 		}
+		// Update the fields in the product based on the request
+		Helpers.updateEntityFields(request, product);
 
-		return productMapper.toProductResponse(productRepository.save(product));
+		System.out.println("oke");
+
+		for(AttributeProduct att : product.getAttributes() ) { 
+			System.out.println(att.getId()) ;
+			attributeProductRepository.deleteById(att.getId());
+		}
+		
+		
+		// Thêm lại thuộc tính từ request
+		if (updateAttributes != null && !updateAttributes.isEmpty()) {
+			List<AttributeProduct> newAttributes = updateAttributes.stream()
+					.map(attr -> new AttributeProduct(attr.getName(), attr.getValue()))
+					.collect(Collectors.toList());
+
+			// Lưu các thuộc tính mới vào product
+			product.setAttributes(newAttributes);
+//	        attributeProductRepository.saveAll(newAttributes);
+		}
+
+		System.out.println("heer");
+		// Save the updated product
+		Product updatedProduct = productRepository.save(product);
+
+		// Return the updated product response
+		return productMapper.toProductResponse(updatedProduct);
 	}
 
-	public void deleteUser(String productId) {
+	// Delete product
+	public void deleteProduct(String productId) {
 		productRepository.deleteById(productId);
 	}
-
 }

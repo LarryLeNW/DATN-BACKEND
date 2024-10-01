@@ -8,4 +8,8 @@ import com.backend.entity.Category;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, String> {
+    //check for existence of the name
+
+	boolean existsByName(String name);
+
 }

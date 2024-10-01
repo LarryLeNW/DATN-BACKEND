@@ -2,8 +2,12 @@ package com.backend.dto.request.user;
 
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import com.backend.constant.Type.LoginType;
+import com.backend.constant.Type.UserStatusType;
 import com.backend.validator.DobConstraint;
 
 import lombok.*;
@@ -15,12 +19,20 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
-    @Size(min = 4, message = "USERNAME_INVALID")
-    String username;
+	@NotNull
+	@Size(min = 4, message = "USERNAME_INVALID")
+	String username;
 
-    @Size(min = 6, message = "INVALID_PASSWORD")
-    String password;
+	@NotNull
+	@Size(min = 6, message = "INVALID_PASSWORD")
+	String password;
 
-    @DobConstraint(min = 10, message = "INVALID_DOB")
-    LocalDate dob;
+	@NotNull
+	@Email
+	String email;
+
+	LoginType login_type = LoginType.DEFAULT;;
+
+	UserStatusType status = UserStatusType.INACTIVE;
+
 }
