@@ -50,8 +50,7 @@ public class Product {
 	@JsonBackReference
 	Brand brand;
 	
-	@OneToMany(cascade=CascadeType.ALL)
-	@JsonManagedReference 
+	@OneToMany( cascade = CascadeType.ALL)
 	List<AttributeProduct> attributes;
 
 	@ManyToOne(optional = true)
