@@ -15,6 +15,7 @@ public enum ErrorCode {
     USERNAME_INVALID(1003, "Username must be at least {min} characters", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(1004, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
+    VARIANT_NOT_EXISTED(1005,"VariantProduct not existed",HttpStatus.NOT_FOUND),
     CATEGORY_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
     REVIEW_NOT_FOUND(1005,"review not found",HttpStatus.NOT_FOUND),
     PRODUCT_NOT_EXISTED(1005, "Product not existed", HttpStatus.NOT_FOUND),
