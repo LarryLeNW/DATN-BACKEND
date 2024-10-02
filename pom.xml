@@ -13,7 +13,7 @@
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>demo</name>
+	<name>Server</name>
 	<description>Backend Fashion E-Commerce</description>
 	<url />
 	<licenses>

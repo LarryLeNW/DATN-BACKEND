@@ -27,6 +27,7 @@ import com.backend.repository.CategoryRepository;
 import com.backend.repository.ProductRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.repository.product.ProductQueryRepository;
 import com.backend.utils.Helpers;
 
 import jakarta.persistence.EntityManager;
@@ -50,10 +51,9 @@ public class ProductService {
 	final ProductMapper productMapper;
 	final EntityManager entityManager;
 
-	// Paginated retrieval of products
 	public PagedResponse<Product> getProducts(int page, int limit, String sort, String... search) {
 		List<SearchType> criteriaList = new ArrayList<>();
-		CustomSearchRepository<Product> customSearchService = new CustomSearchRepository<>(entityManager);
+		ProductQueryRepository<Product> customSearchService = new ProductQueryRepository<>(entityManager);
 
 		CriteriaQuery<Product> query = customSearchService.buildSearchQuery(Product.class, search, sort);
 

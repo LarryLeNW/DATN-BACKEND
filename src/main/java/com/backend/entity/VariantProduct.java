@@ -42,7 +42,7 @@ public class VariantProduct {
 	@ManyToOne
 	Product product;
 
-	@OneToMany
+	@OneToMany( cascade = CascadeType.ALL)
 	List<AttributeProduct> attributes;
 	
 	@CreationTimestamp
