@@ -23,13 +23,14 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductDTO>> getProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) Long price,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Map<String, String> attributes) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ProductDTO> productsPage = productService.getProducts(categoryId, attributes, pageable);
+    	
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<ProductDTO> productsPage = productService.getProducts(attributes);
         return ResponseEntity.ok(productsPage);
     }
 

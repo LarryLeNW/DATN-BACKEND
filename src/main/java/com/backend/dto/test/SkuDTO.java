@@ -13,5 +13,7 @@ public class SkuDTO {
     private Long id;
     private String code;
     private Long price;
+    private Long stock; 
+    private Long discount;
     private String attributes;
 }

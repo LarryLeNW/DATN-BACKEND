@@ -57,6 +57,25 @@ public class ProductSpecification {
             return predicate;
         };
     }
+    
+    
+    public static Specification<Product> hasExactPrice(Long price) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.join("skus").get("price"), price);
+    }
+    
+    
+    public static Specification<Product> hasMinPrice(Long minPrice) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.join("skus").get("price"), minPrice);
+    }
+
+    public static Specification<Product> hasMaxPrice(Long maxPrice) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.join("skus").get("price"), maxPrice);
+    }
+    
+    
 
     // Lấy thông tin của SKU và Attribute
     public static Specification<Product> getProductWithSkus() {

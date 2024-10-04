@@ -15,7 +15,9 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
     private String name;
+    
     private String slug;
 
     // Getters and Setters

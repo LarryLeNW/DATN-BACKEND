@@ -1,6 +1,5 @@
 package com.backend.entity.test;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,19 +13,21 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Data
 public class Product {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String name;
-    private String slug;
+	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
+	private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "categoryId", nullable = false)
-    @JsonIgnore
-    private Category category;
+	private String slug;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Sku> skus;
+	@ManyToOne
+	@JoinColumn(name = "categoryId", nullable = false)
+	@JsonIgnore
+	private Category category;
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private List<Sku> skus;
 
 }

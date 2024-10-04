@@ -23,7 +23,13 @@ public class Sku {
     private Product product;
 
     private String code;
+    
     private Long price;
+    
+    private Long stock; 
+    
+    private Long discount;
+    
 
     @OneToMany(mappedBy = "sku")
     private List<AttributeOptionSku> attributeOptionSkus;

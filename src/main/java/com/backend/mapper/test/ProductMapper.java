@@ -31,9 +31,9 @@ public class ProductMapper {
 
         // Build attribute string similar to what you provided in the image
         String attributes = sku.getAttributeOptionSkus().stream()
-                .map(aos -> "{" + aos.getAttributeOption().getAttribute().getName() + ": " + aos.getAttributeOption().getValue() + "}")
+                .map(aos ->  aos.getAttributeOption().getAttribute().getName() + ": " + aos.getAttributeOption().getValue()  )
                 .collect(Collectors.joining(", "));
-        dto.setAttributes(attributes);
+        dto.setAttributes("{" +attributes + "}");
 
         return dto;
     }

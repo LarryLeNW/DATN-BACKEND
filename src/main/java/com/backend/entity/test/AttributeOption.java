@@ -23,6 +23,7 @@ public class AttributeOption {
     @JsonIgnore
     private Attribute attribute;
 
+    @Column(name = "value", columnDefinition = "NVARCHAR(MAX)")
     private String value;
 
     @OneToMany(mappedBy = "attributeOption")
