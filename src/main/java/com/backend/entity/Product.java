@@ -35,4 +35,8 @@ public class Product {
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Sku> skus;
 
+	@Override
+	public String toString() {
+	    return "Product{id=" + id + ", name='" + name + "'}"; 
+	}
 }

@@ -17,6 +17,7 @@ public enum ErrorCode {
     USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
     REVIEW_NOT_FOUND(1005,"review not found",HttpStatus.NOT_FOUND),
+    SKU_NOT_FOUND(1005,"SKU_NOT_FOUND ",HttpStatus.NOT_FOUND),    
     PRODUCT_NOT_EXISTED(1005, "Product not existed", HttpStatus.NOT_FOUND),
     CATEGORY_NAME_EXISTED(1005, "name Category existed", HttpStatus.NOT_FOUND),
     BRAND_NOT_EXISTED(1005, "Brand not existed", HttpStatus.NOT_FOUND),

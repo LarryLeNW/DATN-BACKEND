@@ -27,5 +27,4 @@ public class AttributeOptionSku {
     @JsonIgnore
     private AttributeOption attributeOption;
 
-    // Getters and Setters
 }

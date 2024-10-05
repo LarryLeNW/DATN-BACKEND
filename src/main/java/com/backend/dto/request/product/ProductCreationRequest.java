@@ -1,48 +1,36 @@
 package com.backend.dto.request.product;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.backend.entity.Sku;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
-
-
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class ProductCreationRequest {
-	@NotNull
-	String name;
+	private Long id;
+	private String name;
+	private String slug;
+	private Long categoryId;
+	private Long brandId; 
+    private List<SKUDTO> skus;
 
-	String description;
-
-	@Positive(message = "Price must be greater than 0")
-	double price;
-
-	@Min(value = 1, message = "Stock must be at least 1")
-	int stock;
-
-	@NotNull(message = "Thumbnail URL cannot be empty")
-	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
-	String thumbnail_url;
-	
-	@NotNull(message = "CategoryId cannot be null")
-	String categoryId;
-
-	@NotNull(message = "BrandId cannot be null")
-	String brandId;
-	
-	@NotNull
-	List<Sku> attributes ; 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SKUDTO {
+    	Long Id;
+		Long price;
+		Long stock;
+		Long discount;
+		String code; 
+		HashMap<String, String> attributes;
+	}
 
 }

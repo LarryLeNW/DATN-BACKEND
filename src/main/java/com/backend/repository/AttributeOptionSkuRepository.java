@@ -9,12 +9,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.backend.entity.Attribute;
+import com.backend.entity.AttributeOption;
+import com.backend.entity.AttributeOptionSku;
+import com.backend.entity.AttributeOptionSkuKey;
+import com.backend.entity.Category;
 
 import jakarta.transaction.Transactional;
 import java.util.List;
+import com.backend.entity.Sku;
 
 
 @Repository
-public interface AttributeProductRepository extends JpaRepository<Attribute, Long> {
-	Optional<Attribute> findByName(String name);
+public interface AttributeOptionSkuRepository extends JpaRepository<AttributeOptionSku, AttributeOptionSkuKey> {
+	  Optional<AttributeOptionSku> findBySkuAndAttributeOption(Sku sku, AttributeOption attributeOption);
 }
