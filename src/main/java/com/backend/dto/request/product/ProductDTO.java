@@ -25,9 +25,11 @@ public class ProductDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class SKUDTO {
+    	Long Id;
 		Long price;
 		Long stock;
 		Long discount;
+		String code; 
 		HashMap<String, String> attributes;
 	}
 
