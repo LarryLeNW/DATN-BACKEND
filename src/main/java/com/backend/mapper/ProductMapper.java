@@ -1,22 +1,27 @@
-//package com.backend.mapper;
-//
-//import org.mapstruct.Mapper;
-//import org.mapstruct.Mapping;
-//import org.mapstruct.MappingTarget;
-//
-//import com.backend.dto.request.product.ProductCreationRequest;
-//import com.backend.dto.request.product.ProductUpdateRequest;
-//import com.backend.dto.response.product.ProductResponse;
-//import com.backend.entity.Product;
-//
-//@Mapper(componentModel = "spring")
-//public interface ProductMapper {
-//
-//	Product toProduct(ProductCreationRequest request);
-//
-//	ProductResponse toProductResponse(Product product);
-//
-//	@Mapping(target = "category", ignore = true)
-//	@Mapping(target = "brand", ignore = true)
-//	void updateProduct(@MappingTarget Product product, ProductUpdateRequest request);
-//}
+package com.backend.mapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
+import com.backend.dto.request.product.ProductDTO;
+import com.backend.entity.Product;
+
+
+@Component
+public class ProductMapper {
+
+    public ProductDTO toDTO(Product product) {
+        ProductDTO dto = new ProductDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setSlug(product.getSlug());
+
+//        List<SkuDTO> skus = product.getSkus().stream().map(this:).collect(Collectors.toList());
+
+        return dto;
+    }
+
+  
+}

@@ -1,15 +1,16 @@
-package com.backend.entity.test;
+package com.backend.entity;
 
-import java.util.List;
-import java.util.Set;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+import java.util.Set;
+
 @Entity
-@Table(name = "categories")
+@Table(name = "attributes")
 @Data
-public class Category {
+public class Attribute {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,8 +18,9 @@ public class Category {
 
     @Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
     private String name;
-    
-    private String slug;
+
+    @OneToMany(mappedBy = "attribute")
+    private List<AttributeOption> attributeOptions;
 
     // Getters and Setters
 }

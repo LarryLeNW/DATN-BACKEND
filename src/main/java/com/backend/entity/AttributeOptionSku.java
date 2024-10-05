@@ -1,4 +1,4 @@
-package com.backend.entity.test;
+package com.backend.entity;
 
 import java.util.Set;
 

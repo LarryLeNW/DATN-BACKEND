@@ -26,7 +26,11 @@ public class CategoryCreationRequest {
 	@Size(min = 3 , max = 255 , message = "@Param be greater 3 characters")
 	String name;
 	
-	String description;
+	String slug; 
+	
+	String description; 
+
+	String images;
 	
 	@CreationTimestamp
 	LocalDateTime createdAt;

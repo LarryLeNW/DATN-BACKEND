@@ -1,10 +1,10 @@
 package com.backend.specification;
 
-import com.backend.entity.test.Attribute;
-import com.backend.entity.test.AttributeOption;
-import com.backend.entity.test.AttributeOptionSku;
-import com.backend.entity.test.Product;
-import com.backend.entity.test.Sku;
+import com.backend.entity.Attribute;
+import com.backend.entity.AttributeOption;
+import com.backend.entity.AttributeOptionSku;
+import com.backend.entity.Product;
+import com.backend.entity.Sku;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
