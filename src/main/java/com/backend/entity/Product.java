@@ -1,67 +1,38 @@
 package com.backend.entity;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
+import lombok.Data;
+
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "products")
+@Data
 public class Product {
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	String id;
-	
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
 	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
-	String name; 
-	
-	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
-	String description;
+	private String name;
 
-	@Column(name = "price")
-	double price;
-
-	@Column(name = "stock")
-	int stock;
-
-	@Column(name = "thumbnail_url")
-	String thumbnail_url;
-	
-	@ManyToOne
-	@JsonBackReference
-	Category category;
+	private String slug;
 
 	@ManyToOne
-	@JsonBackReference
-	Brand brand;
+	@JoinColumn(name = "categoryId", nullable = false)
+	@JsonIgnore
+	private Category category;
 	
-	@OneToMany( cascade = CascadeType.ALL)
-	List<AttributeProduct> attributes;
+	@ManyToOne
+	@JoinColumn(name = "brandId", nullable = false)
+	@JsonIgnore
+	private Brand brand;
 
-	@ManyToOne(optional = true)
-	@JsonManagedReference 
-	VariantProduct variant_product;
-
-
-	@CreationTimestamp
-	LocalDateTime createdAt;
-
-	@UpdateTimestamp
-	LocalDateTime updatedAt;
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private List<Sku> skus;
 
 }

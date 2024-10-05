@@ -19,14 +19,7 @@ import com.backend.dto.request.category.CategoryUpdateRequest;
 import com.backend.dto.request.product.ProductCreationRequest;
 
 import com.backend.dto.response.ApiResponse;
-
-import com.backend.dto.request.product.ProductUpdateRequest;
-
-import com.backend.dto.response.common.PagedResponse;
-import com.backend.dto.response.product.ProductResponse;
-
 import com.backend.entity.Category;
-import com.backend.entity.Product;
 import com.backend.service.CategoryService;
 
 import jakarta.validation.Valid;
@@ -43,32 +36,69 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CategoryController {
 	CategoryService categoryService;
-
-	@GetMapping
-	ApiResponse<PagedResponse<Category>> getCategories(
-			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
-			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
-			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
-
-		PagedResponse<Category> pagedResponse = categoryService.getCategories(page, limit, sort, search);
-
-		return ApiResponse.<PagedResponse<Category>>builder().result(pagedResponse).build();
-	}
+//
+//	@GetMapping
+//	ApiResponse<PagedResponse<Category>> getCategories(
+//			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
+//			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
+//			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
+//
+//		PagedResponse<Category> pagedResponse = categoryService.getCategories(page, limit, sort, search);
+//
+//		return ApiResponse.<PagedResponse<Category>>builder().result(pagedResponse).build();
+//	}
 
 	@PostMapping
 	ApiResponse<Category> createCategory(@Valid @RequestBody CategoryCreationRequest request) {
 		return ApiResponse.<Category>builder().result(categoryService.createCategory(request)).build();
 	}
 
-	@DeleteMapping("/{categoryId}")
-	ApiResponse<String> deleteCategory(@PathVariable String categoryId) {
-		categoryService.deleteCategory(categoryId);
-		return ApiResponse.<String>builder().result("Category has been deleted").build();
-	}
+//	@DeleteMapping("/{categoryId}")
+//	ApiResponse<String> deleteCategory(@PathVariable String categoryId) {
+//		categoryService.deleteCategory(categoryId);
+//		return ApiResponse.<String>builder().result("Category has been deleted").build();
+//	}
+//
+//	@PutMapping("/{categoryId}")
+//	ApiResponse<Category> updateUser(@PathVariable String categoryId, @Valid @RequestBody CategoryUpdateRequest request) {
+//		return ApiResponse.<Category>builder().result(categoryService.updateCategory(categoryId, request)).build();
+//	}
 
-	@PutMapping("/{categoryId}")
-	ApiResponse<Category> updateUser(@PathVariable String categoryId, @Valid @RequestBody CategoryUpdateRequest request) {
-		return ApiResponse.<Category>builder().result(categoryService.updateCategory(categoryId, request)).build();
-	}
-	
 }
+
+//@RestController
+//@RequestMapping("/categories")
+//@RequiredArgsConstructor
+//@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+//@Slf4j
+//public class CategoryController {
+//	CategoryService categoryService;
+//
+//	@GetMapping
+//	ApiResponse<PagedResponse<Category>> getCategories(
+//			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
+//			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
+//			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
+//
+//		PagedResponse<Category> pagedResponse = categoryService.getCategories(page, limit, sort, search);
+//
+//		return ApiResponse.<PagedResponse<Category>>builder().result(pagedResponse).build();
+//	}
+//
+//	@PostMapping
+//	ApiResponse<Category> createCategory(@Valid @RequestBody CategoryCreationRequest request) {
+//		return ApiResponse.<Category>builder().result(categoryService.createCategory(request)).build();
+//	}
+//
+//	@DeleteMapping("/{categoryId}")
+//	ApiResponse<String> deleteCategory(@PathVariable String categoryId) {
+//		categoryService.deleteCategory(categoryId);
+//		return ApiResponse.<String>builder().result("Category has been deleted").build();
+//	}
+//
+//	@PutMapping("/{categoryId}")
+//	ApiResponse<Category> updateUser(@PathVariable String categoryId, @Valid @RequestBody CategoryUpdateRequest request) {
+//		return ApiResponse.<Category>builder().result(categoryService.updateCategory(categoryId, request)).build();
+//	}
+//	
+//}

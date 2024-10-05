@@ -1,12 +1,7 @@
 package com.backend.repository.product;
 
 import java.util.function.Consumer;
-
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.From;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,88 +13,71 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ConsumerCondition implements Consumer<SearchType> {
-	private CriteriaBuilder builder;
-	private Predicate predicate;
-	private Root<?> root;
-	private Join<?, ?> variantJoin; // Join với VariantProduct
-	private Join<?, ?> attributeJoin; // Join với AttributeProduct
+    private CriteriaBuilder builder;
+    private Predicate predicate;
+    private Root<?> root;
+    private Join<?, ?> attributeJoin; // Join trực tiếp với AttributeProduct
 
-	@Override
-	public void accept(SearchType criteria) {
-	    System.out.println("Processing search criteria: " + criteria);
-	    String key = criteria.getKey();
-	    String operation = criteria.getOperation();
-	    Object value = criteria.getValue();
-	    
-	    System.out.println(isProductField(key));
-	    
-	    
-	    if (isProductField(key)) {
-	        handleSearch(root, key, operation, value);
-	    } else {
-	        // Nếu không phải, coi nó là thuộc tính động từ AttributeProduct
-	        handleDynamicAttributeSearch(attributeJoin, key, operation, value);
-	    }
-	}
+    @Override
+    public void accept(SearchType criteria) {
+        String key = criteria.getKey();
+        String operation = criteria.getOperation();
+        Object value = criteria.getValue();
 
-	private boolean isProductField(String key) {
-		// Kiểm tra nếu key là thuộc tính của Product, thay thế bằng các trường hợp của
-		// bảng Product
-		try {
-			root.get(key); // Nếu key tồn tại trong root của Product, nó là trường hợp hợp lệ
-			return true;
-		} catch (IllegalArgumentException e) {
-			return false; // Nếu không tồn tại, coi key là thuộc tính động của AttributeProduct
-		}
-	}
+        if (isProductField(key)) {
+            // Xử lý các trường của Product
+            handleSearch(root, key, operation, value);
+        } else {
+            // Nếu không có attributeJoin, thực hiện join động với bảng AttributeProduct
+            if (attributeJoin == null) {
+                attributeJoin = root.join("attributes", JoinType.LEFT);  // Tạo join với bảng AttributeProduct
+            }
+            // Xử lý lọc trên bảng AttributeProduct
+            handleSearch(attributeJoin, key, operation, value);
+        }
+    }
 
-	private void handleDynamicAttributeSearch(Join<?, ?> join, String attributeName, String operation, Object value) {
-	    System.out.println("Searching for attribute: " + attributeName + " with value: " + value);
-	    
-	    // Lọc theo thuộc tính động từ AttributeProduct (ví dụ: color, size)
+    private boolean isProductField(String key) {
+        return isValidField(root, key); // Kiểm tra xem key có thuộc về bảng Product không
+    }
 
-	    switch (operation) {
-	        case ":": // Tìm kiếm như
-	            predicate = builder.and(predicate, builder.like(join.get("value"), "%" + value + "%")); // value là giá trị
-	            break;
-	        case "=": // Tìm kiếm chính xác
-	            predicate = builder.and(predicate, builder.equal(join.get("value"), value));
-	            break;
-	        case ">": // Tìm kiếm lớn hơn
-	            predicate = builder.and(predicate, builder.greaterThan(join.get("value"), (Comparable) value));
-	            break;
-	        case "<": // Tìm kiếm nhỏ hơn
-	            predicate = builder.and(predicate, builder.lessThan(join.get("value"), (Comparable) value));
-	            break;
-	        default:
-	        	break ;
-	    }
-	    
-	    System.out.println(operation);
-	}
+    private boolean isValidField(From<?, ?> join, String key) {
+        try {
+            join.get(key); // Kiểm tra xem key có tồn tại trong join không
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 
+    private void handleSearch(From<?, ?> from, String field, String operation, Object value) {
+        if (value == null) {
+            return; // Bỏ qua giá trị null
+        }
 
-	private void handleSearch(From<?, ?> root, String field, String operation, Object value) {
-		// Xử lý tìm kiếm cho các trường trong Product
-		switch (operation) {
-		case ":":
-			predicate = builder.and(predicate, builder.like(root.get(field), "%" + value + "%"));
-			break;
-		case "=":
-			predicate = builder.and(predicate, builder.equal(root.get(field), value));
-			break;
-		case ">":
-			predicate = builder.and(predicate, builder.greaterThan(root.get(field), (Comparable) value));
-			break;
-		case "<":
-			predicate = builder.and(predicate, builder.lessThan(root.get(field), (Comparable) value));
-			break;
-		default:
-			throw new UnsupportedOperationException("Operation not supported");
-		}
-	}
+        if (predicate == null) {
+            predicate = builder.conjunction(); // Khởi tạo nếu predicate đang là null
+        }
 
-	public Predicate getPredicate() {
-		return this.predicate;
-	}
+        switch (operation) {
+            case "=":
+                predicate = builder.and(predicate, builder.equal(from.get(field), value));
+                break;
+            case ">":
+                predicate = builder.and(predicate, builder.greaterThan(from.get(field), (Comparable) value));
+                break;
+            case "<":
+                predicate = builder.and(predicate, builder.lessThan(from.get(field), (Comparable) value));
+                break;
+            case ":": // Xử lý phép tìm kiếm "like"
+                predicate = builder.and(predicate, builder.like(from.get(field), "%" + value + "%"));
+                break;
+            default:
+                throw new UnsupportedOperationException("Operation not supported: " + operation);
+        }
+    }
+
+    public Predicate getPredicate() {
+        return this.predicate;
+    }
 }

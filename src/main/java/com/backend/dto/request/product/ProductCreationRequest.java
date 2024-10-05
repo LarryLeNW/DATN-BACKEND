@@ -2,7 +2,7 @@ package com.backend.dto.request.product;
 
 import java.util.List;
 
-import com.backend.entity.AttributeProduct;
+import com.backend.entity.Sku;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -43,6 +43,6 @@ public class ProductCreationRequest {
 	String brandId;
 	
 	@NotNull
-	List<AttributeProduct> attributes ; 
+	List<Sku> attributes ; 
 
 }
