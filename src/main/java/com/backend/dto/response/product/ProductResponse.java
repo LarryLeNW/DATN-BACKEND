@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.backend.entity.Image;
 import com.backend.entity.Sku;
 
 import lombok.AllArgsConstructor;
@@ -31,7 +30,7 @@ public class ProductResponse {
 		Long stock;
 		Long discount;
 		String code; 
-		List<Image> images;
+		String images;
 		HashMap<String, String> attributes;
 	}
 

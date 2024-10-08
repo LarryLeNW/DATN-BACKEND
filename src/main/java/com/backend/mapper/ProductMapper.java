@@ -20,8 +20,7 @@ public class ProductMapper {
 		productDTO.setSlug(product.getSlug());
 		productDTO.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
 		productDTO.setBrandId(product.getBrand() != null ? product.getBrand().getId() : null);
-		
-		
+
 		List<ProductResponse.SKUDTO> skuDTOs = product.getSkus().stream().map(sku -> {
 			ProductResponse.SKUDTO skuDTO = new ProductResponse.SKUDTO();
 			skuDTO.setPrice(sku.getPrice());
@@ -31,8 +30,7 @@ public class ProductMapper {
 			skuDTO.setCode(sku.getCode());
 			skuDTO.setId(sku.getId());
 			skuDTO.setImages(sku.getImages());
-			
-			
+
 			skuDTO.setAttributes(sku.getAttributeOptionSkus().stream()
 					.collect(Collectors.toMap(
 							attributeOptionSku -> attributeOptionSku.getAttributeOption().getAttribute().getName(),

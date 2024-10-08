@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductCreationRequest.SKUDTO;
 import com.backend.dto.response.product.ProductResponse;
@@ -13,6 +15,7 @@ import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
 import com.backend.repository.*;
 import com.backend.specification.ProductSpecification;
+import com.backend.utils.UploadFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,179 +50,219 @@ public class ProductService {
 
 	@Autowired
 	private ProductMapper productMapper;
+	
+	
+	private UploadFile uploadFile = new UploadFile(); 
 
-	public ProductCreationRequest createProduct(ProductCreationRequest request) {
-		Product productCreated = new Product();
+	public ProductCreationRequest createProduct(ProductCreationRequest request, List<MultipartFile> images) {
+	    Product productCreated = new Product();
 
-		if (request.getCategoryId() != null) {
-			productCreated.setCategory(categoryRepository.findById(request.getCategoryId())
-					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)));
-		}
+	    if (request.getCategoryId() != null) {
+	        productCreated.setCategory(categoryRepository.findById(request.getCategoryId())
+	                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)));
+	    }
 
-		if (request.getBrandId() != null) {
-			productCreated.setBrand(brandRepository.findById(request.getBrandId())
-					.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED)));
-		}
+	    if (request.getBrandId() != null) {
+	        productCreated.setBrand(brandRepository.findById(request.getBrandId())
+	                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED)));
+	    }
 
-		productCreated.setName(request.getName());
-		productCreated.setSlug(request.getSlug());
+	    productCreated.setName(request.getName());
+	    productCreated.setSlug(request.getSlug());
 
-		productRepository.save(productCreated);
+	    productRepository.save(productCreated);
 
-		Map<String, Attribute> attributeCache = new HashMap<>();
-		Map<String, AttributeOption> attributeOptionCache = new HashMap<>();
+	    Map<String, Attribute> attributeCache = new HashMap<>();
+	    Map<String, AttributeOption> attributeOptionCache = new HashMap<>();
 
-		List<Sku> skusToSave = new ArrayList<>();
-		List<AttributeOptionSku> attributeOptionSkusToSave = new ArrayList<>();
+	    List<Sku> skusToSave = new ArrayList<>();
+	    List<AttributeOptionSku> attributeOptionSkusToSave = new ArrayList<>();
 
-		for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
-			Sku skuCreated = new Sku(productCreated, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
-					skuDTO.getDiscount());
-			skusToSave.add(skuCreated);
+	    int imageIndex = 0;
 
-			for (Map.Entry<String, String> entry : skuDTO.getAttributes().entrySet()) {
-				String attributeName = entry.getKey();
-				String attributeValue = entry.getValue();
+	    for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
+	        Sku skuCreated = new Sku(productCreated, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
+	                skuDTO.getDiscount());
+	        skusToSave.add(skuCreated);
 
-				Attribute attribute = attributeCache.computeIfAbsent(attributeName, name -> {
-					return attributeRepository.findByName(name).orElseGet(() -> {
-						Attribute newAttribute = new Attribute();
-						newAttribute.setName(name);
-						return attributeRepository.save(newAttribute);
-					});
-				});
+	        // Xử lý thuộc tính (attributes)
+	        for (Map.Entry<String, String> entry : skuDTO.getAttributes().entrySet()) {
+	            String attributeName = entry.getKey();
+	            String attributeValue = entry.getValue();
 
-				String attributeOptionKey = attributeName + ":" + attributeValue;
-				AttributeOption attributeOption = attributeOptionCache.computeIfAbsent(attributeOptionKey, key -> {
-					return attributeOptionRepository.findByValueAndAttribute(attributeValue, attribute)
-							.orElseGet(() -> {
-								AttributeOption newAttributeOption = new AttributeOption();
-								newAttributeOption.setValue(attributeValue);
-								newAttributeOption.setAttribute(attribute);
-								return attributeOptionRepository.save(newAttributeOption);
-							});
-				});
+	            Attribute attribute = attributeCache.computeIfAbsent(attributeName, name -> {
+	                return attributeRepository.findByName(name).orElseGet(() -> {
+	                    Attribute newAttribute = new Attribute();
+	                    newAttribute.setName(name);
+	                    return attributeRepository.save(newAttribute);
+	                });
+	            });
 
-				AttributeOptionSkuKey attributeOptionSkuKey = new AttributeOptionSkuKey();
-				attributeOptionSkuKey.setAttributeOptionId(attributeOption.getId());
-				attributeOptionSkuKey.setSkuId(skuCreated.getId());
+	            String attributeOptionKey = attributeName + ":" + attributeValue;
+	            AttributeOption attributeOption = attributeOptionCache.computeIfAbsent(attributeOptionKey, key -> {
+	                return attributeOptionRepository.findByValueAndAttribute(attributeValue, attribute)
+	                        .orElseGet(() -> {
+	                            AttributeOption newAttributeOption = new AttributeOption();
+	                            newAttributeOption.setValue(attributeValue);
+	                            newAttributeOption.setAttribute(attribute);
+	                            return attributeOptionRepository.save(newAttributeOption);
+	                        });
+	            });
 
-				AttributeOptionSku attributeOptionSku = new AttributeOptionSku();
-				attributeOptionSku.setId(attributeOptionSkuKey);
-				attributeOptionSku.setSku(skuCreated);
-				attributeOptionSku.setAttributeOption(attributeOption);
+	            AttributeOptionSkuKey attributeOptionSkuKey = new AttributeOptionSkuKey();
+	            attributeOptionSkuKey.setAttributeOptionId(attributeOption.getId());
+	            attributeOptionSkuKey.setSkuId(skuCreated.getId());
 
-				attributeOptionSkusToSave.add(attributeOptionSku);
-			}
-		}
+	            AttributeOptionSku attributeOptionSku = new AttributeOptionSku();
+	            attributeOptionSku.setId(attributeOptionSkuKey);
+	            attributeOptionSku.setSku(skuCreated);
+	            attributeOptionSku.setAttributeOption(attributeOption);
 
-		skuRepository.saveAll(skusToSave);
+	            attributeOptionSkusToSave.add(attributeOptionSku);
+	        }
 
-		attributeOptionSkuRepository.saveAll(attributeOptionSkusToSave);
+	        StringBuilder imagesString = new StringBuilder();
+	        for (int i = 0; i < skuDTO.getImageCount(); i++) {
+	            if (imageIndex < images.size()) {
+	                MultipartFile imageFile = images.get(imageIndex);
+	                String imageUrl = uploadFile.saveFile(imageFile, "productTest"); 
+	                if (imagesString.length() > 0) {
+	                    imagesString.append(","); 
+	                }
+	                imagesString.append(imageUrl);
+	                imageIndex++;
+	            }
+	        }
 
-		return request;
+	        skuCreated.setImages(imagesString.toString());
+	    }
+
+	    skuRepository.saveAll(skusToSave);
+	    attributeOptionSkuRepository.saveAll(attributeOptionSkusToSave);
+
+
+	    return request;
 	}
 
-	public ProductResponse updateProduct(Long productId, ProductCreationRequest request) {
-		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+	
+	public ProductCreationRequest updateProduct(Long productId, ProductCreationRequest request, List<MultipartFile> images) {
+	    Product existingProduct = productRepository.findById(productId)
+	            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-		// Update basic product information
-		product.setName(request.getName());
-		product.setSlug(request.getSlug());
-		
-		if (request.getCategoryId() != null) {
-			product.setCategory(categoryRepository.findById(request.getCategoryId())
-					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)));
-		}
-		if (request.getBrandId() != null) {
-			product.setBrand(brandRepository.findById(request.getBrandId())
-					.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED)));
-		}
+	    // Update product basic information
+	    if (request.getCategoryId() != null) {
+	        existingProduct.setCategory(categoryRepository.findById(request.getCategoryId())
+	                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)));
+	    }
 
-		// Create a map of existing SKUs for easy lookup
-		Map<Long, Sku> existingSkus = product.getSkus().stream().collect(Collectors.toMap(Sku::getId, sku -> sku));
+	    if (request.getBrandId() != null) {
+	        existingProduct.setBrand(brandRepository.findById(request.getBrandId())
+	                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED)));
+	    }
 
-		List<Sku> updatedSkus = new ArrayList<>();
+	    existingProduct.setName(request.getName());
+	    existingProduct.setSlug(request.getSlug());
 
-		for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
-			Sku skuToUpdate = existingSkus.get(skuDTO.getId());
+	    productRepository.save(existingProduct);
 
-			if (skuToUpdate != null) {
-				// Update the existing SKU
-				skuToUpdate.setPrice(skuDTO.getPrice());
-				skuToUpdate.setStock(skuDTO.getStock());
-				skuToUpdate.setDiscount(skuDTO.getDiscount());
-				skuToUpdate.setCode(skuDTO.getCode());
+	    Map<String, Attribute> attributeCache = new HashMap<>();
+	    Map<String, AttributeOption> attributeOptionCache = new HashMap<>();
 
-				// Update attributes
-				Map<String, String> attributes = skuDTO.getAttributes();
-				List<AttributeOptionSku> attributeOptionSkus = skuToUpdate.getAttributeOptionSkus();
+	    List<Sku> skusToSave = new ArrayList<>();
+	    List<AttributeOptionSku> attributeOptionSkusToSave = new ArrayList<>();
 
-				for (AttributeOptionSku attributeOptionSku : attributeOptionSkus) {
-					String attributeName = attributeOptionSku.getAttributeOption().getAttribute().getName();
-					if (attributes.containsKey(attributeName)) {
-						attributeOptionSku.getAttributeOption().setValue(attributes.get(attributeName));
-					}
-				}
-				updatedSkus.add(skuToUpdate);
-			} else {
-				// Create a new SKU
-				Sku newSku = new Sku(product, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
-						skuDTO.getDiscount());
+	    // Fetch existing SKUs related to the product
+	    List<Sku> existingSkus = skuRepository.findByProductId(productId);
+	    Map<Long, Sku> existingSkuMap = existingSkus.stream()
+	            .collect(Collectors.toMap(Sku::getId, sku -> sku));
 
-				// Create and assign new attributes
-				Map<String, Attribute> attributeCache = new HashMap<>();
-				Map<String, AttributeOption> attributeOptionCache = new HashMap<>();
-				List<AttributeOptionSku> attributeOptionSkus = new ArrayList<>();
+	    int imageIndex = 0;
 
-				for (Map.Entry<String, String> entry : skuDTO.getAttributes().entrySet()) {
-					String attributeName = entry.getKey();
-					String attributeValue = entry.getValue();
+	    for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
+	        Sku sku;
 
-					Attribute attribute = attributeCache.computeIfAbsent(attributeName, name -> {
-						return attributeRepository.findByName(name).orElseGet(() -> {
-							Attribute newAttribute = new Attribute();
-							newAttribute.setName(name);
-							return attributeRepository.save(newAttribute);
-						});
-					});
+	        if (skuDTO.getId() != null && existingSkuMap.containsKey(skuDTO.getId())) {
+	            // Update the existing SKU using the ID
+	            sku = existingSkuMap.get(skuDTO.getId());
+	            sku.setPrice(skuDTO.getPrice());
+	            sku.setStock(skuDTO.getStock());
+	            sku.setDiscount(skuDTO.getDiscount());
+	        } else {
+	            // Create a new SKU if it doesn't exist
+	            sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(), skuDTO.getDiscount());
+	        }
 
-					String attributeOptionKey = attributeName + ":" + attributeValue;
-					AttributeOption attributeOption = attributeOptionCache.computeIfAbsent(attributeOptionKey, key -> {
-						return attributeOptionRepository.findByValueAndAttribute(attributeValue, attribute)
-								.orElseGet(() -> {
-									AttributeOption newAttributeOption = new AttributeOption();
-									newAttributeOption.setValue(attributeValue);
-									newAttributeOption.setAttribute(attribute);
-									return attributeOptionRepository.save(newAttributeOption);
-								});
-					});
+	        // Save SKU before handling attributes and images
+	        skuRepository.save(sku);
+	        skusToSave.add(sku);
 
-					AttributeOptionSkuKey attributeOptionSkuKey = new AttributeOptionSkuKey();
-					attributeOptionSkuKey.setAttributeOptionId(attributeOption.getId());
-					attributeOptionSkuKey.setSkuId(newSku.getId());
+	        // Process attributes
+	        for (Map.Entry<String, String> entry : skuDTO.getAttributes().entrySet()) {
+	            String attributeName = entry.getKey();
+	            String attributeValue = entry.getValue();
 
-					AttributeOptionSku attributeOptionSku = new AttributeOptionSku();
-					attributeOptionSku.setId(attributeOptionSkuKey);
-					attributeOptionSku.setSku(newSku);
-					attributeOptionSku.setAttributeOption(attributeOption);
+	            Attribute attribute = attributeCache.computeIfAbsent(attributeName, name -> {
+	                return attributeRepository.findByName(name).orElseGet(() -> {
+	                    Attribute newAttribute = new Attribute();
+	                    newAttribute.setName(name);
+	                    return attributeRepository.save(newAttribute);
+	                });
+	            });
 
-					attributeOptionSkus.add(attributeOptionSku);
-				}
-				newSku.setAttributeOptionSkus(attributeOptionSkus);
-				updatedSkus.add(newSku);
-			}
-		}
+	            String attributeOptionKey = attributeName + ":" + attributeValue;
+	            AttributeOption attributeOption = attributeOptionCache.computeIfAbsent(attributeOptionKey, key -> {
+	                return attributeOptionRepository.findByValueAndAttribute(attributeValue, attribute).orElseGet(() -> {
+	                    AttributeOption newAttributeOption = new AttributeOption();
+	                    newAttributeOption.setValue(attributeValue);
+	                    newAttributeOption.setAttribute(attribute);
+	                    return attributeOptionRepository.save(newAttributeOption);
+	                });
+	            });
 
-		product.setSkus(updatedSkus);
+	            AttributeOptionSkuKey attributeOptionSkuKey = new AttributeOptionSkuKey();
+	            attributeOptionSkuKey.setAttributeOptionId(attributeOption.getId());
+	            attributeOptionSkuKey.setSkuId(sku.getId());
 
-		productRepository.save(product);
+	            Optional<AttributeOptionSku> existingAttributeOptionSku = attributeOptionSkuRepository.findById(attributeOptionSkuKey);
+	            AttributeOptionSku attributeOptionSku;
 
-		return productMapper.toDTO(product);
+	            if (existingAttributeOptionSku.isPresent()) {
+	                attributeOptionSku = existingAttributeOptionSku.get();
+	            } else {
+	                attributeOptionSku = new AttributeOptionSku();
+	                attributeOptionSku.setId(attributeOptionSkuKey);
+	                attributeOptionSku.setSku(sku);
+	                attributeOptionSku.setAttributeOption(attributeOption);
+	            }
+
+	            attributeOptionSkusToSave.add(attributeOptionSku);
+	        }
+
+	        StringBuilder imagesString = new StringBuilder();
+	        for (int i = 0; i < skuDTO.getImageCount(); i++) {
+	            if (imageIndex < images.size()) {
+	                MultipartFile imageFile = images.get(imageIndex);
+	                String imageUrl = uploadFile.saveFile(imageFile, "productTest"); 
+	                if (imagesString.length() > 0) {
+	                    imagesString.append(","); 
+	                }
+	                imagesString.append(imageUrl);
+	                imageIndex++;
+	            }
+	        }
+
+	        sku.setImages(imagesString.toString());
+	    }
+
+	    skuRepository.saveAll(skusToSave);
+	    attributeOptionSkuRepository.saveAll(attributeOptionSkusToSave);
+
+	    return request;
 	}
 
 	public Page<ProductResponse> getProducts(Map<String, String> params) {
+		
+		
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 		String sortField = params.getOrDefault("sort", "id"); // Mặc định sort theo id nếu không có
@@ -263,5 +306,4 @@ public class ProductService {
 
 		return new PageImpl<>(productDTOs, pageable, productsPage.getTotalElements());
 	}
-
 }

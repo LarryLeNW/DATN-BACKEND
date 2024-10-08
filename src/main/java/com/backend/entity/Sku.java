@@ -37,9 +37,7 @@ public class Sku {
 	@OneToMany(mappedBy = "sku")
     private List<AttributeOptionSku> attributeOptionSkus;
 
-	@OneToMany
-    private List<Image> images;	
-	
+    private String images;	
 	
 	public Sku(Product product, String code, Long price, Long stock, Long discount) {
 		super();

@@ -2,9 +2,8 @@ package com.backend.dto.request.product;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.backend.entity.Sku;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,24 +12,26 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true) 
 public class ProductCreationRequest {
-	private Long id;
-	private String name;
-	private String slug;
-	private Long categoryId;
-	private Long brandId; 
+    private Long id;
+    private String name;
+    private String slug;
+    private Long categoryId;
+    private Long brandId; 
+    private String thumbnailUrl;
     private List<SKUDTO> skus;
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class SKUDTO {
-    	Long Id;
-		Long price;
-		Long stock;
-		Long discount;
-		String code; 
-		HashMap<String, String> attributes;
-	}
-
+        private Long id;   // Sửa tên biến Id -> id
+        private Long price;
+        private Long stock;
+        private Long discount;
+        private String code; 
+        private HashMap<String, String> attributes;
+        private int imageCount; // Thêm trường images để lưu danh sách URL hình ảnh
+    }
 }
