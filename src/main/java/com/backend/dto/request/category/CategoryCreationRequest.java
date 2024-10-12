@@ -32,9 +32,5 @@ public class CategoryCreationRequest {
 
 	String images;
 	
-	@CreationTimestamp
-	LocalDateTime createdAt;
 
-	@UpdateTimestamp
-	LocalDateTime updatedAt;
 }

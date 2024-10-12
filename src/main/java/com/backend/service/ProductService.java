@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductCreationRequest.SKUDTO;
+import com.backend.dto.request.product.ProductUpdateRequest;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.entity.*;
 import com.backend.exception.AppException;
@@ -52,7 +53,8 @@ public class ProductService {
 	private ProductMapper productMapper;
 	
 	
-	private UploadFile uploadFile = new UploadFile(); 
+	@Autowired
+	private UploadFile uploadFile ; 
 
 	public ProductCreationRequest createProduct(ProductCreationRequest request, List<MultipartFile> images) {
 	    Product productCreated = new Product();
@@ -145,11 +147,10 @@ public class ProductService {
 	}
 
 	
-	public ProductCreationRequest updateProduct(Long productId, ProductCreationRequest request, List<MultipartFile> images) {
+	public ProductResponse updateProduct(Long productId, ProductUpdateRequest request , List<MultipartFile> images ) {
 	    Product existingProduct = productRepository.findById(productId)
 	            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-	    // Update product basic information
 	    if (request.getCategoryId() != null) {
 	        existingProduct.setCategory(categoryRepository.findById(request.getCategoryId())
 	                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)));
@@ -171,80 +172,33 @@ public class ProductService {
 	    List<Sku> skusToSave = new ArrayList<>();
 	    List<AttributeOptionSku> attributeOptionSkusToSave = new ArrayList<>();
 
-	    // Fetch existing SKUs related to the product
 	    List<Sku> existingSkus = skuRepository.findByProductId(productId);
 	    Map<Long, Sku> existingSkuMap = existingSkus.stream()
 	            .collect(Collectors.toMap(Sku::getId, sku -> sku));
-
+	    
 	    int imageIndex = 0;
-
-	    for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
+	    
+	    for (ProductUpdateRequest.SKUDTO skuDTO : request.getSkus()) {
 	        Sku sku;
 
 	        if (skuDTO.getId() != null && existingSkuMap.containsKey(skuDTO.getId())) {
-	            // Update the existing SKU using the ID
 	            sku = existingSkuMap.get(skuDTO.getId());
 	            sku.setPrice(skuDTO.getPrice());
 	            sku.setStock(skuDTO.getStock());
 	            sku.setDiscount(skuDTO.getDiscount());
 	        } else {
-	            // Create a new SKU if it doesn't exist
 	            sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(), skuDTO.getDiscount());
 	        }
 
-	        // Save SKU before handling attributes and images
-	        skuRepository.save(sku);
 	        skusToSave.add(sku);
-
-	        // Process attributes
-	        for (Map.Entry<String, String> entry : skuDTO.getAttributes().entrySet()) {
-	            String attributeName = entry.getKey();
-	            String attributeValue = entry.getValue();
-
-	            Attribute attribute = attributeCache.computeIfAbsent(attributeName, name -> {
-	                return attributeRepository.findByName(name).orElseGet(() -> {
-	                    Attribute newAttribute = new Attribute();
-	                    newAttribute.setName(name);
-	                    return attributeRepository.save(newAttribute);
-	                });
-	            });
-
-	            String attributeOptionKey = attributeName + ":" + attributeValue;
-	            AttributeOption attributeOption = attributeOptionCache.computeIfAbsent(attributeOptionKey, key -> {
-	                return attributeOptionRepository.findByValueAndAttribute(attributeValue, attribute).orElseGet(() -> {
-	                    AttributeOption newAttributeOption = new AttributeOption();
-	                    newAttributeOption.setValue(attributeValue);
-	                    newAttributeOption.setAttribute(attribute);
-	                    return attributeOptionRepository.save(newAttributeOption);
-	                });
-	            });
-
-	            AttributeOptionSkuKey attributeOptionSkuKey = new AttributeOptionSkuKey();
-	            attributeOptionSkuKey.setAttributeOptionId(attributeOption.getId());
-	            attributeOptionSkuKey.setSkuId(sku.getId());
-
-	            Optional<AttributeOptionSku> existingAttributeOptionSku = attributeOptionSkuRepository.findById(attributeOptionSkuKey);
-	            AttributeOptionSku attributeOptionSku;
-
-	            if (existingAttributeOptionSku.isPresent()) {
-	                attributeOptionSku = existingAttributeOptionSku.get();
-	            } else {
-	                attributeOptionSku = new AttributeOptionSku();
-	                attributeOptionSku.setId(attributeOptionSkuKey);
-	                attributeOptionSku.setSku(sku);
-	                attributeOptionSku.setAttributeOption(attributeOption);
-	            }
-
-	            attributeOptionSkusToSave.add(attributeOptionSku);
-	        }
 
 	        StringBuilder imagesString = new StringBuilder();
 	        for (int i = 0; i < skuDTO.getImageCount(); i++) {
 	            if (imageIndex < images.size()) {
 	                MultipartFile imageFile = images.get(imageIndex);
-	                String imageUrl = uploadFile.saveFile(imageFile, "productTest"); 
+	                String imageUrl = uploadFile.saveFile(imageFile, "productTest");
 	                if (imagesString.length() > 0) {
-	                    imagesString.append(","); 
+	                    imagesString.append(",");
 	                }
 	                imagesString.append(imageUrl);
 	                imageIndex++;
@@ -257,15 +211,17 @@ public class ProductService {
 	    skuRepository.saveAll(skusToSave);
 	    attributeOptionSkuRepository.saveAll(attributeOptionSkusToSave);
 
-	    return request;
+	    ProductResponse response = productMapper.toDTO(existingProduct);
+
+	    return response;
 	}
 
+
+
 	public Page<ProductResponse> getProducts(Map<String, String> params) {
-		
-		
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
-		String sortField = params.getOrDefault("sort", "id"); // Mặc định sort theo id nếu không có
+		String sortField = params.getOrDefault("sort", "id");
 		Sort sort = Sort.by(Sort.Direction.ASC, sortField);
 
 		Pageable pageable = PageRequest.of(page, limit, sort);

@@ -15,14 +15,15 @@ import java.util.UUID;
 @Service
 public class UploadFile {
 
-    private static Cloudinary cloudinary;
+    private final Cloudinary cloudinary;
 
-    @Value("${cloudinary.url}")
-    public void setCloudinary(String cloudinaryUrl) {
-        cloudinary = new Cloudinary(cloudinaryUrl);
+    // Inject the cloudinary URL
+    public UploadFile(@Value("${cloudinary.url}") String cloudinaryUrl) {
+        // Initialize Cloudinary with the injected URL
+        this.cloudinary = new Cloudinary(cloudinaryUrl);
     }
 
-    public static String saveFile(MultipartFile image, String folder) {
+    public String saveFile(MultipartFile image, String folder) {
         try {
             String uniqueFileName = UUID.randomUUID().toString();
 
@@ -32,16 +33,15 @@ public class UploadFile {
             );
 
             Map<String, Object> uploadResult = cloudinary.uploader().upload(image.getBytes(), uploadParams);
-
             return (String) uploadResult.get("url");
         } catch (IOException e) {
-            throw new RuntimeException("Could not save file: " + e.getMessage());
+            throw new RuntimeException("Could not save file: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new RuntimeException("Error during file upload: " + e.getMessage());
+            throw new RuntimeException("Error during file upload: " + e.getMessage(), e);
         }
     }
 
-    public static String saveFiles(List<MultipartFile> images, String folder) {
+    public String saveFiles(List<MultipartFile> images, String folder) {
         List<String> urls = new ArrayList<>();
 
         for (MultipartFile image : images) {
@@ -57,9 +57,9 @@ public class UploadFile {
                 String url = (String) uploadResult.get("url");
                 urls.add(url);
             } catch (IOException e) {
-                throw new RuntimeException("Could not save file: " + e.getMessage());
+                throw new RuntimeException("Could not save file: " + e.getMessage(), e);
             } catch (Exception e) {
-                throw new RuntimeException("Error during file upload: " + e.getMessage());
+                throw new RuntimeException("Error during file upload: " + e.getMessage(), e);
             }
         }
 

@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import com.backend.entity.Product;
 import com.backend.dto.request.product.ProductCreationRequest;
+import com.backend.dto.request.product.ProductUpdateRequest;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,25 +42,24 @@ public class ProductController {
         return ResponseEntity.ok(productService.createProduct(productRequest, files));
     }
 
-    // Update Product
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProduct(
+    		@RequestPart("files") List<MultipartFile> files,
             @PathVariable Long id,
-            @RequestPart("productData") String productData,
-            @RequestPart("images") List<MultipartFile> images) {
+            @RequestPart("productData") String productData
+            ) {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        ProductCreationRequest productRequest;
+        ProductUpdateRequest productRequest;
 
         try {
-            productRequest = objectMapper.readValue(productData, ProductCreationRequest.class);
+            productRequest = objectMapper.readValue(productData, ProductUpdateRequest.class);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
         
 
-        return ResponseEntity.ok("OK");
-//        return ResponseEntity.ok(productService.updateProduct(id, productRequest, images));
+        return ResponseEntity.ok(productService.updateProduct(id, productRequest, files));
     }
 
     // Get Products

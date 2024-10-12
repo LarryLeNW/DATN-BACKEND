@@ -20,6 +20,5 @@ public class Brand {
     
     private String slug;
 
-    private String images;
-    // Getters and Setters
+    private String image;
 }

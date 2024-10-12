@@ -26,12 +26,12 @@ public class ProductCreationRequest {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class SKUDTO {
-        private Long id;   // Sửa tên biến Id -> id
+        private Long id;  
         private Long price;
         private Long stock;
         private Long discount;
         private String code; 
         private HashMap<String, String> attributes;
-        private int imageCount; // Thêm trường images để lưu danh sách URL hình ảnh
+        private int imageCount; 
     }
 }

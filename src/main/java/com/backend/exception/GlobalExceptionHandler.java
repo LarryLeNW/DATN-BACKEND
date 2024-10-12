@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.backend.dto.response.ApiResponse;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -171,6 +172,13 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(value = ParseException.class)
     public ResponseEntity<ApiResponse> handleParseException(ParseException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = UnrecognizedPropertyException.class)
+    public ResponseEntity<ApiResponse> handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
     	ApiResponse apiResponse = new ApiResponse();
     	apiResponse.setMessage(exception.getMessage());
     	return ResponseEntity.badRequest().body(apiResponse);
