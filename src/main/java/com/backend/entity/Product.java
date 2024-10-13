@@ -3,8 +3,12 @@ package com.backend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -37,8 +41,20 @@ public class Product {
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Sku> skus;
 
+	@CreationTimestamp	
+	@Column(name = "created_at")
+	LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	@Column(name = "updated_at")
+	LocalDateTime updatedAt;
+	
 	@Override
 	public String toString() {
 	    return "Product{id=" + id + ", name='" + name + "'}"; 
 	}
+	
+	
+	
+	
 }

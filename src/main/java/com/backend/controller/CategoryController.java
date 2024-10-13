@@ -79,8 +79,12 @@ public class CategoryController {
 	@PutMapping("/{categoryId}")
 	ApiResponse<Category> update(@PathVariable Long categoryId, @RequestParam(required = false) String categoryData,
 			@RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
+			
+		CategoryUpdateRequest categoryRequest = null; 
 		
-		CategoryUpdateRequest categoryRequest = objectMapper.readValue(categoryData, CategoryUpdateRequest.class);
+		if(categoryData != null) {
+			categoryRequest = objectMapper.readValue(categoryData, CategoryUpdateRequest.class);
+		}
 
 		return ApiResponse.<Category>builder().result(categoryService.updateCategory(categoryId, categoryRequest , image))
 				.build();

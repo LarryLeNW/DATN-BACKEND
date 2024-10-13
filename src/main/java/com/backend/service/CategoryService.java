@@ -57,12 +57,12 @@ public class CategoryService {
 		Category category = categoryRepository.findById(categoryId)
 				.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 
-
-		Helpers.updateFieldEntityIfChanged(request.getName(), category.getName(), category::setName);
-		
-		if(request.getName() != null)
-			category.setSlug(Helpers.toSlug(request.getName()));
-		
+		if(request != null) {
+			Helpers.updateFieldEntityIfChanged(request.getName(), category.getName(), category::setName);
+			
+			if(request.getName() != null)
+				category.setSlug(Helpers.toSlug(request.getName()));
+		}
 		
 		if (image != null) {
 			String imageUrl = uploadFile.saveFile(image, "categoryTest");

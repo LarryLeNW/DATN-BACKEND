@@ -18,7 +18,7 @@ import com.backend.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/product")
 public class ProductController {
 
     @Autowired

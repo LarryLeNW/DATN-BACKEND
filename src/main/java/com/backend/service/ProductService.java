@@ -18,6 +18,7 @@ import com.backend.repository.*;
 import com.backend.specification.ProductSpecification;
 import com.backend.utils.UploadFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ public class ProductService {
 	@Autowired
 	private UploadFile uploadFile ; 
 
+	
 	public ProductCreationRequest createProduct(ProductCreationRequest request, List<MultipartFile> images) {
 	    Product productCreated = new Product();
 
@@ -71,6 +73,7 @@ public class ProductService {
 
 	    productCreated.setName(request.getName());
 	    productCreated.setSlug(request.getSlug());
+	    
 
 	    productRepository.save(productCreated);
 
@@ -219,47 +222,57 @@ public class ProductService {
 
 
 	public Page<ProductResponse> getProducts(Map<String, String> params) {
-		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 0;
-		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
-		String sortField = params.getOrDefault("sort", "id");
-		Sort sort = Sort.by(Sort.Direction.ASC, sortField);
+	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 0;
+	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 
-		Pageable pageable = PageRequest.of(page, limit, sort);
+	    String sortField = params.getOrDefault("sortBy", "id"); 
+	    String orderBy = params.getOrDefault("orderBy", "asc"); 
 
-		Specification<Product> spec = Specification.where(null);
+	    
+	    // handle sort 
+		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC
+				: Sort.Direction.ASC;
+		
+	    Sort sort =  Sort.by(direction, sortField); 
 
-		if (params.containsKey("categoryId")) {
-			Long categoryId = Long.parseLong(params.get("categoryId"));
-			spec = spec.and(ProductSpecification.hasCategory(categoryId));
-		}
+	    
+	    Pageable pageable = PageRequest.of(page, limit, sort);
 
-		if (params.containsKey("price")) {
-			Long price = Long.parseLong(params.get("price"));
-			spec = spec.and(ProductSpecification.hasExactPrice(price));
-		}
+	    Specification<Product> spec = Specification.where(null);
 
-		if (params.containsKey("minPrice")) {
-			Long price = Long.parseLong(params.get("minPrice"));
-			spec = spec.and(ProductSpecification.hasMinPrice(price));
-		}
+	    if (params.containsKey("categoryId")) {
+	        Long categoryId = Long.parseLong(params.get("categoryId"));
+	        spec = spec.and(ProductSpecification.hasCategory(categoryId));
+	    }
 
-		if (params.containsKey("maxPrice")) {
-			Long price = Long.parseLong(params.get("maxPrice"));
-			spec = spec.and(ProductSpecification.hasMaxPrice(price));
-		}
+	    if (params.containsKey("price")) {
+	        Long price = Long.parseLong(params.get("price"));
+	        spec = spec.and(ProductSpecification.hasExactPrice(price));
+	    }
 
-		Map<String, String> attributes = params.entrySet().stream().filter(entry -> !List
-				.of("page", "limit", "sort", "categoryId", "price", "minPrice", "maxPrice").contains(entry.getKey()))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	    if (params.containsKey("minPrice")) {
+	        Long price = Long.parseLong(params.get("minPrice"));
+	        spec = spec.and(ProductSpecification.hasMinPrice(price));
+	    }
 
-		if (!attributes.isEmpty()) {
-			spec = spec.and(ProductSpecification.hasAttributes(attributes));
-		}
+	    if (params.containsKey("maxPrice")) {
+	        Long price = Long.parseLong(params.get("maxPrice"));
+	        spec = spec.and(ProductSpecification.hasMaxPrice(price));
+	    }
 
-		Page<Product> productsPage = productRepository.findAll(spec, pageable);
-		List<ProductResponse> productDTOs = productsPage.getContent().stream().map(productMapper::toDTO)
-				.collect(Collectors.toList());
+	    Map<String, String> attributes = params.entrySet().stream().filter(entry -> !List
+	            .of("page", "limit", "sortBy", "orderBy", "categoryId", "price", "minPrice", "maxPrice").contains(entry.getKey()))
+	            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-		return new PageImpl<>(productDTOs, pageable, productsPage.getTotalElements());
+	    if (!attributes.isEmpty()) {
+	        spec = spec.and(ProductSpecification.hasAttributes(attributes));
+	    }
+
+	    Page<Product> productsPage = productRepository.findAll(spec, pageable);
+	    List<ProductResponse> productDTOs = productsPage.getContent().stream().map(productMapper::toDTO)
+	            .collect(Collectors.toList());
+
+	    return new PageImpl<>(productDTOs, pageable, productsPage.getTotalElements());
 	}
+
 }

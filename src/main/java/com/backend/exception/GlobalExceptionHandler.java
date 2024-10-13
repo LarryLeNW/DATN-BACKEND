@@ -17,6 +17,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -179,6 +180,13 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(value = UnrecognizedPropertyException.class)
     public ResponseEntity<ApiResponse> handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
     	ApiResponse apiResponse = new ApiResponse();
     	apiResponse.setMessage(exception.getMessage());
     	return ResponseEntity.badRequest().body(apiResponse);

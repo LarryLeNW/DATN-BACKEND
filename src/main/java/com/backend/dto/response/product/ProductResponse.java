@@ -1,35 +1,44 @@
 package com.backend.dto.response.product;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.backend.entity.Sku;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductResponse {
-	private Long id;
-	private String name;
-	private String slug;
-	private Long categoryId;
-	private Long brandId; 
-    private List<SKUDTO> skus;
+	Long id;
+	String name;
+	String slug;
+	Long categoryId;
+	Long brandId;
+	LocalDateTime createdAt;
+	LocalDateTime updatedAt;
+	private List<SKUDTO> skus;
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class SKUDTO {
-    	Long Id;
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class SKUDTO {
+		Long Id;
 		Long price;
 		Long stock;
 		Long discount;
-		String code; 
+		String code;
 		String images;
 		HashMap<String, String> attributes;
 

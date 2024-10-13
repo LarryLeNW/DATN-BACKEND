@@ -2,7 +2,8 @@ package com.backend.controller;
 
 import java.util.List;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.dto.request.brand.BrandCreationRequest;
 
@@ -27,6 +29,9 @@ import com.backend.dto.response.common.PagedResponse;
 import com.backend.entity.Brand;
 import com.backend.entity.Category;
 import com.backend.service.BrandService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -43,32 +48,42 @@ import lombok.extern.slf4j.Slf4j;
 public class BrandController {
 
 	BrandService brandService;
+	
+	@Autowired
+	ObjectMapper objectMapper; 
 
-//	@GetMapping
-//	ApiResponse<PagedResponse<Brand>> getBrands(
-//			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
-//			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
-//			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
-//
-//		PagedResponse<Brand> pagedResponse = brandService.getBrands(page, limit, sort, search);
-//
-//		return ApiResponse.<PagedResponse<Brand>>builder().result(pagedResponse).build();
-//	}
+	@GetMapping
+	ApiResponse<PagedResponse<Brand>> getAll(
+			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
+			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
+			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
 
-	@PostMapping
-	ApiResponse<Brand> createBrands(@Valid @RequestBody BrandCreationRequest request) {
-		return ApiResponse.<Brand>builder().result(brandService.createBrand(request)).build();
+		PagedResponse<Brand> pagedResponse = brandService.getBrands(page, limit, sort, search);
+
+		return ApiResponse.<PagedResponse<Brand>>builder().result(pagedResponse).build();
 	}
 
-//	@DeleteMapping("/{brandId}")
-//	ApiResponse<String> deleteCategory(@PathVariable String brandId) {
-//		brandService.deleteBrand(brandId);
-//		return ApiResponse.<String>builder().result("Brand has been deleted").build();
-//	}
-//
-//	@PutMapping("/{brandId}")
-//	ApiResponse<Brand> updateUser(@PathVariable String brandId, @Valid @RequestBody BrandUpdateRequest request) {
-//		return ApiResponse.<Brand>builder().result(brandService.updateBrand(brandId, request)).build();
-//	}
-//	
+	@PostMapping
+	ApiResponse<Brand> create(@RequestParam String brandData , @RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
+		BrandCreationRequest brandRequest = objectMapper.readValue(brandData, BrandCreationRequest.class);
+		return ApiResponse.<Brand>builder().result(brandService.createBrand(brandRequest , image)).build();
+	}
+
+	@DeleteMapping("/{brandId}")
+	ApiResponse<String> delete(@PathVariable Long brandId) {
+		brandService.deleteBrand(brandId);
+		return ApiResponse.<String>builder().result("Brand has been deleted").build();
+	}
+
+	@PutMapping("/{brandId}")
+	ApiResponse<Brand> update(@PathVariable Long brandId, @RequestParam(required = false) String brandData , @RequestParam(required = false) MultipartFile image ) throws JsonMappingException, JsonProcessingException {
+			
+		BrandUpdateRequest brandRequest = null;
+		
+		if(brandData != null)
+			 brandRequest = objectMapper.readValue(brandData, BrandUpdateRequest.class);
+		
+		return ApiResponse.<Brand>builder().result(brandService.updateBrand(brandId, brandRequest, image)).build();
+	}
+	
 }
