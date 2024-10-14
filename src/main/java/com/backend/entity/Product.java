@@ -31,8 +31,6 @@ public class Product {
 	@JsonIgnore
 	private Category category;
 	
-	
-	
 	@ManyToOne
 	@JoinColumn(name = "brandId", nullable = false)
 	@JsonIgnore
