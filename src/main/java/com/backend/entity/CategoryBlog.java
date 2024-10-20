@@ -29,6 +29,9 @@ public class CategoryBlog {
 	@Column(name = "name" , columnDefinition = "NVARCHAR(MAX)")
 	private String name;
 	
+	@Column(name = "description")
+	String description;
+	
 	@CreationTimestamp	
 	@Column(name = "created_at")
 	LocalDateTime createdAt;

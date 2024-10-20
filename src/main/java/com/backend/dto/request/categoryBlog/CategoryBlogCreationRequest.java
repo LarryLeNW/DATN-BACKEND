@@ -25,6 +25,8 @@ public class CategoryBlogCreationRequest {
 	@Size(min = 3 , max = 255 , message = "@Param be greater 3 characters")
 	String name;
 	
+	String description;
+	
 	
 
 }

@@ -51,6 +51,8 @@ public class CategoryBlogService {
 				.orElseThrow(() -> new AppException(ErrorCode.CATEGORYBLOG_NOT_EXISTED));
 		if (request != null) {
 			Helpers.updateFieldEntityIfChanged(request.getName(), categoryBlog.getName(), categoryBlog::setName);
+			Helpers.updateFieldEntityIfChanged(request.getDescription(), categoryBlog.getDescription(), categoryBlog::setDescription);
+
 		}
 		
 		return categoryBlogRepository.save(categoryBlog);
