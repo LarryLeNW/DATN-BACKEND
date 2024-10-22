@@ -74,6 +74,7 @@ public class BrandService {
 		
 		if(request != null) {
 			Helpers.updateFieldEntityIfChanged(request.getName(), brand.getName(), brand::setName);
+			Helpers.updateFieldEntityIfChanged(request.getDescription(), brand.getDescription(), brand::setDescription);
 
 			if (request.getName() != null)
 				brand.setSlug(Helpers.toSlug(request.getName()));

@@ -222,7 +222,7 @@ public class ProductService {
 
 
 	public Page<ProductResponse> getProducts(Map<String, String> params) {
-	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 0;
+	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page" )) - 1  : 0;
 	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 
 	    String sortField = params.getOrDefault("sortBy", "id"); 

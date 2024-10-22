@@ -18,8 +18,8 @@ public class ProductMapper {
 		productDTO.setName(product.getName());
 		productDTO.setSlug(product.getSlug());
 		productDTO.setSlug(product.getSlug());
-		productDTO.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
-		productDTO.setBrandId(product.getBrand() != null ? product.getBrand().getId() : null);
+		productDTO.setCategory(product.getCategory() != null ? product.getCategory() : null);
+		productDTO.setBrand(product.getBrand() != null ? product.getBrand() : null);
 		productDTO.setCreatedAt(product.getCreatedAt());
 		productDTO.setUpdatedAt(product.getUpdatedAt());
 		
