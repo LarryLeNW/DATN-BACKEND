@@ -1,4 +1,4 @@
-	package com.backend.entity;
+package com.backend.entity;
 
 import java.time.LocalDateTime;
 
@@ -14,43 +14,34 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
-@Table(name = "blogs")
+@Table(name = "comments")
 @Data
-public class Blog {
+public class Comment {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int blogId;
+	private int commentId;
 
-	@NotNull
-	@Column(name = "title")
-	private String title;
-
-	@NotNull
 	@Column(name = "content")
 	private String content;
 
-	@Column(name = "images",  columnDefinition = "NVARCHAR(MAX)")
-	private String images;
+	@ManyToOne
+	@JoinColumn(name = "blogId", nullable = false)
+	@JsonIgnore
+	private Blog blog;
 
 	@ManyToOne
 	@JoinColumn(name = "userId", nullable = false)
 	@JsonIgnore
 	private User user;
 
-	@ManyToOne
-	@JoinColumn(name = "categoryBlogId", nullable = false)
-	@JsonIgnore
-	private CategoryBlog categoryBlog;
-
 	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
-	
+
 	@CreationTimestamp
 	@Column(name = "update_at")
 	LocalDateTime updateAt;
