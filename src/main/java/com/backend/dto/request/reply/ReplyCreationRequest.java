@@ -18,9 +18,9 @@ public class ReplyCreationRequest {
 	@NotNull
 	String content;
 	
-	String blog;
+	int commentId;
 	
-	String user;
+	String userId;
 	
 
 }

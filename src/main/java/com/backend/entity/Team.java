@@ -2,6 +2,7 @@ package com.backend.entity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -25,25 +26,23 @@ public class Team {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private int teamId;
 
 	private String name;
 
 	private String description;
-	
+
 	private String linkJoin;
 
-	@OneToMany(mappedBy = "User", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	private List<User> users;
-	
+	@OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<User> users;
+
 	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
-	
+
 	@CreationTimestamp
 	@Column(name = "update_at")
 	LocalDateTime updateAt;
-
-	
 
 }

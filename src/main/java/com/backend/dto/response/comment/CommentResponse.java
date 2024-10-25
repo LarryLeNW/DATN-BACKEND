@@ -16,8 +16,8 @@ public class CommentResponse {
 
 	int commentId;
 	String content;
-	String blog_id;
-	String user_id;
+	int blog_id;
+	int user_id;
 	LocalDateTime createdAt;
 	LocalDateTime updateAt;
 }

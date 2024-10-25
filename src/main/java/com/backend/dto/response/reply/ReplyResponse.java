@@ -21,8 +21,8 @@ public class ReplyResponse {
            
 	int replyId;
 	String content;
-	String blog_id;
-	String user_id;
+	int comment_id;
+	int user_id;
 	LocalDateTime createdAt;
 	LocalDateTime updateAt;
 	

@@ -18,6 +18,8 @@ public enum ErrorCode {
     CATEGORY_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
     CATEGORYBLOG_NOT_EXISTED(1005,"Category blog not existed",HttpStatus.NOT_FOUND),
     BLOG_NOT_EXISTED(1005,"blog not existed",HttpStatus.NOT_FOUND),
+    COMMENT_NOT_EXISTED(1005,"comment not existed",HttpStatus.NOT_FOUND),
+    REPLY_NOT_EXISTED(1005,"comment not existed",HttpStatus.NOT_FOUND),
     REVIEW_NOT_FOUND(1005,"review not found",HttpStatus.NOT_FOUND),
     SKU_NOT_FOUND(1005,"SKU_NOT_FOUND ",HttpStatus.NOT_FOUND),    
     PRODUCT_NOT_EXISTED(1005, "Product not existed", HttpStatus.NOT_FOUND),

@@ -30,7 +30,7 @@ public class Reply {
 	@ManyToOne
 	@JoinColumn(name = "commentId")
 	@JsonIgnore
-	private Comment parentComment;
+	private Comment comment;
 
 	@ManyToOne
 	@JoinColumn(name = "userId")
