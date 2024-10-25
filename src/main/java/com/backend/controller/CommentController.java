@@ -40,11 +40,11 @@ public class CommentController {
 	}
 	
 	@PutMapping("/{commentId}")
-	ApiResponse<CommentResponse> updateComment(CommentUpdateRequest request,int commentId){
+	ApiResponse<CommentResponse> updateComment(CommentUpdateRequest request,Integer commentId){
 		return ApiResponse.<CommentResponse>builder().result(commentService.updateComment(request, commentId)).build();				
 	}
 	@DeleteMapping("/{commentId}")
-	ApiResponse<String> deleteComment (int commentId){
+	ApiResponse<String> deleteComment (Integer commentId){
 		return ApiResponse.<String>builder().result("delete success comment ").build();
 	}
 	

@@ -45,11 +45,11 @@ public class ReplyController {
 	}
 	
 	@PutMapping("/{replyId}")
-	ApiResponse<ReplyResponse> updateComment(ReplyUpdateRequest request,int replyId){
+	ApiResponse<ReplyResponse> updateComment(ReplyUpdateRequest request,Integer replyId){
 		return ApiResponse.<ReplyResponse>builder().result(replyService.updateReply(request, replyId)).build();				
 	}
 	@DeleteMapping("/{replyId}")
-	ApiResponse<String> deleteComment (int replyId){
+	ApiResponse<String> deleteComment (Integer replyId){
 		return ApiResponse.<String>builder().result("delete success comment ").build();
 	}
 	
