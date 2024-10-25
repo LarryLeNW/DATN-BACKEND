@@ -10,14 +10,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.dto.request.comment.CommentCreationRequest;
 import com.backend.dto.request.comment.CommentUpdateRequest;
+import com.backend.dto.request.reply.ReplyCreationRequest;
+import com.backend.dto.request.reply.ReplyUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.comment.CommentResponse;
 import com.backend.dto.response.common.PagedResponse;
-import com.backend.entity.Category;
+import com.backend.dto.response.reply.ReplyResponse;
 import com.backend.entity.Comment;
-import com.backend.service.CategoryService;
+import com.backend.entity.Reply;
 import com.backend.service.CommentService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.backend.service.ReplyService;
 
 import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
@@ -25,38 +27,41 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+
 @RestController
-@RequestMapping("api/comments")
+@RequestMapping("api/replys")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class CommentController {
+public class ReplyController {
 
-	CommentService commentService;
 	
+	ReplyService replyService;
+	
+
 	@PostMapping
-	ApiResponse<CommentResponse> createComment (CommentCreationRequest request){
-		return ApiResponse.<CommentResponse>builder().result(commentService.createComment(request)).build();
+	ApiResponse<ReplyResponse> createReply (ReplyCreationRequest request){
+		return ApiResponse.<ReplyResponse>builder().result(replyService.createReply(request)).build();
 	}
 	
-	@PutMapping("/{commentId}")
-	ApiResponse<CommentResponse> updateComment(CommentUpdateRequest request,int commentId){
-		return ApiResponse.<CommentResponse>builder().result(commentService.updateComment(request, commentId)).build();				
+	@PutMapping("/{replyId}")
+	ApiResponse<ReplyResponse> updateComment(ReplyUpdateRequest request,int replyId){
+		return ApiResponse.<ReplyResponse>builder().result(replyService.updateReply(request, replyId)).build();				
 	}
-	@DeleteMapping("/{commentId}")
-	ApiResponse<String> deleteComment (int commentId){
+	@DeleteMapping("/{replyId}")
+	ApiResponse<String> deleteComment (int replyId){
 		return ApiResponse.<String>builder().result("delete success comment ").build();
 	}
 	
 	@GetMapping
-	ApiResponse<PagedResponse<Comment>> getComments(
+	ApiResponse<PagedResponse<Reply>> getReplys(
 			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
 			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
 			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
 
-		PagedResponse<Comment> pagedResponse = commentService.getComment(page, limit, sort, search);
+		PagedResponse<Reply> pagedResponse = replyService.getReplys(page, limit, sort, search);
 
-		return ApiResponse.<PagedResponse<Comment>>builder().result(pagedResponse).build();
+		return ApiResponse.<PagedResponse<Reply>>builder().result(pagedResponse).build();
 	}
 
 }
