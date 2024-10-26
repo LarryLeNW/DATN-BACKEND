@@ -1,42 +1,37 @@
 package com.backend.dto.request.product;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
+import java.util.HashMap;
+import java.util.List;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true) 
 public class ProductCreationRequest {
-	@Valid
-	@NotNull(message = "Name cannot be empty")
-	String name;
+    private Long id;
+    private String name;
+    private String slug;
+    private Long categoryId;
+    private Long brandId; 
+    private String thumbnailUrl;
+    private List<SKUDTO> skus;
 
-	String description;
-
-	@Positive(message = "Price must be greater than 0")
-	double price;
-
-	@Min(value = 1, message = "Stock must be at least 1")
-	int stock;
-
-	@NotNull(message = "Thumbnail URL cannot be empty")
-	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
-	String thumbnail_url;
-	
-	@NotNull(message = "CategoryId cannot be null")
-	String categoryId;
-
-	@NotNull(message = "BrandId cannot be null")
-	String brandId;
-
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SKUDTO {
+        private Long id;  
+        private Long price;
+        private Long stock;
+        private Long discount;
+        private String code; 
+        private HashMap<String, String> attributes;
+        private int imageCount; 
+    }
 }

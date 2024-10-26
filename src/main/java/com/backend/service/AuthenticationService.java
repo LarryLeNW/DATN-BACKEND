@@ -10,6 +10,8 @@ import java.util.Random;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -62,6 +64,9 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthenticationService {
 	UserRepository userRepository;
 	UserMapper userMapper;
+	
+	@Autowired
+	@Lazy
 	PasswordEncoder passwordEncoder;
 	InvalidatedTokenRepository invalidatedTokenRepository;
 	RoleRepository roleRepository;

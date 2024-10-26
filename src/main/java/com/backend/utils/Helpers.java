@@ -1,6 +1,7 @@
 package com.backend.utils;
 
 import java.lang.reflect.Field;
+import java.text.Normalizer;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -58,4 +59,19 @@ public class Helpers {
         }
         return randomNumber.toString();
     }
+    
+    
+    public static String toSlug(String input) {
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        String withoutDiacritics = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        
+        withoutDiacritics = withoutDiacritics.toLowerCase();
+        
+        String slug = withoutDiacritics.replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
+        
+        slug = slug.replaceAll("^-|-$", "");
+        
+        return slug;
+    }
+
 }

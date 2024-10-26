@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.dto.request.brand.BrandCreationRequest;
 import com.backend.dto.request.brand.BrandUpdateRequest;
@@ -19,6 +20,7 @@ import com.backend.repository.BrandRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
 import com.backend.utils.Helpers;
+import com.backend.utils.UploadFile;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -30,20 +32,20 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BrandService {
-	
+
 	BrandRepository brandRepository;
 	BrandMapper brandMapper;
-	EntityManager entityManager; 
-	
-	
+	EntityManager entityManager;
+	UploadFile uploadFile;
+
 	public PagedResponse<Brand> getBrands(int page, int limit, String sort, String... search) {
 		List<SearchType> criteriaList = new ArrayList<>();
 		CustomSearchRepository<Brand> customSearchService = new CustomSearchRepository<>(entityManager);
 
 		CriteriaQuery<Brand> query = customSearchService.buildSearchQuery(Brand.class, search, sort);
 
-		List<Brand> brands = entityManager.createQuery(query).setFirstResult((page - 1) * limit)
-				.setMaxResults(limit).getResultList();
+		List<Brand> brands = entityManager.createQuery(query).setFirstResult((page - 1) * limit).setMaxResults(limit)
+				.getResultList();
 
 		CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Brand.class, search);
 		long totalElements = entityManager.createQuery(countQuery).getSingleResult();
@@ -53,23 +55,41 @@ public class BrandService {
 		return new PagedResponse<>(brands, page, totalPages, totalElements, limit);
 	}
 
-	public Brand createBrand(BrandCreationRequest request) {
+	public Brand createBrand(BrandCreationRequest request, MultipartFile image) {
 		Brand brand = brandMapper.toBrand(request);
+		brand.setSlug(Helpers.toSlug(request.getName()));
+
+		if (image != null) {
+			String imageUrl = uploadFile.saveFile(image, "brandTest");
+			brand.setImage(imageUrl);
+		}
 		brandRepository.save(brand);
 		return brand;
 	}
-	
-	public Brand updateBrand(String brandId, BrandUpdateRequest request) {
+
+	public Brand updateBrand(Long brandId, BrandUpdateRequest request, MultipartFile image) {
 		Brand brand = brandRepository.findById(brandId)
 				.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
 
-		Helpers.updateEntityFields(request, brand); 
+		
+		if(request != null) {
+			Helpers.updateFieldEntityIfChanged(request.getName(), brand.getName(), brand::setName);
+
+			if (request.getName() != null)
+				brand.setSlug(Helpers.toSlug(request.getName()));
+		}
+	
+
+		if (image != null) {
+			String imageUrl = uploadFile.saveFile(image, "brandTest");
+			brand.setImage(imageUrl);
+		}
+
 		return brandRepository.save(brand);
 	}
-	
-	public void deleteBrand(String brandId) {
+
+	public void deleteBrand(Long brandId) {
 		brandRepository.deleteById(brandId);
 	}
-
 
 }

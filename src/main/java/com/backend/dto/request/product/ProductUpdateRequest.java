@@ -1,38 +1,36 @@
 package com.backend.dto.request.product;
 
-import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 
-import com.backend.validator.DobConstraint;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true) 
 public class ProductUpdateRequest {
-	String name;
+    private Long id;
+    private String name;
+    private String slug;
+    private Long categoryId;
+    private Long brandId; 
+    private String thumbnailUrl;
+    private List<SKUDTO> skus;
 
-	String description;
-
-	@Positive(message = "Price must be greater than 0")
-	Double price; 
-
-	@Min(value = 1, message = "Stock must be at least 1")
-	Integer stock;
-	
-	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
-	String thumbnail_url;
-	
-	String categoryId;
-
-	String brandId;
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SKUDTO {
+        private Long id;  
+        private Long price;
+        private Long stock;
+        private Long discount;
+        private String code; 
+        private int imageCount; 
+    }
 }

@@ -1,134 +1,278 @@
 package com.backend.service;
 
-import java.util.ArrayList;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.dto.request.product.ProductCreationRequest;
+import com.backend.dto.request.product.ProductCreationRequest.SKUDTO;
 import com.backend.dto.request.product.ProductUpdateRequest;
-import com.backend.dto.request.user.UserCreationRequest;
-import com.backend.dto.request.user.UserUpdateRequest;
-import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
-import com.backend.dto.response.user.UserResponse;
+import com.backend.entity.*;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
-import com.backend.mapper.UserMapper;
-import com.backend.repository.BrandRepository;
-import com.backend.repository.CategoryRepository;
-import com.backend.repository.ProductRepository;
-import com.backend.repository.RoleRepository;
-import com.backend.repository.UserRepository;
-import com.backend.repository.common.ConsumerCondition;
-import com.backend.repository.common.CustomSearchRepository;
-import com.backend.repository.common.SearchType;
-import com.backend.utils.Helpers;
+import com.backend.repository.*;
+import com.backend.specification.ProductSpecification;
+import com.backend.utils.UploadFile;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-
-import com.backend.constant.PredefinedRole;
-import com.backend.entity.Brand;
-import com.backend.entity.Category;
-import com.backend.entity.Product;
-import com.backend.entity.Role;
-import com.backend.entity.User;
-
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.Helper;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
 public class ProductService {
 
-	CategoryRepository categoryRepository;
-	BrandRepository brandRepository;
-	ProductRepository productRepository;
-	ProductMapper productMapper;
-	EntityManager entityManager;
+	@Autowired
+	private ProductRepository productRepository;
 
-	public PagedResponse<Product> getProducts(int page, int limit, String sort, String... search) {
+	@Autowired
+	private CategoryRepository categoryRepository;
 
-		List<SearchType> criteriaList = new ArrayList<>();
-		CustomSearchRepository<Product> customSearchService = new CustomSearchRepository<>(entityManager);
+	@Autowired
+	private BrandRepository brandRepository;
 
-		CriteriaQuery<Product> query = customSearchService.buildSearchQuery(Product.class, search, sort);
+	@Autowired
+	private AttributeProductRepository attributeRepository;
 
-		List<Product> products = entityManager.createQuery(query).setFirstResult((page - 1) * limit)
-				.setMaxResults(limit).getResultList();
+	@Autowired
+	private AttributeOptionRepository attributeOptionRepository;
 
-		CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Product.class, search);
-		long totalElements = entityManager.createQuery(countQuery).getSingleResult();
+	@Autowired
+	private SkuRepository skuRepository;
 
-		int totalPages = (int) Math.ceil((double) totalElements / limit);
+	@Autowired
+	private AttributeOptionSkuRepository attributeOptionSkuRepository;
 
-		return new PagedResponse<>(products, page, totalPages, totalElements, limit);
+	@Autowired
+	private ProductMapper productMapper;
+	
+	
+	@Autowired
+	private UploadFile uploadFile ; 
+
+	
+	public ProductCreationRequest createProduct(ProductCreationRequest request, List<MultipartFile> images) {
+	    Product productCreated = new Product();
+
+	    if (request.getCategoryId() != null) {
+	        productCreated.setCategory(categoryRepository.findById(request.getCategoryId())
+	                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)));
+	    }
+
+	    if (request.getBrandId() != null) {
+	        productCreated.setBrand(brandRepository.findById(request.getBrandId())
+	                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED)));
+	    }
+
+	    productCreated.setName(request.getName());
+	    productCreated.setSlug(request.getSlug());
+	    
+
+	    productRepository.save(productCreated);
+
+	    Map<String, Attribute> attributeCache = new HashMap<>();
+	    Map<String, AttributeOption> attributeOptionCache = new HashMap<>();
+
+	    List<Sku> skusToSave = new ArrayList<>();
+	    List<AttributeOptionSku> attributeOptionSkusToSave = new ArrayList<>();
+
+	    int imageIndex = 0;
+
+	    for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
+	        Sku skuCreated = new Sku(productCreated, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
+	                skuDTO.getDiscount());
+	        skusToSave.add(skuCreated);
+
+	        // Xử lý thuộc tính (attributes)
+	        for (Map.Entry<String, String> entry : skuDTO.getAttributes().entrySet()) {
+	            String attributeName = entry.getKey();
+	            String attributeValue = entry.getValue();
+
+	            Attribute attribute = attributeCache.computeIfAbsent(attributeName, name -> {
+	                return attributeRepository.findByName(name).orElseGet(() -> {
+	                    Attribute newAttribute = new Attribute();
+	                    newAttribute.setName(name);
+	                    return attributeRepository.save(newAttribute);
+	                });
+	            });
+
+	            String attributeOptionKey = attributeName + ":" + attributeValue;
+	            AttributeOption attributeOption = attributeOptionCache.computeIfAbsent(attributeOptionKey, key -> {
+	                return attributeOptionRepository.findByValueAndAttribute(attributeValue, attribute)
+	                        .orElseGet(() -> {
+	                            AttributeOption newAttributeOption = new AttributeOption();
+	                            newAttributeOption.setValue(attributeValue);
+	                            newAttributeOption.setAttribute(attribute);
+	                            return attributeOptionRepository.save(newAttributeOption);
+	                        });
+	            });
+
+	            AttributeOptionSkuKey attributeOptionSkuKey = new AttributeOptionSkuKey();
+	            attributeOptionSkuKey.setAttributeOptionId(attributeOption.getId());
+	            attributeOptionSkuKey.setSkuId(skuCreated.getId());
+
+	            AttributeOptionSku attributeOptionSku = new AttributeOptionSku();
+	            attributeOptionSku.setId(attributeOptionSkuKey);
+	            attributeOptionSku.setSku(skuCreated);
+	            attributeOptionSku.setAttributeOption(attributeOption);
+
+	            attributeOptionSkusToSave.add(attributeOptionSku);
+	        }
+
+	        StringBuilder imagesString = new StringBuilder();
+	        for (int i = 0; i < skuDTO.getImageCount(); i++) {
+	            if (imageIndex < images.size()) {
+	                MultipartFile imageFile = images.get(imageIndex);
+	                String imageUrl = uploadFile.saveFile(imageFile, "productTest"); 
+	                if (imagesString.length() > 0) {
+	                    imagesString.append(","); 
+	                }
+	                imagesString.append(imageUrl);
+	                imageIndex++;
+	            }
+	        }
+
+	        skuCreated.setImages(imagesString.toString());
+	    }
+
+	    skuRepository.saveAll(skusToSave);
+	    attributeOptionSkuRepository.saveAll(attributeOptionSkusToSave);
+
+
+	    return request;
 	}
 
-	public ProductResponse createProduct(ProductCreationRequest request) {
-		Product product = productMapper.toProduct(request);
+	
+	public ProductResponse updateProduct(Long productId, ProductUpdateRequest request , List<MultipartFile> images ) {
+	    Product existingProduct = productRepository.findById(productId)
+	            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-		Category category = categoryRepository.findById(request.getCategoryId())
-				.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
+	    if (request.getCategoryId() != null) {
+	        existingProduct.setCategory(categoryRepository.findById(request.getCategoryId())
+	                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED)));
+	    }
 
-		Brand brand = brandRepository.findById(request.getBrandId())
-				.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
+	    if (request.getBrandId() != null) {
+	        existingProduct.setBrand(brandRepository.findById(request.getBrandId())
+	                .orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED)));
+	    }
 
-		product.setCategory(category);
-		product.setBrand(brand);
-		try {
-			product = productRepository.save(product);
-		} catch (DataIntegrityViolationException exception) {
-			throw new AppException(ErrorCode.PRODUCT_EXISTED);
-		}
+	    existingProduct.setName(request.getName());
+	    existingProduct.setSlug(request.getSlug());
 
-		return productMapper.toProductResponse(product);
+	    productRepository.save(existingProduct);
+
+	    Map<String, Attribute> attributeCache = new HashMap<>();
+	    Map<String, AttributeOption> attributeOptionCache = new HashMap<>();
+
+	    List<Sku> skusToSave = new ArrayList<>();
+	    List<AttributeOptionSku> attributeOptionSkusToSave = new ArrayList<>();
+
+	    List<Sku> existingSkus = skuRepository.findByProductId(productId);
+	    Map<Long, Sku> existingSkuMap = existingSkus.stream()
+	            .collect(Collectors.toMap(Sku::getId, sku -> sku));
+	    
+	    int imageIndex = 0;
+	    
+	    for (ProductUpdateRequest.SKUDTO skuDTO : request.getSkus()) {
+	        Sku sku;
+
+	        if (skuDTO.getId() != null && existingSkuMap.containsKey(skuDTO.getId())) {
+	            sku = existingSkuMap.get(skuDTO.getId());
+	            sku.setPrice(skuDTO.getPrice());
+	            sku.setStock(skuDTO.getStock());
+	            sku.setDiscount(skuDTO.getDiscount());
+	        } else {
+	            sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(), skuDTO.getDiscount());
+	        }
+
+	        skusToSave.add(sku);
+
+	        StringBuilder imagesString = new StringBuilder();
+	        for (int i = 0; i < skuDTO.getImageCount(); i++) {
+	            if (imageIndex < images.size()) {
+	                MultipartFile imageFile = images.get(imageIndex);
+	                String imageUrl = uploadFile.saveFile(imageFile, "productTest");
+	                if (imagesString.length() > 0) {
+	                    imagesString.append(",");
+	                }
+	                imagesString.append(imageUrl);
+	                imageIndex++;
+	            }
+	        }
+
+	        sku.setImages(imagesString.toString());
+	    }
+
+	    skuRepository.saveAll(skusToSave);
+	    attributeOptionSkuRepository.saveAll(attributeOptionSkusToSave);
+
+	    ProductResponse response = productMapper.toDTO(existingProduct);
+
+	    return response;
 	}
 
-	public ProductResponse updateProduct(String productId, ProductUpdateRequest request) {
-		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-		Helpers.updateEntityFields(request, product); 
 
-		if (request.getBrandId() != null && !request.getBrandId().equals(product.getBrand().getId())) {
-			var brand = brandRepository.findById(request.getBrandId())
-					.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
-			product.setBrand(brand);
-		}
+	public Page<ProductResponse> getProducts(Map<String, String> params) {
+	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 0;
+	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 
-		if (request.getCategoryId() != null && !request.getCategoryId().equals(product.getCategory().getId())) {
-			var category = categoryRepository.findById(request.getCategoryId())
-					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
-			product.setCategory(category);
-		}
+	    String sortField = params.getOrDefault("sortBy", "id"); 
+	    String orderBy = params.getOrDefault("orderBy", "asc"); 
 
-		return productMapper.toProductResponse(productRepository.save(product));
-	}
+	    
+	    // handle sort 
+		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC
+				: Sort.Direction.ASC;
+		
+	    Sort sort =  Sort.by(direction, sortField); 
 
-	public void deleteUser(String productId) {
-		productRepository.deleteById(productId);
+	    
+	    Pageable pageable = PageRequest.of(page, limit, sort);
+
+	    Specification<Product> spec = Specification.where(null);
+
+	    if (params.containsKey("categoryId")) {
+	        Long categoryId = Long.parseLong(params.get("categoryId"));
+	        spec = spec.and(ProductSpecification.hasCategory(categoryId));
+	    }
+
+	    if (params.containsKey("price")) {
+	        Long price = Long.parseLong(params.get("price"));
+	        spec = spec.and(ProductSpecification.hasExactPrice(price));
+	    }
+
+	    if (params.containsKey("minPrice")) {
+	        Long price = Long.parseLong(params.get("minPrice"));
+	        spec = spec.and(ProductSpecification.hasMinPrice(price));
+	    }
+
+	    if (params.containsKey("maxPrice")) {
+	        Long price = Long.parseLong(params.get("maxPrice"));
+	        spec = spec.and(ProductSpecification.hasMaxPrice(price));
+	    }
+
+	    Map<String, String> attributes = params.entrySet().stream().filter(entry -> !List
+	            .of("page", "limit", "sortBy", "orderBy", "categoryId", "price", "minPrice", "maxPrice").contains(entry.getKey()))
+	            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+	    if (!attributes.isEmpty()) {
+	        spec = spec.and(ProductSpecification.hasAttributes(attributes));
+	    }
+
+	    Page<Product> productsPage = productRepository.findAll(spec, pageable);
+	    List<ProductResponse> productDTOs = productsPage.getContent().stream().map(productMapper::toDTO)
+	            .collect(Collectors.toList());
+
+	    return new PageImpl<>(productDTOs, pageable, productsPage.getTotalElements());
 	}
 
 }
