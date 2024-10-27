@@ -32,20 +32,8 @@ public class ProductController {
 
 	// Create Product
 	@PostMapping
-	public ResponseEntity<?> createProduct(@RequestParam String productData, @RequestParam List<MultipartFile> images) {
-
-		System.out.println("images: " + (images == null ? "null" : images.size()));
-
-		ObjectMapper objectMapper = new ObjectMapper();
-		ProductCreationRequest productRequest;
-
-		try {
-			productRequest = objectMapper.readValue(productData, ProductCreationRequest.class);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body("Dữ liệu JSON không hợp lệ");
-		}
-
-		return ResponseEntity.ok(productService.createProduct(productRequest, images));
+	public ResponseEntity<?> createProduct(@RequestBody ProductCreationRequest data) {
+		return ResponseEntity.ok(productService.createProduct(data));
 	}
 
 	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

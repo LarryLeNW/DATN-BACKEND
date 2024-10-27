@@ -32,6 +32,6 @@ public class ProductCreationRequest {
         private Long discount;
         private String code; 
         private HashMap<String, String> attributes;
-        private int imageCount; 
+        private String images; 
     }
 }

@@ -44,13 +44,14 @@ public class Sku {
 	@Column(name = "images", columnDefinition = "NVARCHAR(MAX)")
 	private String images;
 
-	public Sku(Product product, String code, Long price, Long stock, Long discount) {
+	public Sku(Product product, String code, Long price, Long stock, Long discount, String images) {
 		super();
 		this.product = product;
 		this.code = code;
 		this.price = price;
 		this.stock = stock;
 		this.discount = discount;
+		this.images = images;
 	}
 
 	@Override
