@@ -17,5 +17,5 @@ public class MailService {
 		message.setText(body);
 		message.setFrom("FASHION@VIETNAM.COM");
 		mailSender.send(message);
-	}
+	}	
 }

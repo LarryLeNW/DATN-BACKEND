@@ -40,7 +40,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("api/categories")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
@@ -79,7 +79,7 @@ public class CategoryController {
 	@PutMapping("/{categoryId}")
 	ApiResponse<Category> update(@PathVariable Long categoryId, @RequestParam(required = false) String categoryData,
 			@RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
-			
+		
 		CategoryUpdateRequest categoryRequest = null; 
 		
 		if(categoryData != null) {
