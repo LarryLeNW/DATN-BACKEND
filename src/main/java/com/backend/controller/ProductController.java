@@ -69,6 +69,8 @@ public class ProductController {
                                                              @RequestParam(defaultValue = "10") int pageSize) {
 
         Page<ProductResponse> productsPage = productService.getProducts(params);
+        System.out.println(productsPage.getContent());
+
         return ResponseEntity.ok(productsPage);
     }
 
