@@ -23,6 +23,7 @@ public enum ErrorCode {
     PRODUCT_NOT_EXISTED(1005, "Product not existed", HttpStatus.NOT_FOUND),
     CATEGORY_NAME_EXISTED(1005, "name Category existed", HttpStatus.NOT_FOUND),
     BRAND_NOT_EXISTED(1005, "Brand not existed", HttpStatus.NOT_FOUND),
+    ROLE_NOT_EXISTED(1005, "Role not existed", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),

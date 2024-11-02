@@ -40,8 +40,8 @@ import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.UserMapper;
 import com.backend.repository.InvalidatedTokenRepository;
-import com.backend.repository.RoleRepository;
-import com.backend.repository.UserRepository;
+import com.backend.repository.user.RoleRepository;
+import com.backend.repository.user.UserRepository;
 import com.backend.utils.Helpers;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -255,16 +255,27 @@ public class AuthenticationService {
 	}
 
 	private String buildScope(User user) {
-		StringJoiner stringJoiner = new StringJoiner(" ");
+	    StringJoiner scopeJoiner = new StringJoiner(" ");
+	    
+	    // Get user role
+	    Role role = user.getRole();
+	    if (role != null) {
+	        scopeJoiner.add("ROLE_" + role.getName());
 
-		Role userRole = user.getRole();
+	        // For each module in role-module-permissions, add module and permissions
+	        if (role.getRoleModulePermissions() != null) {
+	            role.getRoleModulePermissions().forEach(rmp -> {
+	                String moduleName = rmp.getModule().getName();
+	                String permissionName = rmp.getPermission().getName();
+	                
+	                // Format each module and permission in the scope
+	                scopeJoiner.add(String.format("%s_%s", moduleName.toUpperCase(), permissionName.toUpperCase()));
+	            });
+	        }
+	    }
 
-		if (userRole != null) {
-			stringJoiner.add("ROLE_" + userRole.getName());
-			if (!CollectionUtils.isEmpty(userRole.getPermissions()))
-				userRole.getPermissions().forEach(permission -> stringJoiner.add(permission.getName()));
-		}
-
-		return stringJoiner.toString();
+	    return scopeJoiner.toString();
 	}
+
+
 }

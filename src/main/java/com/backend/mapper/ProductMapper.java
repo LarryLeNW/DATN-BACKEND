@@ -18,11 +18,12 @@ public class ProductMapper {
 		productDTO.setName(product.getName());
 		productDTO.setSlug(product.getSlug());
 		productDTO.setSlug(product.getSlug());
+		productDTO.setDescription(product.getDescription());
 		productDTO.setCategory(product.getCategory() != null ? product.getCategory() : null);
 		productDTO.setBrand(product.getBrand() != null ? product.getBrand() : null);
 		productDTO.setCreatedAt(product.getCreatedAt());
 		productDTO.setUpdatedAt(product.getUpdatedAt());
-		
+
 		List<ProductResponse.SKUDTO> skuDTOs = product.getSkus().stream().map(sku -> {
 			ProductResponse.SKUDTO skuDTO = new ProductResponse.SKUDTO();
 			skuDTO.setPrice(sku.getPrice());

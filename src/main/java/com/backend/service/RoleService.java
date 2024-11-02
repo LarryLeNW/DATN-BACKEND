@@ -1,45 +1,70 @@
 package com.backend.service;
 
-import java.util.HashSet;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
-import com.backend.dto.request.auth.RoleRequest;
-import com.backend.dto.response.auth.RoleResponse;
+import com.backend.entity.Role;
+import com.backend.entity.RoleModulePermission;
 import com.backend.mapper.RoleMapper;
 import com.backend.repository.PermissionRepository;
-import com.backend.repository.RoleRepository;
+import com.backend.repository.user.ModuleRepository;
+import com.backend.repository.user.RoleRepository;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.transaction.Transactional;
+
+import com.backend.dto.request.auth.Role.ModuleDTO;
+import com.backend.dto.request.auth.Role.RoleCreationRequest;
+import com.backend.entity.Module;
+import com.backend.entity.Permission;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleService {
-    RoleRepository roleRepository;
-    PermissionRepository permissionRepository;
-    RoleMapper roleMapper;
 
-    public RoleResponse create(RoleRequest request) {
-        var role = roleMapper.toRole(request);
+    @Autowired
+    private RoleRepository roleRepository;
 
-        var permissions = permissionRepository.findAllById(request.getPermissions());
-        role.setPermissions(new HashSet<>(permissions));
-
+    @Autowired 
+    private ModuleRepository moduleRepository;
+    
+    @Autowired
+    private RoleMapper roleMapper; 
+    
+    @Autowired
+    private PermissionRepository permissionRepository;
+    
+    @Transactional
+    public Role create(RoleCreationRequest request) {
+        Role role = roleMapper.toRole(request);
         role = roleRepository.save(role);
-        return roleMapper.toRoleResponse(role);
-    }
 
-    public List<RoleResponse> getAll() {
-        return roleRepository.findAll().stream().map(roleMapper::toRoleResponse).toList();
-    }
+        if (request.getModules() != null) {
+            for (ModuleDTO moduleDTO : request.getModules()) {
+                Module module = moduleRepository.findById(moduleDTO.getId())
+                    .orElseThrow(() -> new RuntimeException("Module not found with ID: " + moduleDTO.getId()));
 
-    public void delete(String role) {
-        roleRepository.deleteById(role);
+                for (Long permissionId : moduleDTO.getPermissions()) {
+                    Permission permission = permissionRepository.findById(permissionId)
+                        .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId));
+
+                    RoleModulePermission roleModulePermission = new RoleModulePermission();
+                    roleModulePermission.setRole(role);
+                    roleModulePermission.setModule(module);
+                    roleModulePermission.setPermission(permission);
+                    
+                    if (role.getRoleModulePermissions() == null) {
+                        role.setRoleModulePermissions(new ArrayList<>());
+                    }
+                    role.getRoleModulePermissions().add(roleModulePermission);
+                }
+            }
+        }
+
+        return roleRepository.save(role);
+    }
+    
+    public List<Role> getAll() {
+    	return roleRepository.findAll();
     }
 }

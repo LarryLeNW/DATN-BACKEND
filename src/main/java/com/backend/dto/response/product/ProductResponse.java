@@ -28,6 +28,7 @@ public class ProductResponse {
 	String slug;
 	Category category;
 	Brand brand;
+	String description;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 	private List<SKUDTO> skus;

@@ -4,9 +4,10 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.backend.dto.request.auth.RoleRequest;
+import com.backend.dto.request.auth.Role.RoleCreationRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.auth.RoleResponse;
+import com.backend.entity.Role;
 import com.backend.service.RoleService;
 
 import lombok.AccessLevel;
@@ -15,7 +16,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/roles")
+@RequestMapping("/api/roles")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
@@ -23,22 +24,22 @@ public class RoleController {
     RoleService roleService;
 
     @PostMapping
-    ApiResponse<RoleResponse> create(@RequestBody RoleRequest request) {
-        return ApiResponse.<RoleResponse>builder()
+    ApiResponse<Role> create(@RequestBody RoleCreationRequest request) {
+        return ApiResponse.<Role>builder()
                 .result(roleService.create(request))
                 .build();
     }
 
     @GetMapping
-    ApiResponse<List<RoleResponse>> getAll() {
-        return ApiResponse.<List<RoleResponse>>builder()
+    ApiResponse<List<Role>> getAll() {
+        return ApiResponse.<List<Role>>builder()
                 .result(roleService.getAll())
                 .build();
     }
 
-    @DeleteMapping("/{role}")
-    ApiResponse<Void> delete(@PathVariable String role) {
-        roleService.delete(role);
-        return ApiResponse.<Void>builder().build();
-    }
+//    @DeleteMapping("/{role}")
+//    ApiResponse<Void> delete(@PathVariable String role) {
+//        roleService.delete(role);
+//        return ApiResponse.<Void>builder().build();
+//    }
 }

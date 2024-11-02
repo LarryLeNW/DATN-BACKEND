@@ -24,13 +24,16 @@ public class Product {
 	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
 	private String name;
 
+	@Column(name = "description", columnDefinition = "TEXT")
+	private String description;
+
 	private String slug;
 
 	@ManyToOne
 	@JoinColumn(name = "categoryId", nullable = false)
 	@JsonIgnore
 	private Category category;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "brandId", nullable = false)
 	@JsonIgnore
@@ -39,20 +42,17 @@ public class Product {
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Sku> skus;
 
-	@CreationTimestamp	
+	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
 
 	@UpdateTimestamp
 	@Column(name = "updated_at")
 	LocalDateTime updatedAt;
-	
+
 	@Override
 	public String toString() {
-	    return "Product{id=" + id + ", name='" + name + "'}"; 
+		return "Product{id=" + id + ", name='" + name + "'}";
 	}
-	
-	
-	
-	
+
 }
