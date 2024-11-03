@@ -58,7 +58,7 @@ public class ProductService {
 	private UploadFile uploadFile ; 
 
 	
-	public ProductCreationRequest createProduct(ProductCreationRequest request, List<MultipartFile> images) {
+	public ProductCreationRequest createProduct(ProductCreationRequest request) {
 	    Product productCreated = new Product();
 
 	    if (request.getCategoryId() != null) {
@@ -83,11 +83,12 @@ public class ProductService {
 	    List<Sku> skusToSave = new ArrayList<>();
 	    List<AttributeOptionSku> attributeOptionSkusToSave = new ArrayList<>();
 
-	    int imageIndex = 0;
 
 	    for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
 	        Sku skuCreated = new Sku(productCreated, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
-	                skuDTO.getDiscount());
+	                skuDTO.getDiscount(), skuDTO.getImages());
+	        
+	        
 	        skusToSave.add(skuCreated);
 
 	        // Xử lý thuộc tính (attributes)
@@ -126,20 +127,6 @@ public class ProductService {
 	            attributeOptionSkusToSave.add(attributeOptionSku);
 	        }
 
-	        StringBuilder imagesString = new StringBuilder();
-	        for (int i = 0; i < skuDTO.getImageCount(); i++) {
-	            if (imageIndex < images.size()) {
-	                MultipartFile imageFile = images.get(imageIndex);
-	                String imageUrl = uploadFile.saveFile(imageFile, "productTest"); 
-	                if (imagesString.length() > 0) {
-	                    imagesString.append(","); 
-	                }
-	                imagesString.append(imageUrl);
-	                imageIndex++;
-	            }
-	        }
-
-	        skuCreated.setImages(imagesString.toString());
 	    }
 
 	    skuRepository.saveAll(skusToSave);
@@ -190,7 +177,7 @@ public class ProductService {
 	            sku.setStock(skuDTO.getStock());
 	            sku.setDiscount(skuDTO.getDiscount());
 	        } else {
-	            sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(), skuDTO.getDiscount());
+	            sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(), skuDTO.getDiscount(), null);
 	        }
 
 	        skusToSave.add(sku);
@@ -222,7 +209,7 @@ public class ProductService {
 
 
 	public Page<ProductResponse> getProducts(Map<String, String> params) {
-	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 0;
+	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page" )) - 1  : 0;
 	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 
 	    String sortField = params.getOrDefault("sortBy", "id"); 

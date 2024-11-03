@@ -45,14 +45,14 @@ public class BlogController {
 	ObjectMapper objectMapper;
 
 	@GetMapping
-	ApiResponse<PagedResponse<Blog>> getAll(
-			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
-			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
-			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
+	public ApiResponse<PagedResponse<BlogResponse>> getAll(
+	        @RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
+	        @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
+	        @RequestParam(required = false) String sort, 
+	        @RequestParam(required = false) String[] search) {
 
-		PagedResponse<Blog> pagedResponse = blogServices.getBlogs(page, limit, sort, search);
-
-		return ApiResponse.<PagedResponse<Blog>>builder().result(pagedResponse).build();
+	    PagedResponse<BlogResponse> pagedResponse = blogServices.getBlogs(page, limit, sort, search);
+	    return ApiResponse.<PagedResponse<BlogResponse>>builder().result(pagedResponse).build();
 	}
 
 

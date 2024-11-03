@@ -26,35 +26,37 @@ public class Sku {
 	@JsonIgnore
 	private Product product;
 
+	@Column(name = "code")
 	private String code;
 
+	@Column(name = "price")
 	private Long price;
 
+	@Column(name = "stock")
 	private Long stock;
 
+	@Column(name = "discount")
 	private Long discount;
 
 	@OneToMany(mappedBy = "sku")
-    private List<AttributeOptionSku> attributeOptionSkus;
+	private List<AttributeOptionSku> attributeOptionSkus;
 
-    private String images;	
-	
-	public Sku(Product product, String code, Long price, Long stock, Long discount) {
+	@Column(name = "images", columnDefinition = "NVARCHAR(MAX)")
+	private String images;
+
+	public Sku(Product product, String code, Long price, Long stock, Long discount, String images) {
 		super();
 		this.product = product;
 		this.code = code;
 		this.price = price;
 		this.stock = stock;
 		this.discount = discount;
+		this.images = images;
 	}
-	
+
 	@Override
 	public String toString() {
-	    return "Sku{id=" + id + ", code='" + code + "'}"; 
+		return "Sku{id=" + id + ", code='" + code + "'}";
 	}
 
-	
-
-    
-    
 }

@@ -8,6 +8,8 @@ import java.util.Map;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.backend.entity.Brand;
+import com.backend.entity.Category;
 import com.backend.entity.Sku;
 
 import lombok.AccessLevel;
@@ -24,8 +26,8 @@ public class ProductResponse {
 	Long id;
 	String name;
 	String slug;
-	Long categoryId;
-	Long brandId;
+	Category category;
+	Brand brand;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 	private List<SKUDTO> skus;

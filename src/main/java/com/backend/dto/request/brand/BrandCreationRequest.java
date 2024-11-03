@@ -30,4 +30,5 @@ public class BrandCreationRequest {
 	
 	String images;
    
+	String description; 
 }

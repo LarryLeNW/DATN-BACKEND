@@ -1,7 +1,11 @@
 package com.backend.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -23,4 +27,12 @@ public class Category {
     private String description; 
     
     private String image;
+    
+    @CreationTimestamp	
+	@Column(name = "created_at")
+	LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	@Column(name = "updated_at")
+	LocalDateTime updatedAt;
 }

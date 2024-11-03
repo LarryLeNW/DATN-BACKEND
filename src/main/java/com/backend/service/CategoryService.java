@@ -59,6 +59,7 @@ public class CategoryService {
 
 		if(request != null) {
 			Helpers.updateFieldEntityIfChanged(request.getName(), category.getName(), category::setName);
+			Helpers.updateFieldEntityIfChanged(request.getDescription(), category.getDescription(), category::setDescription);
 			
 			if(request.getName() != null)
 				category.setSlug(Helpers.toSlug(request.getName()));

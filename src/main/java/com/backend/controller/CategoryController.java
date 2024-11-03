@@ -79,7 +79,7 @@ public class CategoryController {
 	@PutMapping("/{categoryId}")
 	ApiResponse<Category> update(@PathVariable Long categoryId, @RequestParam(required = false) String categoryData,
 			@RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
-		
+			
 		CategoryUpdateRequest categoryRequest = null; 
 		
 		if(categoryData != null) {

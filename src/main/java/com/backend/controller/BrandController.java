@@ -41,16 +41,16 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("api/brands")
+@RequestMapping("/api/brands")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class BrandController {
 
 	BrandService brandService;
-	
+
 	@Autowired
-	ObjectMapper objectMapper; 
+	ObjectMapper objectMapper;
 
 	@GetMapping
 	ApiResponse<PagedResponse<Brand>> getAll(
@@ -64,9 +64,10 @@ public class BrandController {
 	}
 
 	@PostMapping
-	ApiResponse<Brand> create(@RequestParam String brandData , @RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
+	ApiResponse<Brand> create(@RequestParam String brandData, @RequestParam(required = false) MultipartFile image)
+			throws JsonMappingException, JsonProcessingException {
 		BrandCreationRequest brandRequest = objectMapper.readValue(brandData, BrandCreationRequest.class);
-		return ApiResponse.<Brand>builder().result(brandService.createBrand(brandRequest , image)).build();
+		return ApiResponse.<Brand>builder().result(brandService.createBrand(brandRequest, image)).build();
 	}
 
 	@DeleteMapping("/{brandId}")
@@ -76,14 +77,15 @@ public class BrandController {
 	}
 
 	@PutMapping("/{brandId}")
-	ApiResponse<Brand> update(@PathVariable Long brandId, @RequestParam(required = false) String brandData , @RequestParam(required = false) MultipartFile image ) throws JsonMappingException, JsonProcessingException {
-			
+	ApiResponse<Brand> update(@PathVariable Long brandId, @RequestParam(required = false) String brandData,
+			@RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
+
 		BrandUpdateRequest brandRequest = null;
-		
-		if(brandData != null)
-			 brandRequest = objectMapper.readValue(brandData, BrandUpdateRequest.class);
-		
+
+		if (brandData != null)
+			brandRequest = objectMapper.readValue(brandData, BrandUpdateRequest.class);
+
 		return ApiResponse.<Brand>builder().result(brandService.updateBrand(brandId, brandRequest, image)).build();
 	}
-	
+
 }

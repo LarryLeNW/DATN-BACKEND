@@ -19,7 +19,9 @@ public class BlogResponse {
 	String content;
 	String images;
 	String user_id;
+    String userName;  
 	String categoryBlog_id;
+	String categoryBlogName;
 	LocalDateTime createdAt;
 
 }
