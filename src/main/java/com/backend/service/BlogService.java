@@ -20,9 +20,9 @@ import com.backend.exception.ErrorCode;
 import com.backend.mapper.BlogMapper;
 import com.backend.repository.BlogRepository;
 import com.backend.repository.CategoryBlogRepository;
-import com.backend.repository.UserRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.repository.user.UserRepository;
 import com.backend.utils.Helpers;
 import com.backend.utils.UploadFile;
 

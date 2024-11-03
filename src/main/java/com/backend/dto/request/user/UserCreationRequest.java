@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
+import com.backend.entity.Role;
 import com.backend.validator.DobConstraint;
 
 import lombok.*;
@@ -19,8 +20,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
-	@NotNull
-	@Size(min = 4, message = "USERNAME_INVALID")
+	@Size(min = 4, message = "USERNAME MINSIZE 4")
 	String username;
 
 	@NotNull
@@ -34,5 +34,6 @@ public class UserCreationRequest {
 	LoginType login_type = LoginType.DEFAULT;;
 
 	UserStatusType status = UserStatusType.INACTIVE;
-
+	
+	Role role;
 }

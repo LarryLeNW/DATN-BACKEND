@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.util.ArrayList;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -18,9 +19,9 @@ import com.backend.exception.ErrorCode;
 import com.backend.mapper.ReplyMapper;
 import com.backend.repository.CommentRepository;
 import com.backend.repository.ReplyRepository;
-import com.backend.repository.UserRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.repository.user.UserRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
