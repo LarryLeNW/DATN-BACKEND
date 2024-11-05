@@ -27,18 +27,19 @@ public class SecurityConfig {
 	@Lazy
 	private CustomJwtDecoder customJwtDecoder;
 
-	private final String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/category", "/api/brand" , "/api/module" , "/api/permission"};
-	private final String[] PUBLIC_POST_ENDPOINTS = { "/api/auth/**",  "/api/users" };
+	private final String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/category", "/api/brand", "/api/module",
+			"/api/permission" };
+	private final String[] PUBLIC_POST_ENDPOINTS = { "/api/auth/**", "/api/users" };
 	private final String[] PUBLIC_DELETE_ENDPOINTS = { "/api/users" };
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
-		httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
-				.permitAll().requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-				.requestMatchers(HttpMethod.DELETE, PUBLIC_DELETE_ENDPOINTS).permitAll()
-				.anyRequest()
-				.authenticated());
+//		httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
+//				.permitAll().requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+//				.requestMatchers(HttpMethod.DELETE, PUBLIC_DELETE_ENDPOINTS).permitAll().anyRequest().authenticated());
+
+		httpSecurity.authorizeHttpRequests(request -> request.anyRequest().permitAll());
 
 		httpSecurity.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder)

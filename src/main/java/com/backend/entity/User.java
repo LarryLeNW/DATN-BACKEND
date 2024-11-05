@@ -25,7 +25,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @Column(name = "username")
+    @Column(name = "username", columnDefinition = "NVARCHAR(MAX)")
     String username;
 
     @Column(name = "password")

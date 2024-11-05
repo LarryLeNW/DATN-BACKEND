@@ -27,11 +27,11 @@ public class Blog {
 	private int blogId;
 
 	@NotNull
-	@Column(name = "title")
+	@Column(name = "title",columnDefinition = "NVARCHAR(MAX)")
 	private String title;
 
 	@NotNull
-	@Column(name = "content")
+	@Column(name = "content",columnDefinition = "NVARCHAR(MAX)")
 	private String content;
 
 	@Column(name = "images",  columnDefinition = "NVARCHAR(MAX)")

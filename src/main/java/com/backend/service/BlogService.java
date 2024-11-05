@@ -83,6 +83,12 @@ public class BlogService {
 		return blogMapper.toBlogResponse(blogRepository.save(blog));
 
 	}
+	public BlogResponse getBlogById(Integer blogId) {
+	    Blog blog = blogRepository.findById(blogId)
+	            .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
+
+	    return blogMapper.toBlogResponse(blog);
+	}
 
 	public BlogResponse updateBlog(BlogUpdateRequest request,List<MultipartFile> images, Integer blogId) {
 		Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));

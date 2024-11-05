@@ -29,7 +29,7 @@ public class CategoryBlog {
 	@Column(name = "name" , columnDefinition = "NVARCHAR(MAX)")
 	private String name;
 	
-	@Column(name = "description")
+	@Column(name = "description" ,columnDefinition = "NVARCHAR(MAX)")
 	String description;
 	
 	@CreationTimestamp	

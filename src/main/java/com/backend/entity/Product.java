@@ -24,7 +24,7 @@ public class Product {
 	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
 	private String name;
 
-	@Column(name = "description", columnDefinition = "TEXT")
+	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	private String description;
 
 	private String slug;
