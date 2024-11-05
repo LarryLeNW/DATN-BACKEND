@@ -27,18 +27,18 @@ public class SecurityConfig {
 	@Lazy
 	private CustomJwtDecoder customJwtDecoder;
 
-	private final String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/category", "/api/brand" , "/api/module" , "/api/permission"};
-	private final String[] PUBLIC_POST_ENDPOINTS = { "/api/auth/**",  "/api/users" };
+	private final String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/categories", "/api/brands" };
+	private final String[] PUBLIC_POST_ENDPOINTS = { "/api/auth/**", "/api/users", "/api/categories", "/api/brands" };
 	private final String[] PUBLIC_DELETE_ENDPOINTS = { "/api/users" };
+	private final String[] PUBLIC_PUT_ENDPOINTS = {};
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
 		httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
 				.permitAll().requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-				.requestMatchers(HttpMethod.DELETE, PUBLIC_DELETE_ENDPOINTS).permitAll()
-				.anyRequest()
-				.authenticated());
+				.requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
+				.requestMatchers(HttpMethod.DELETE, PUBLIC_DELETE_ENDPOINTS).permitAll().anyRequest().authenticated());
 
 		httpSecurity.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder)

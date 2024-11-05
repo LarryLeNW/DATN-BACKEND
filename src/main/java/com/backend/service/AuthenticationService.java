@@ -86,40 +86,31 @@ public class AuthenticationService {
 	public String register(UserCreationRequest request) {
 		// find user email
 		Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-		User user;
 
-		if (optionalUser.isPresent()) {
-			// update
-			user = optionalUser.get();
+		if (optionalUser.isPresent() && optionalUser.get().getStatus().equals(UserStatusType.ACTIVED)) {
+			throw new RuntimeException("Email has already been used.");
+		}else {
+			User user = userMapper.toUser(request);
 
-			if (user.getStatus() != UserStatusType.INACTIVE) {
-				throw new RuntimeException("Email has already been used.");
-			}
-
-			user.setUsername(request.getUsername());
-			user.setPassword(passwordEncoder.encode(request.getPassword()));
-		} else {
-			// create
-			user = userMapper.toUser(request);
 			user.setPassword(passwordEncoder.encode(request.getPassword()));
 
 			Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
+
 			if (roleUser == null) {
 				throw new RuntimeException("Role " + PredefinedRole.USER_NAME + " not created.");
 			}
+			
 			user.setRole(roleUser);
+
+			user = userRepository.save(user);
 		}
 
-		String otpRamdom = Helpers.handleRandomOTP(5);
-		System.out.println("otpRamdom :" + otpRamdom);
-		user.setOtp(otpRamdom);
-
-		user = userRepository.save(user);
-
+		
+		String message = "<h1> This is link to confirm register DATN WEBSITE  <a>Please click here to confirm</a> Thank You !!!</h1>"; 
 		// send otp
-		mailService.send("DATN Team By FPT Education", "Verify your account with OTP is" + otpRamdom, user.getEmail());
+		mailService.send("DATN WEBSITE", message , request.getEmail());
 
-		return user.getId();
+		return "We send a confirmation link to your email...";
 	}
 
 	public UserResponse verifyRegister(String token) throws JOSEException, ParseException {

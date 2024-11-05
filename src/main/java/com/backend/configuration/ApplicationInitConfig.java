@@ -45,8 +45,8 @@ public class ApplicationInitConfig {
     ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
         log.info("Initializing application.....");
         return args -> {
+        	log.warn("test runing");
             if (userRepository.findByUsername(ADMIN_USER_NAME).isEmpty()) {
-         
                 log.warn("admin user has been created with default password: admin, please change it");
             }
             log.info("Application initialization completed .....");
