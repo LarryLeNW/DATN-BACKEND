@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,8 @@ import com.backend.repository.*;
 import com.backend.specification.ProductSpecification;
 import com.backend.utils.UploadFile;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class ProductService {
 
 	@Autowired
@@ -174,6 +178,14 @@ public class ProductService {
 				sku = new Sku(productId, existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
 						skuDTO.getDiscount(), attributeOptionSkusToSave, null);
 			}
+	        if (skuDTO.getId() != null && existingSkuMap.containsKey(skuDTO.getId())) {
+	            sku = existingSkuMap.get(skuDTO.getId());
+	            sku.setPrice(skuDTO.getPrice());
+	            sku.setStock(skuDTO.getStock());
+	            sku.setDiscount(skuDTO.getDiscount());
+	        } else {
+	            sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(), skuDTO.getDiscount(), null);
+	        }
 
 			skusToSave.add(sku);
 
@@ -202,6 +214,7 @@ public class ProductService {
 	}
 
 	public Page<ProductResponse> getProducts(Map<String, String> params) {
+		
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 
@@ -239,7 +252,7 @@ public class ProductService {
 		}
 
 		Map<String, String> attributes = params.entrySet().stream().filter(entry -> !List
-				.of("page", "limit", "sortBy", "orderBy", "categoryId", "price", "minPrice", "maxPrice")
+				.of("page", "limit", "sortBy", "orderBy", "categoryId", "price", "minPrice", "maxPrice", "keyword")
 				.contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 

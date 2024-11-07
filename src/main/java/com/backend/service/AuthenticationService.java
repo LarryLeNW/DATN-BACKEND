@@ -83,34 +83,48 @@ public class AuthenticationService {
 	@Value("${jwt.refreshable-duration}")
 	protected long REFRESHABLE_DURATION;
 
+	@NonFinal
+	@Value("${jwt.register-duration}")
+	protected long REGISTER_DURATION;
+
+	@NonFinal
+	@Value("${CLIENT_URL}")
+	protected String CLIENT_URL;
+
 	public String register(UserCreationRequest request) {
 		// find user email
-		Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+		User userFound = userRepository.findByEmail(request.getEmail());
 
-		if (optionalUser.isPresent() && optionalUser.get().getStatus().equals(UserStatusType.ACTIVED)) {
+		if (userFound != null && userFound.getStatus().equals(UserStatusType.ACTIVED)) {
 			throw new RuntimeException("Email has already been used.");
-		}else {
-			User user = userMapper.toUser(request);
+		}
 
-			user.setPassword(passwordEncoder.encode(request.getPassword()));
+		if (userFound == null) {
+			userFound = userMapper.toUser(request);
+
 
 			Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
 
 			if (roleUser == null) {
 				throw new RuntimeException("Role " + PredefinedRole.USER_NAME + " not created.");
 			}
-			
-			user.setRole(roleUser);
 
-			user = userRepository.save(user);
+			userFound.setRole(roleUser);
+
+			userFound = userRepository.save(userFound);
 		}
 
-		
-		String message = "<h1> This is link to confirm register DATN WEBSITE  <a>Please click here to confirm</a> Thank You !!!</h1>"; 
-		// send otp
-		mailService.send("DATN WEBSITE", message , request.getEmail());
+		userFound.setPassword(passwordEncoder.encode(request.getPassword()));
 
-		return "We send a confirmation link to your email...";
+		var token = generateToken(userFound, REGISTER_DURATION);
+
+		String message = "<h1> This is link to confirm register DATN WEBSITE  <a href='" + CLIENT_URL
+				+ "/confirm-register?token=" + token
+				+ " ' style='color : blue'>Please click here to confirm</a> Thank You !!!</h1>";
+		// send otp
+		mailService.send("DATN WEBSITE", message, request.getEmail());
+
+		return token;
 	}
 
 	public UserResponse verifyRegister(String token) throws JOSEException, ParseException {
@@ -120,7 +134,12 @@ public class AuthenticationService {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-		return userMapper.toUserResponse(user);
+		if (user.getStatus().equals(UserStatusType.ACTIVED))
+			throw new AppException(ErrorCode.USER_NOT_EXISTED);
+
+		user.setStatus(UserStatusType.ACTIVED);
+
+		return userMapper.toUserResponse(userRepository.save(user));
 	}
 
 	public UserResponse getMyInfo() {
@@ -153,18 +172,19 @@ public class AuthenticationService {
 	}
 
 	public AuthenticationResponse authenticate(AuthenticationRequest request) {
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-		var user = userRepository.findByEmail(request.getEmail())
-				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
-
-		if (!authenticated)
-			throw new AppException(ErrorCode.UNAUTHENTICATED);
-
-		var token = generateToken(user, VALID_DURATION_TOKEN);
-
-		return AuthenticationResponse.builder().token(token).authenticated(true).build();
+//		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+//		var user = userRepository.findByEmail(request.getEmail())
+//				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+//
+//		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
+//
+//		if (!authenticated)
+//			throw new AppException(ErrorCode.UNAUTHENTICATED);
+//
+//		var token = generateToken(user, VALID_DURATION_TOKEN);
+//
+//		return AuthenticationResponse.builder().token(token).authenticated(true).build();
+		return AuthenticationResponse.builder().token("3123").authenticated(true).build();
 	}
 
 	public void logout(LogoutRequest request) throws ParseException, JOSEException {

@@ -16,7 +16,9 @@ public interface BlogMapper {
 	
 	
 	@Mapping(source = "user.id",target = "user_id")
+    @Mapping(source = "user.username", target = "userName")  // Thêm userName
 	@Mapping(source = "categoryBlog.categoryBlogId",target = "categoryBlog_id")
+	@Mapping(source = "categoryBlog.name",target = "categoryBlogName")
 	BlogResponse toBlogResponse(Blog blog);
 	
 

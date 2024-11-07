@@ -25,4 +25,10 @@ public class Role {
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
 	List<RoleModulePermission> roleModulePermissions;
+
+	public Role(String name, String description) {
+		super();
+		this.name = name;
+		this.description = description;
+	}
 }

@@ -1,7 +1,6 @@
-package com.backend.dto.response.blog;
+package com.backend.dto.response.comment;
 
 import java.time.LocalDateTime;
-
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -13,15 +12,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BlogResponse {
-	int blogId;
-	String title;
-	String content;
-	String images;
-	String user_id;
-    String userName;  
-	String categoryBlog_id;
-	String categoryBlogName;
-	LocalDateTime createdAt;
+public class CommentResponse {
 
+	int commentId;
+	String content;
+	int blog_id;
+	int user_id;
+	LocalDateTime createdAt;
+	LocalDateTime updateAt;
 }

@@ -1,7 +1,9 @@
 package com.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "products")
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Product {
 
 	@Id
@@ -24,7 +27,7 @@ public class Product {
 	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
 	private String name;
 
-	@Column(name = "description", columnDefinition = "TEXT")
+	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
 	private String description;
 
 	private String slug;
@@ -41,6 +44,9 @@ public class Product {
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Sku> skus;
+	
+	@Column(name = "stars")
+	Double stars;
 
 	@CreationTimestamp
 	@Column(name = "created_at")
@@ -55,4 +61,12 @@ public class Product {
 		return "Product{id=" + id + ", name='" + name + "'}";
 	}
 
+	@PrePersist
+	public void prePersist() {
+	    if (stars == null) {
+	        stars = 5.0;
+	    }
+	}
+
+	
 }

@@ -31,6 +31,7 @@ public class ProductResponse {
 	String description;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
+	Double stars;
 	private List<SKUDTO> skus;
 
 	@Data

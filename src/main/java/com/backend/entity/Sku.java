@@ -6,6 +6,8 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class Sku {
 	@Column(name = "stock")
 	private Long stock;
 
+	@Max(value = 80)
+	@Min(value = 0 )
 	@Column(name = "discount")
 	private Long discount;
 

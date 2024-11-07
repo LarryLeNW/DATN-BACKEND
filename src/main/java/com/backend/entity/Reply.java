@@ -1,6 +1,7 @@
-	package com.backend.entity;
+package com.backend.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -14,43 +15,32 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
-@Table(name = "blogs")
+@Table(name = "replys")
 @Data
-public class Blog {
-
+public class Reply {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int blogId;
+	private int replyId;
 
-	@NotNull
-	@Column(name = "title",columnDefinition = "NVARCHAR(MAX)")
-	private String title;
-
-	@NotNull
-	@Column(name = "content",columnDefinition = "NVARCHAR(MAX)")
 	private String content;
 
-	@Column(name = "images",  columnDefinition = "NVARCHAR(MAX)")
-	private String images;
+	@ManyToOne
+	@JoinColumn(name = "commentId")
+	@JsonIgnore
+	private Comment comment;
 
 	@ManyToOne
-	@JoinColumn(name = "userId", nullable = false)
+	@JoinColumn(name = "userId")
 	@JsonIgnore
 	private User user;
-
-	@ManyToOne
-	@JoinColumn(name = "categoryBlogId", nullable = false)
-	@JsonIgnore
-	private CategoryBlog categoryBlog;
 
 	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
-	
+
 	@CreationTimestamp
 	@Column(name = "update_at")
 	LocalDateTime updateAt;

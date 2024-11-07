@@ -83,6 +83,12 @@ public class BlogService {
 		return blogMapper.toBlogResponse(blogRepository.save(blog));
 
 	}
+	public BlogResponse getBlogById(Integer blogId) {
+	    Blog blog = blogRepository.findById(blogId)
+	            .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
+
+	    return blogMapper.toBlogResponse(blog);
+	}
 
 	public BlogResponse updateBlog(BlogUpdateRequest request,List<MultipartFile> images, Integer blogId) {
 		Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
@@ -121,21 +127,28 @@ public class BlogService {
 		blogRepository.deleteById(blogId);
 	}
 
-	public PagedResponse<Blog> getBlogs(int page, int limit, String sort, String... search) {
-		List<SearchType> criteriaList = new ArrayList<>();
-		CustomSearchRepository<Blog> customSearchService = new CustomSearchRepository<>(entityManager);
 
-		CriteriaQuery<Blog> query = customSearchService.buildSearchQuery(Blog.class, search, sort);
+    public PagedResponse<BlogResponse> getBlogs(int page, int limit, String sort, String... search) {
+        List<SearchType> criteriaList = new ArrayList<>();
+        CustomSearchRepository<Blog> customSearchService = new CustomSearchRepository<>(entityManager);
 
-		List<Blog> blogs = entityManager.createQuery(query).setFirstResult((page - 1) * limit).setMaxResults(limit)
-				.getResultList();
+        CriteriaQuery<Blog> query = customSearchService.buildSearchQuery(Blog.class, search, sort);
 
-		CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Blog.class, search);
-		long totalElements = entityManager.createQuery(countQuery).getSingleResult();
+        List<Blog> blogs = entityManager.createQuery(query)
+            .setFirstResult((page - 1) * limit)
+            .setMaxResults(limit)
+            .getResultList();
 
-		int totalPages = (int) Math.ceil((double) totalElements / limit);
+        List<BlogResponse> blogResponses = blogs.stream()
+            .map(blogMapper::toBlogResponse)
+            .toList();
 
-		return new PagedResponse<>(blogs, page, totalPages, totalElements, limit);
-	}
+        CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Blog.class, search);
+        long totalElements = entityManager.createQuery(countQuery).getSingleResult();
+
+        int totalPages = (int) Math.ceil((double) totalElements / limit);
+
+        return new PagedResponse<>(blogResponses, page, totalPages, totalElements, limit);
+    }
 
 }

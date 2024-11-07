@@ -12,7 +12,7 @@ import com.backend.entity.User;
 public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByUsername(String username);
     
-    Optional<User> findByEmail(String email);
+    User findByEmail(String email);
     
     Optional<User> findByEmailAndStatusNot(String email, UserStatusType status);
 
