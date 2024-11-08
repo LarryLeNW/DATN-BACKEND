@@ -25,7 +25,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @Column(name = "username")
+    @Column(name = "username", columnDefinition = "NVARCHAR(MAX)")
     String username;
 
     @Column(name = "password")
@@ -60,4 +60,8 @@ public class User {
     
     @OneToMany
     Set<Address> address;
+//    
+//    @ManyToOne
+//    @JoinColumn(name = "team_id", nullable = false)
+//    private Team team;
 }

@@ -1,67 +1,72 @@
 package com.backend.entity;
 
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "products")
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Product {
+
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	String id;
-	
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
 	@Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
-	String name; 
-	
+	private String name;
+
 	@Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
-	String description;
+	private String description;
 
-	@Column(name = "price")
-	double price;
-
-	@Column(name = "stock")
-	int stock;
-
-	@Column(name = "thumbnail_url")
-	String thumbnail_url;
-	
-	@ManyToOne
-	@JsonBackReference
-	Category category;
+	private String slug;
 
 	@ManyToOne
-	@JsonBackReference
-	Brand brand;
+	@JoinColumn(name = "categoryId", nullable = false)
+	@JsonIgnore
+	private Category category;
+
+	@ManyToOne
+	@JoinColumn(name = "brandId", nullable = false)
+	@JsonIgnore
+	private Brand brand;
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private List<Sku> skus;
 	
-	@OneToMany( cascade = CascadeType.ALL)
-	List<AttributeProduct> attributes;
-
-	@ManyToOne(optional = true)
-	@JsonManagedReference 
-	VariantProduct variant_product;
-
+	@Column(name = "stars")
+	Double stars;
 
 	@CreationTimestamp
+	@Column(name = "created_at")
 	LocalDateTime createdAt;
 
 	@UpdateTimestamp
+	@Column(name = "updated_at")
 	LocalDateTime updatedAt;
 
+	@Override
+	public String toString() {
+		return "Product{id=" + id + ", name='" + name + "'}";
+	}
+
+	@PrePersist
+	public void prePersist() {
+	    if (stars == null) {
+	        stars = 5.0;
+	    }
+	}
+
+	
 }

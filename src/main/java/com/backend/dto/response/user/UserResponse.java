@@ -7,6 +7,7 @@ import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
 import com.backend.dto.response.auth.RoleResponse;
 import com.backend.entity.Address;
+import com.backend.entity.Role;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +25,6 @@ public class UserResponse {
     int points; 
     UserStatusType status; 
     LoginType login_type; 
-    Set<RoleResponse> roles;
+    Role role;
     Set<Address> address;
 }

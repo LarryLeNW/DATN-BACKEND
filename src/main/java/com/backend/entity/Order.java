@@ -11,8 +11,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,8 +19,6 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "orders")
 public class Order {
-	
-	
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

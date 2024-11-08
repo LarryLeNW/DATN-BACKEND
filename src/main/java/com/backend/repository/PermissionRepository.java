@@ -6,4 +6,4 @@ import org.springframework.stereotype.Repository;
 import com.backend.entity.Permission;
 
 @Repository
-public interface PermissionRepository extends JpaRepository<Permission, String> {}
+public interface PermissionRepository extends JpaRepository<Permission, Long> {}

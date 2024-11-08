@@ -1,38 +1,38 @@
 package com.backend.entity;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "brands")
+@Table(name = "Brands")
+@Data
 public class Brand {
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	String id;
 
-	@Column(name = "name", columnDefinition = "NVARCHAR(255)", unique = true)
-	String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @CreationTimestamp
-    LocalDateTime createdAt;
- 
-    @UpdateTimestamp
-    LocalDateTime updatedAt;
- 
+    @Column(name = "name", columnDefinition = "NVARCHAR(MAX)")
+    private String name;
+    
+    private String slug;
+    
+    private String description;
+
+    private String image;
+    
+    @CreationTimestamp	
+	@Column(name = "created_at")
+	LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	@Column(name = "updated_at")
+	LocalDateTime updatedAt;
 }

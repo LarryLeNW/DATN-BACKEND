@@ -1,15 +1,13 @@
 package com.backend.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import com.backend.entity.Category;
 
-@Repository
-public interface CategoryRepository extends JpaRepository<Category, String> {
-    //check for existence of the name
-
+public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSpecificationExecutor<Category> {
 	boolean existsByName(String name);
-
 }

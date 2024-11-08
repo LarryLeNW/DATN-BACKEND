@@ -1,64 +1,66 @@
 package com.backend.controller;
 
-import java.util.List;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import com.backend.entity.Category;
+import com.backend.entity.Product;
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductUpdateRequest;
-import com.backend.dto.request.user.UserCreationRequest;
-import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
-import com.backend.dto.response.user.UserResponse;
-import com.backend.entity.Product;
 import com.backend.service.ProductService;
-import com.backend.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/products")
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
-@Validated
+@RequestMapping("/api/product")
 public class ProductController {
-	ProductService productService;
 
-	@GetMapping
-	public ApiResponse<PagedResponse<Product>> getAllProducts(
-			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
-			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
-			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
+	@Autowired
+	private ProductService productService;
 
-		PagedResponse<Product> pagedResponse = productService.getProducts(page, limit, sort, search);
-
-		return ApiResponse.<PagedResponse<Product>>builder().result(pagedResponse).build();
-	}
-
+	// Create Product
 	@PostMapping
-	ApiResponse<ProductResponse> createProduct(@Valid @RequestBody ProductCreationRequest request) {
-		return ApiResponse.<ProductResponse>builder().result(productService.createProduct(request)).build();
+	public ResponseEntity<?> createProduct(@RequestBody ProductCreationRequest data) {
+		return ResponseEntity.ok(productService.createProduct(data));
 	}
 
-	@DeleteMapping("/{productId}")
-	ApiResponse<String> deleteProduct(@PathVariable String productId) { 
-		productService.deleteProduct(productId);
-		return ApiResponse.<String>builder().result("Product has been deleted").build();
+	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> updateProduct(@RequestPart("files") List<MultipartFile> files, @PathVariable Long id,
+			@RequestPart("productData") String productData) {
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		ProductUpdateRequest productRequest;
+
+		try {
+			productRequest = objectMapper.readValue(productData, ProductUpdateRequest.class);
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+
+		return ResponseEntity.ok(productService.updateProduct(id, productRequest, files));
 	}
-	
-	@PutMapping("/{productId}")
-	ApiResponse<Product> updateProduct(@PathVariable String productId, @Valid @RequestBody ProductUpdateRequest request) {
-		return ApiResponse.<Product>builder().result(productService.updateProduct(productId, request)).build();
+
+	// Get Products
+	@GetMapping
+	ApiResponse<Page<ProductResponse>> getProducts(@RequestParam Map<String, String> params,
+			@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
+
+		Page<ProductResponse> productsPage = productService.getProducts(params);
+
+		return ApiResponse.<Page<ProductResponse>>builder().result(productsPage).build();
 	}
 
 }

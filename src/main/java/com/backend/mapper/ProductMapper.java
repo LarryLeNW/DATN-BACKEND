@@ -1,22 +1,53 @@
 package com.backend.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import com.backend.dto.request.product.ProductCreationRequest;
-import com.backend.dto.request.product.ProductUpdateRequest;
+import org.springframework.stereotype.Component;
+
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.entity.Product;
 
-@Mapper(componentModel = "spring")
-public interface ProductMapper {
+@Component
+public class ProductMapper {
 
-	Product toProduct(ProductCreationRequest request);
+	public ProductResponse toDTO(Product product) {
+		ProductResponse productDTO = new ProductResponse();
+		productDTO.setId(product.getId());
+		productDTO.setName(product.getName());
+		productDTO.setSlug(product.getSlug());
+		productDTO.setSlug(product.getSlug());
+		productDTO.setDescription(product.getDescription());
+		productDTO.setCategory(product.getCategory() != null ? product.getCategory() : null);
+		productDTO.setBrand(product.getBrand() != null ? product.getBrand() : null);
+		productDTO.setCreatedAt(product.getCreatedAt());
+		productDTO.setUpdatedAt(product.getUpdatedAt());
 
-	ProductResponse toProductResponse(Product product);
+		List<ProductResponse.SKUDTO> skuDTOs = product.getSkus().stream().map(sku -> {
+			ProductResponse.SKUDTO skuDTO = new ProductResponse.SKUDTO();
+			skuDTO.setPrice(sku.getPrice());
+			skuDTO.setPrice(sku.getPrice());
+			skuDTO.setStock(sku.getStock());
+			skuDTO.setDiscount(sku.getDiscount());
+			skuDTO.setCode(sku.getCode());
+			skuDTO.setId(sku.getId());
+			skuDTO.setImages(sku.getImages());
 
-	@Mapping(target = "category", ignore = true)
-	@Mapping(target = "brand", ignore = true)
-	void updateProduct(@MappingTarget Product product, ProductUpdateRequest request);
+			skuDTO.setAttributes(sku.getAttributeOptionSkus().stream()
+					.collect(Collectors.toMap(
+							attributeOptionSku -> attributeOptionSku.getAttributeOption().getAttribute().getName(),
+							attributeOptionSku -> attributeOptionSku.getAttributeOption().getValue(),
+							(existing, replacement) -> existing, // xử lý trường hợp trùng lặp key, bạn có thể giữ lại
+																	// giá trị cũ
+							HashMap::new // chỉ định loại bản đồ là HashMap<String, String>
+			)));
+
+			return skuDTO;
+		}).collect(Collectors.toList());
+
+		productDTO.setSkus(skuDTOs);
+		return productDTO;
+	}
+
 }
