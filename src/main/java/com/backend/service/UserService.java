@@ -2,6 +2,7 @@ package com.backend.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -17,8 +18,8 @@ import com.backend.dto.response.user.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.UserMapper;
-import com.backend.repository.RoleRepository;
-import com.backend.repository.UserRepository;
+import com.backend.repository.user.RoleRepository;
+import com.backend.repository.user.UserRepository;
 import com.backend.constant.PredefinedRole;
 import com.backend.entity.Role;
 import com.backend.entity.User;
@@ -42,16 +43,19 @@ public class UserService {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
+//        Role roleUser = roleRepository.findById(PredefinedRole.USER_NAME);
+        Role roleUser = roleRepository.findById(request.getRole().getId()).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
         
-    	if (roleUser == null)
-			throw new RuntimeException("Role " + PredefinedRole.USER_NAME + "not creating");
+        
+//        
+//    	if (roleUser == null)
+//			throw new RuntimeException("Role " + PredefinedRole.USER_NAME + "not creating");
 
     	user.setRole(roleUser);
         
-        if(userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
+//        if(userRepository.findByUsername(user.getUsername()).isPresent()) {
+//            throw new AppException(ErrorCode.USER_EXISTED);
+//        }
 
         try {
             user = userRepository.save(user);

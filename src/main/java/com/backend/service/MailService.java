@@ -1,21 +1,32 @@
 package com.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class MailService {
-	@Autowired
-	JavaMailSender mailSender;
+    
+    @Autowired
+    private JavaMailSender mailSender;
 
-	void send(String subject, String body, String recipient) {
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(recipient); 
-		message.setSubject(subject);
-		message.setText(body);
-		message.setFrom("FASHION@VIETNAM.COM");
-		mailSender.send(message);
-	}
+    public void send(String subject, String body, String recipient) {
+        MimeMessage message = mailSender.createMimeMessage();
+        
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(recipient);
+            helper.setSubject(subject);
+            helper.setText(body, true);
+            helper.setFrom("FASHION@VIETNAM.COM");
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            e.printStackTrace(); 
+        }
+    }
 }

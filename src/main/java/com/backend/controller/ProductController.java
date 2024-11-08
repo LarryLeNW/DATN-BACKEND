@@ -10,66 +10,57 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import com.backend.entity.Category;
 import com.backend.entity.Product;
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductUpdateRequest;
+import com.backend.dto.response.ApiResponse;
+import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.service.ProductService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @RestController
 @RequestMapping("/api/product")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+	@Autowired
+	private ProductService productService;
 
-    // Create Product
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createProduct(
-            @RequestPart("productData") String productData,
-            @RequestPart("files") List<MultipartFile> files) {
+	// Create Product
+	@PostMapping
+	public ResponseEntity<?> createProduct(@RequestBody ProductCreationRequest data) {
+		return ResponseEntity.ok(productService.createProduct(data));
+	}
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ProductCreationRequest productRequest;
+	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> updateProduct(@RequestPart("files") List<MultipartFile> files, @PathVariable Long id,
+			@RequestPart("productData") String productData) {
 
-        try {
-            productRequest = objectMapper.readValue(productData, ProductCreationRequest.class);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Dữ liệu JSON không hợp lệ");
-        }
+		ObjectMapper objectMapper = new ObjectMapper();
+		ProductUpdateRequest productRequest;
 
-        return ResponseEntity.ok(productService.createProduct(productRequest, files));
-    }
+		try {
+			productRequest = objectMapper.readValue(productData, ProductUpdateRequest.class);
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateProduct(
-    		@RequestPart("files") List<MultipartFile> files,
-            @PathVariable Long id,
-            @RequestPart("productData") String productData
-            ) {
+		return ResponseEntity.ok(productService.updateProduct(id, productRequest, files));
+	}
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ProductUpdateRequest productRequest;
+	// Get Products
+	@GetMapping
+	ApiResponse<Page<ProductResponse>> getProducts(@RequestParam Map<String, String> params,
+			@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
 
-        try {
-            productRequest = objectMapper.readValue(productData, ProductUpdateRequest.class);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        
+		Page<ProductResponse> productsPage = productService.getProducts(params);
 
-        return ResponseEntity.ok(productService.updateProduct(id, productRequest, files));
-    }
-
-    // Get Products
-    @GetMapping
-    public ResponseEntity<Page<ProductResponse>> getProducts(@RequestParam Map<String, String> params,
-                                                             @RequestParam(defaultValue = "0") int pageNumber,
-                                                             @RequestParam(defaultValue = "10") int pageSize) {
-
-        Page<ProductResponse> productsPage = productService.getProducts(params);
-        return ResponseEntity.ok(productsPage);
-    }
+		return ApiResponse.<Page<ProductResponse>>builder().result(productsPage).build();
+	}
 
 }

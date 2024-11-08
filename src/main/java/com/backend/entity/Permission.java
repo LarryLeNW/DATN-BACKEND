@@ -1,14 +1,12 @@
 package com.backend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import java.util.List;
+
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -16,7 +14,11 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "permissions")
 public class Permission {
     @Id
-    String name;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    String description;
+    @Column(nullable = false, unique = true)
+    private String name;
+
+
 }

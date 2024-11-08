@@ -13,8 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.backend.constant.PredefinedRole;
 import com.backend.entity.Role;
 import com.backend.entity.User;
-import com.backend.repository.RoleRepository;
-import com.backend.repository.UserRepository;
+import com.backend.repository.user.RoleRepository;
+import com.backend.repository.user.UserRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -45,25 +45,8 @@ public class ApplicationInitConfig {
     ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
         log.info("Initializing application.....");
         return args -> {
+        	log.warn("test runing");
             if (userRepository.findByUsername(ADMIN_USER_NAME).isEmpty()) {
-                Role userRole = roleRepository.save(Role.builder()
-                        .name(PredefinedRole.USER_NAME)
-                        .description("User role")
-                        .build());
-
-                Role adminRole = roleRepository.save(Role.builder()
-                        .name(PredefinedRole.ADMIN_NAME)
-                        .description("Admin role")
-                        .build());
-
-
-                User user = User.builder()
-                        .username(ADMIN_USER_NAME)
-                        .password(passwordEncoder.encode(ADMIN_PASSWORD))
-                        .role(userRole)
-                        .build();
-
-                userRepository.save(user);
                 log.warn("admin user has been created with default password: admin, please change it");
             }
             log.info("Application initialization completed .....");

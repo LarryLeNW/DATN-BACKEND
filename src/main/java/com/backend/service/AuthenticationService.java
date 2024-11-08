@@ -40,8 +40,8 @@ import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.UserMapper;
 import com.backend.repository.InvalidatedTokenRepository;
-import com.backend.repository.RoleRepository;
-import com.backend.repository.UserRepository;
+import com.backend.repository.user.RoleRepository;
+import com.backend.repository.user.UserRepository;
 import com.backend.utils.Helpers;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -60,11 +60,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-
 public class AuthenticationService {
 	UserRepository userRepository;
 	UserMapper userMapper;
-	
+
 	@Autowired
 	@Lazy
 	PasswordEncoder passwordEncoder;
@@ -84,45 +83,49 @@ public class AuthenticationService {
 	@Value("${jwt.refreshable-duration}")
 	protected long REFRESHABLE_DURATION;
 
+	@NonFinal
+	@Value("${jwt.register-duration}")
+	protected long REGISTER_DURATION;
+
+	@NonFinal
+	@Value("${CLIENT_URL}")
+	protected String CLIENT_URL;
+
 	public String register(UserCreationRequest request) {
-	    // find user email
-	    Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-	    User user;
+		// find user email
+		User userFound = userRepository.findByEmail(request.getEmail());
 
-	    if (optionalUser.isPresent()) {
-	    	// update 
-	        user = optionalUser.get();
+		if (userFound != null && userFound.getStatus().equals(UserStatusType.ACTIVED)) {
+			throw new RuntimeException("Email has already been used.");
+		}
 
-	        if (user.getStatus() != UserStatusType.INACTIVE) {
-	            throw new RuntimeException("Email has already been used.");
-	        }
+		if (userFound == null) {
+			userFound = userMapper.toUser(request);
 
-	        user.setUsername(request.getUsername());
-	        user.setPassword(passwordEncoder.encode(request.getPassword()));
-	    } else {
-	    	// create 
-	    	user = userMapper.toUser(request);
-	        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-	        Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
-	        if (roleUser == null) {
-	            throw new RuntimeException("Role " + PredefinedRole.USER_NAME + " not created.");
-	        }
-	        user.setRole(roleUser);
-	    }
+			Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
 
-	    String otpRamdom = Helpers.handleRandomOTP(5); 
-	    System.out.println("otpRamdom :" + otpRamdom );
-	    user.setOtp(otpRamdom);
-	    
-	    user = userRepository.save(user);
+			if (roleUser == null) {
+				throw new RuntimeException("Role " + PredefinedRole.USER_NAME + " not created.");
+			}
 
-	    // send otp
-	    mailService.send("DATN Team By FPT Education", "Verify your account with OTP is" + otpRamdom, user.getEmail());
+			userFound.setRole(roleUser);
 
-	    return user.getId();
+			userFound = userRepository.save(userFound);
+		}
+
+		userFound.setPassword(passwordEncoder.encode(request.getPassword()));
+
+		var token = generateToken(userFound, REGISTER_DURATION);
+
+		String message = "<h1> This is link to confirm register DATN WEBSITE  <a href='" + CLIENT_URL
+				+ "/confirm-register?token=" + token
+				+ " ' style='color : blue'>Please click here to confirm</a> Thank You !!!</h1>";
+		// send otp
+		mailService.send("DATN WEBSITE", message, request.getEmail());
+
+		return token;
 	}
-
 
 	public UserResponse verifyRegister(String token) throws JOSEException, ParseException {
 		SignedJWT signedJWT = verifyToken(token, false);
@@ -131,7 +134,12 @@ public class AuthenticationService {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-		return userMapper.toUserResponse(user);
+		if (user.getStatus().equals(UserStatusType.ACTIVED))
+			throw new AppException(ErrorCode.USER_NOT_EXISTED);
+
+		user.setStatus(UserStatusType.ACTIVED);
+
+		return userMapper.toUserResponse(userRepository.save(user));
 	}
 
 	public UserResponse getMyInfo() {
@@ -164,18 +172,19 @@ public class AuthenticationService {
 	}
 
 	public AuthenticationResponse authenticate(AuthenticationRequest request) {
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-		var user = userRepository.findByEmail(request.getEmail())
-				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
-
-		if (!authenticated)
-			throw new AppException(ErrorCode.UNAUTHENTICATED);
-
-		var token = generateToken(user, VALID_DURATION_TOKEN);
-
-		return AuthenticationResponse.builder().token(token).authenticated(true).build();
+//		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+//		var user = userRepository.findByEmail(request.getEmail())
+//				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+//
+//		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
+//
+//		if (!authenticated)
+//			throw new AppException(ErrorCode.UNAUTHENTICATED);
+//
+//		var token = generateToken(user, VALID_DURATION_TOKEN);
+//
+//		return AuthenticationResponse.builder().token(token).authenticated(true).build();
+		return AuthenticationResponse.builder().token("3123").authenticated(true).build();
 	}
 
 	public void logout(LogoutRequest request) throws ParseException, JOSEException {
@@ -255,16 +264,22 @@ public class AuthenticationService {
 	}
 
 	private String buildScope(User user) {
-		StringJoiner stringJoiner = new StringJoiner(" ");
+		StringJoiner scopeJoiner = new StringJoiner(" ");
 
-		Role userRole = user.getRole();
+		Role role = user.getRole();
+		if (role != null) {
+			scopeJoiner.add("ROLE_" + role.getName());
+			if (role.getRoleModulePermissions() != null) {
+				role.getRoleModulePermissions().forEach(rmp -> {
+					String moduleName = rmp.getModule().getName();
+					String permissionName = rmp.getPermission().getName();
 
-		if (userRole != null) {
-			stringJoiner.add("ROLE_" + userRole.getName());
-			if (!CollectionUtils.isEmpty(userRole.getPermissions()))
-				userRole.getPermissions().forEach(permission -> stringJoiner.add(permission.getName()));
+					scopeJoiner.add(String.format("%s_%s", moduleName.toUpperCase(), permissionName.toUpperCase()));
+				});
+			}
 		}
 
-		return stringJoiner.toString();
+		return scopeJoiner.toString();
 	}
+
 }

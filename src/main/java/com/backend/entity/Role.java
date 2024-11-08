@@ -1,27 +1,34 @@
 package com.backend.entity;
 
-import java.util.Set;
+import java.util.*;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "roles")
 public class Role {
-    @Id
-    String name;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	Long id;
 
-    String description;
+	@Column(nullable = false, unique = true)
+	String name;
 
-    @ManyToMany
-    Set<Permission> permissions;
+	String description;
+
+	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+	List<RoleModulePermission> roleModulePermissions;
+
+	public Role(String name, String description) {
+		super();
+		this.name = name;
+		this.description = description;
+	}
 }
