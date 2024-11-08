@@ -26,10 +26,5 @@ import lombok.experimental.FieldDefaults;
 public class BrandUpdateRequest {
 	@Size(min = 3 , max = 255 , message = "@Param be greater 3 characters")
 	String name;
-
-    @CreationTimestamp
-    LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    LocalDateTime updatedAt;
+	
 }

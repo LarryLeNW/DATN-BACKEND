@@ -43,7 +43,7 @@ public class ConsumerCondition implements Consumer<SearchType> {
             	predicate = builder.and(predicate, builder.like(root.get(key), "%" + value + "%"));
                 break;
             default:
-                throw new UnsupportedOperationException("Operation not supported");
+            	break;
         }
     }
 

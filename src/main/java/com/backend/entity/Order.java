@@ -4,14 +4,14 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Set;
 
+import com.backend.constant.Type.OrderStatusType;
 
 import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,14 +19,6 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "orders")
 public class Order {
-	
-	public enum OrderStatus {
-	    PENDING,
-	    SHIPPED,
-	    DELIVERED,
-	    CANCELLED
-	}
-	
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -37,6 +29,6 @@ public class Order {
 	double total_amount;
 	
 	@Enumerated(EnumType.STRING)
-	OrderStatus status;
+	OrderStatusType status;
 
 }

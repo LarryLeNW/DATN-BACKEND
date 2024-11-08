@@ -1,9 +1,6 @@
 package com.backend.repository.common;
 
-import com.backend.mapper.ProductMapper;
-import com.backend.repository.BrandRepository;
-import com.backend.repository.CategoryRepository;
-import com.backend.repository.ProductRepository;
+
 import com.backend.service.ProductService;
 
 import jakarta.persistence.*;

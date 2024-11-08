@@ -1,5 +1,6 @@
 package com.backend.exception;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,11 +13,17 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.backend.dto.response.ApiResponse;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -99,7 +106,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
         log.error("IllegalArgumentException: ", exception);
-        
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(ErrorCode.INVALID_FIELD_ACCESS.getCode());  
         apiResponse.setMessage("Invalid field access: " + exception.getMessage());
@@ -112,6 +118,77 @@ public class GlobalExceptionHandler {
     	ApiResponse apiResponse = new ApiResponse();
     	apiResponse.setCode(ErrorCode.INVALID_FIELD_ACCESS.getCode());  
     	apiResponse.setMessage( exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+   
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse> HttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage("Not found this route API");
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value =NullPointerException.class)
+    public ResponseEntity<ApiResponse> handleNullPointerException(NullPointerException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = RuntimeException.class)
+    public ResponseEntity<ApiResponse> handleRuntimeException(RuntimeException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = AuthenticationServiceException.class)
+    public ResponseEntity<ApiResponse> handleAuthenticationServiceException(AuthenticationServiceException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage("Not Auth");
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = JwtException.class)
+    public ResponseEntity<ApiResponse> handleJwtException(JwtException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage("Invalid Token");
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = IllegalStateException.class)
+    public ResponseEntity<ApiResponse> handleIllegalStateException(IllegalStateException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse> handleNoResourceFoundException(NoResourceFoundException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = ParseException.class)
+    public ResponseEntity<ApiResponse> handleParseException(ParseException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = UnrecognizedPropertyException.class)
+    public ResponseEntity<ApiResponse> handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
+    	return ResponseEntity.badRequest().body(apiResponse);
+    }
+    
+    @ExceptionHandler(value = MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
+    	ApiResponse apiResponse = new ApiResponse();
+    	apiResponse.setMessage(exception.getMessage());
     	return ResponseEntity.badRequest().body(apiResponse);
     }
 
