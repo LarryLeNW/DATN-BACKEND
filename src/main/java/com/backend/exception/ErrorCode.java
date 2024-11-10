@@ -35,6 +35,7 @@ public enum ErrorCode {
     PRODUCT_EXISTED(1002, "Product existed", HttpStatus.BAD_REQUEST),
     CATEGORY_EXISTED(1002, "Category existed", HttpStatus.BAD_REQUEST),
     BRAND_EXISTED(1002, "Brand existed", HttpStatus.BAD_REQUEST),
+    CART_EXISTED(1002, "Cart existed", HttpStatus.BAD_REQUEST),
     INVALID_FIELD_ACCESS(1009, "Invalid Access Field", HttpStatus.BAD_REQUEST);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

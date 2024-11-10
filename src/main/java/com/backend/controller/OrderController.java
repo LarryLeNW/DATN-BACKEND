@@ -39,7 +39,7 @@ public class OrderController {
 	ObjectMapper objectMapper;   
 	
 	@GetMapping
-	ApiResponse<PagedResponse<OrderResponse>> getCategories(
+	ApiResponse<PagedResponse<OrderResponse>> getAlls(
 			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
 			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
 			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
@@ -50,16 +50,17 @@ public class OrderController {
 	}
 	
 	@PostMapping
-	ApiResponse<OrderResponse> createOrder (@RequestBody OrderCreationRequest request){
+	ApiResponse<OrderResponse> create(@RequestBody OrderCreationRequest request){
 		return ApiResponse.<OrderResponse>builder().result(orderService.createOrder(request)).build();
 	}
 	
 	@PutMapping("/{orderId}")
-	ApiResponse<OrderResponse> updateOrder (@RequestBody OrderUpdateRequest request,@PathVariable String orderId ){
+	ApiResponse<OrderResponse> update(@RequestBody OrderUpdateRequest request,@PathVariable String orderId ){
 		return ApiResponse.<OrderResponse>builder().result(orderService.updateOrder(orderId, request)).build();
 	}
+	
 	@DeleteMapping("/{orderId}")
-	public ApiResponse<String> deleteBlog(@PathVariable String orderId) {
+	public ApiResponse<String> delete(@PathVariable String orderId) {
 		orderService.deleteOrder(orderId);
 		return ApiResponse.<String>builder().result("delete success order with id of: " + orderId).build();
 	}

@@ -1,4 +1,4 @@
-package com.backend.dto.response.order;
+package com.backend.dto.response.cart;
 
 import com.backend.dto.response.product.ProductResponse.SKUDTO;
 
@@ -12,10 +12,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderDetailResponse {
-	String id;
-    long productId;
+public class CartDetailResponse {
+	Long id;
+    Long productId;
     String productName;
-	String orderId;
 	SKUDTO sku;
 }
