@@ -15,6 +15,7 @@ public enum ErrorCode {
     USERNAME_INVALID(1003, "Username must be at least {min} characters", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(1004, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
+    USER_BLOCKED(1005, "You has been blocked .", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
     CATEGORYBLOG_NOT_EXISTED(1005,"Category blog not existed",HttpStatus.NOT_FOUND),
     BLOG_NOT_EXISTED(1005,"blog not existed",HttpStatus.NOT_FOUND),

@@ -1,4 +1,4 @@
-package com.backend.repository;
+package com.backend.repository.product;
 
 import java.util.Optional;
 
@@ -9,12 +9,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.backend.entity.Attribute;
+import com.backend.entity.AttributeOption;
+import com.backend.entity.Category;
 
 import jakarta.transaction.Transactional;
-import java.util.List;
-
 
 @Repository
-public interface AttributeProductRepository extends JpaRepository<Attribute, Long> {
-	Optional<Attribute> findByName(String name);
+public interface AttributeOptionRepository extends JpaRepository<AttributeOption, Long> {
+
+	Optional<AttributeOption> findByValueAndAttribute(String attributeValue, Attribute attribute);
 }

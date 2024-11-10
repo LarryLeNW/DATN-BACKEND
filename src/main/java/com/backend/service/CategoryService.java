@@ -17,9 +17,9 @@ import com.backend.entity.Category;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.CategoryMapper;
-import com.backend.repository.CategoryRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.repository.product.CategoryRepository;
 import com.backend.utils.Helpers;
 import com.backend.utils.UploadFile;
 

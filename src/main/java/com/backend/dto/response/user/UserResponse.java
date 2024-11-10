@@ -22,9 +22,10 @@ public class UserResponse {
     String username;
     String phone_number;
     String email;
+    String avatar;
     int points; 
     UserStatusType status; 
     LoginType login_type; 
-    Role role;
     Set<Address> address;
+    String role;
 }

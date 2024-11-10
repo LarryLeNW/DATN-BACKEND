@@ -12,6 +12,7 @@ import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.user.UserResponse;
+import com.backend.entity.User;
 import com.backend.service.UserService;
 
 import lombok.AccessLevel;
@@ -35,7 +36,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('SUPER_ADMIN') or hasAuthority('USER_VIEWALL')")
 	@GetMapping
-	ApiResponse<List<UserResponse>> getUsers() {
+	ApiResponse<List<User>> getUsers() {
 		var context = SecurityContextHolder.getContext();
 		var authentication = context.getAuthentication();
 		
@@ -46,7 +47,7 @@ public class UserController {
 			log.info("No authenticated user found or request does not require authentication.");
 		}
 
-		return ApiResponse.<List<UserResponse>>builder().result(userService.getUsers()).build();
+		return ApiResponse.<List<User>>builder().result(userService.getUsers()).build();
 	}
 
 	@GetMapping("/{userId}")

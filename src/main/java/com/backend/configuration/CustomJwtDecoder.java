@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import com.backend.dto.request.auth.IntrospectRequest;
 import com.backend.dto.response.auth.IntrospectResponse;
+import com.backend.exception.AppException;
+import com.backend.exception.ErrorCode;
 import com.backend.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 
@@ -38,9 +40,9 @@ public class CustomJwtDecoder implements JwtDecoder {
 			response = authenticationService.introspect(IntrospectRequest.builder().token(token).build());
 
 			if (!response.isValid())
-				throw new JwtException("Token invalid");
+				throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-			if (Objects.isNull(nimbusJwtDecoder)) {
+			if (Objects.isNull(nimbusJwtDecoder)) { 
 				SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
 				nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512)
 						.build();

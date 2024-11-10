@@ -37,6 +37,9 @@ public class User {
     @Column(name = "email", nullable = false)
     String email;
 
+    @Column(name = "avatar")
+    String avatar;
+
     @Column(name = "refresh_token")
     String refresh_token;
     
@@ -46,7 +49,7 @@ public class User {
     
     @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
     int points;
-
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     UserStatusType status = UserStatusType.INACTIVE;
@@ -60,8 +63,13 @@ public class User {
     
     @OneToMany
     Set<Address> address;
+    
+    @OneToMany
+    Set<Cart> cart;
 //    
 //    @ManyToOne
 //    @JoinColumn(name = "team_id", nullable = false)
 //    private Team team;
+
+	
 }

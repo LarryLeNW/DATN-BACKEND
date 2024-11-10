@@ -29,7 +29,7 @@ public class DataSeeder {
 			new Permission((long) 2, "VIEWALL"), new Permission((long) 3, "VIEW"), new Permission((long) 4, "UPDATE"),
 			new Permission((long) 5, "DELETE")));
 
-	@PostConstruct
+//	@PostConstruct
 	public void seed() {
 		log.warn("Start generate data");
 

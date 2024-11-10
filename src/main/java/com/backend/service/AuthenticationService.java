@@ -100,9 +100,9 @@ public class AuthenticationService {
 		}
 
 		if (userFound == null) {
-			userFound = userMapper.toUser(request);
-
-
+			userFound = new User(); 
+			userFound.setEmail(request.getEmail());
+			userFound.setPassword(passwordEncoder.encode(request.getPassword()));
 			Role roleUser = roleRepository.findByName(PredefinedRole.USER_NAME);
 
 			if (roleUser == null) {
@@ -110,18 +110,15 @@ public class AuthenticationService {
 			}
 
 			userFound.setRole(roleUser);
-
-			userFound = userRepository.save(userFound);
 		}
 
-		userFound.setPassword(passwordEncoder.encode(request.getPassword()));
+		userFound = userRepository.save(userFound);
 
 		var token = generateToken(userFound, REGISTER_DURATION);
 
 		String message = "<h1> This is link to confirm register DATN WEBSITE  <a href='" + CLIENT_URL
 				+ "/confirm-register?token=" + token
 				+ " ' style='color : blue'>Please click here to confirm</a> Thank You !!!</h1>";
-		// send otp
 		mailService.send("DATN WEBSITE", message, request.getEmail());
 
 		return token;
@@ -151,8 +148,6 @@ public class AuthenticationService {
 
 		String userId = authentication.getName();
 
-		System.out.println("userID : " + userId);
-
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
 		return userMapper.toUserResponse(user);
@@ -171,20 +166,19 @@ public class AuthenticationService {
 		return IntrospectResponse.builder().valid(isValid).build();
 	}
 
-	public AuthenticationResponse authenticate(AuthenticationRequest request) {
-//		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-//		var user = userRepository.findByEmail(request.getEmail())
-//				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-//
-//		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
-//
-//		if (!authenticated)
-//			throw new AppException(ErrorCode.UNAUTHENTICATED);
-//
-//		var token = generateToken(user, VALID_DURATION_TOKEN);
-//
-//		return AuthenticationResponse.builder().token(token).authenticated(true).build();
-		return AuthenticationResponse.builder().token("3123").authenticated(true).build();
+	public AuthenticationResponse authenticate(AuthenticationRequest request ) {
+		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+		User user = userRepository.findByEmail(request.getEmail()); 
+		if(user == null || !user.getStatus().equals(UserStatusType.ACTIVED)) throw new AppException(ErrorCode.USER_NOT_EXISTED);
+
+		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
+		
+		if (!authenticated)
+			throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+		var token = generateToken(user, VALID_DURATION_TOKEN);
+		
+		return new AuthenticationResponse(token, true, userMapper.toUserResponse(user));
 	}
 
 	public void logout(LogoutRequest request) throws ParseException, JOSEException {
@@ -227,7 +221,8 @@ public class AuthenticationService {
 		JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder().subject(user.getId()).issuer("lebatrinh.com")
 				.issueTime(new Date())
 				.expirationTime(new Date(Instant.now().plus(valid_duration, ChronoUnit.SECONDS).toEpochMilli()))
-				.jwtID(UUID.randomUUID().toString()).claim("scope", buildScope(user)).build();
+				.jwtID(UUID.randomUUID().toString()).claim("scope", buildScope(user))
+				.build();
 
 		Payload payload = new Payload(jwtClaimsSet.toJSONObject());
 
@@ -263,7 +258,7 @@ public class AuthenticationService {
 		return signedJWT;
 	}
 
-	private String buildScope(User user) {
+	public static String buildScope(User user) {
 		StringJoiner scopeJoiner = new StringJoiner(" ");
 
 		Role role = user.getRole();

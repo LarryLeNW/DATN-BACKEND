@@ -16,6 +16,11 @@ import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
 import com.backend.repository.*;
+import com.backend.repository.product.AttributeOptionRepository;
+import com.backend.repository.product.AttributeOptionSkuRepository;
+import com.backend.repository.product.AttributeProductRepository;
+import com.backend.repository.product.CategoryRepository;
+import com.backend.repository.product.ProductRepository;
 import com.backend.specification.ProductSpecification;
 import com.backend.utils.UploadFile;
 

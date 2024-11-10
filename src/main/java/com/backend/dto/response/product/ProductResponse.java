@@ -45,7 +45,6 @@ public class ProductResponse {
 		String code;
 		String images;
 		HashMap<String, String> attributes;
-
 	}
 
 }
