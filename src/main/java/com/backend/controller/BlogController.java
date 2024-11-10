@@ -40,46 +40,41 @@ import lombok.extern.slf4j.Slf4j;
 public class BlogController {
 
 	BlogService blogServices;
-	
+
 	@Autowired
 	ObjectMapper objectMapper;
 
 	@GetMapping
 	public ApiResponse<PagedResponse<BlogResponse>> getAll(
-	        @RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
-	        @RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
-	        @RequestParam(required = false) String sort, 
-	        @RequestParam(required = false) String[] search) {
+			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
+			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
+			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search) {
 
-	    PagedResponse<BlogResponse> pagedResponse = blogServices.getBlogs(page, limit, sort, search);
-	    return ApiResponse.<PagedResponse<BlogResponse>>builder().result(pagedResponse).build();
+		PagedResponse<BlogResponse> pagedResponse = blogServices.getBlogs(page, limit, sort, search);
+		return ApiResponse.<PagedResponse<BlogResponse>>builder().result(pagedResponse).build();
 	}
-
-
 
 	@PostMapping
 	public ApiResponse<BlogResponse> createBlog(@RequestParam String blogData,
-			 @RequestPart("images") List<MultipartFile> images) throws JsonMappingException, JsonProcessingException {
+			@RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
 
 		BlogCreationRequest request = objectMapper.readValue(blogData, BlogCreationRequest.class);
 		System.out.println(request);
 
-		return ApiResponse.<BlogResponse>builder().result(blogServices.createBlog(request, images)).build();
+		return ApiResponse.<BlogResponse>builder().result(blogServices.createBlog(request, image)).build();
 	}
 
-
-	
 	@PutMapping("/{blogId}")
 	ApiResponse<BlogResponse> updateBlog(@PathVariable Integer blogId, @RequestParam(required = false) String blogData,
-			 @RequestPart("images") List<MultipartFile> images) throws JsonMappingException, JsonProcessingException {
-			
-		BlogUpdateRequest blogRequest = null; 
-		
-		if(blogData != null) {
+			@RequestParam(required = false) MultipartFile image) throws JsonMappingException, JsonProcessingException {
+
+		BlogUpdateRequest blogRequest = null;
+
+		if (blogData != null) {
 			blogRequest = objectMapper.readValue(blogData, BlogUpdateRequest.class);
 		}
 
-		return ApiResponse.<BlogResponse>builder().result(blogServices.updateBlog(blogRequest, images, blogId)).build();
+		return ApiResponse.<BlogResponse>builder().result(blogServices.updateBlog(blogRequest, image, blogId)).build();
 	}
 
 	@DeleteMapping("/{blogId}")
@@ -87,6 +82,7 @@ public class BlogController {
 		blogServices.deleteBlog(blogId);
 		return ApiResponse.<String>builder().result("delete success blog with id of: " + blogId).build();
 	}
+
 	@GetMapping("/{blogId}")
 	ApiResponse<BlogResponse> getBlogById(@PathVariable Integer blogId) {
 		return ApiResponse.<BlogResponse>builder().result(blogServices.getBlogById(blogId)).build();

@@ -1,6 +1,7 @@
 package com.backend.mapper;
 
 import org.mapstruct.Mapper;
+
 import org.mapstruct.Mapping;
 
 import com.backend.dto.request.comment.CommentCreationRequest;

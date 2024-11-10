@@ -1,6 +1,9 @@
 package com.backend.entity;
 
 import java.time.LocalDate;
+
+import java.util.List;
+
 import java.util.Optional;
 import java.util.Set;
 
@@ -60,7 +63,12 @@ public class User {
     
     @OneToMany
     Set<Address> address;
-//    
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders;
+    
+    
+    
 //    @ManyToOne
 //    @JoinColumn(name = "team_id", nullable = false)
 //    private Team team;

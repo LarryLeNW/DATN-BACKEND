@@ -248,7 +248,7 @@ public class ProductService {
 		}
 
 		Map<String, String> attributes = params.entrySet().stream().filter(entry -> !List
-				.of("page", "limit", "sortBy", "orderBy", "categoryId", "price", "minPrice", "maxPrice")
+				.of("page", "limit", "sortBy", "orderBy", "categoryId", "price", "minPrice", "maxPrice","keyword")
 				.contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 

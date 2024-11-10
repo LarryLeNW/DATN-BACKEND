@@ -26,7 +26,7 @@ public class BlogUpdateRequest {
 	@NotNull
 	String content;
 
-	String images;
+	String image;
 
 	@NotNull
 	String userId;

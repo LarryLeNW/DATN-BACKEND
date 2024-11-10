@@ -29,7 +29,7 @@ public class BlogCreationRequest {
 	@NotNull
 	String content;
 
-	int images;
+	int image;
 
 	
 	String userId;
