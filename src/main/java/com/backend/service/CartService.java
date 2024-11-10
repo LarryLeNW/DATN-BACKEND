@@ -72,7 +72,7 @@ public class CartService {
 	ProductRepository productRepository;
 	CartMapper cartMapper;
 	
-	public Page<CartDetailResponse> getAll(Map<String, String> params) {
+	public PagedResponse<CartDetailResponse> getAll(Map<String, String> params) {
 	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 	    String roleUser = auth.getAuthorities().iterator().next().toString();
 	    String idUser = auth.getName(); 
@@ -89,7 +89,7 @@ public class CartService {
 	    Specification<Cart> spec = Specification.where(null);
 
 	    if ("ROLE_USER".equals(roleUser)) {
-	    		        spec = spec.and(CartSpecification.belongsToUser(idUser));
+	        spec = spec.and(CartSpecification.belongsToUser(idUser));
 	    }
 
 	    if (params.containsKey("quantity")) {
@@ -97,13 +97,12 @@ public class CartService {
 	        spec = spec.and(CartSpecification.hasQuantity(quantity));
 	    }
 
-	    // Truy vấn dữ liệu với specification và pageable
 	    Page<Cart> cartPage = cartRepository.findAll(spec, pageable);
 	    List<CartDetailResponse> cartResponses = cartPage.getContent().stream()
 	            .map(cartMapper::toCartDetailResponse)
 	            .collect(Collectors.toList());
 
-	    return new PageImpl<>(cartResponses, pageable, cartPage.getTotalElements());
+	    return new PagedResponse<>(cartResponses, page + 1, cartPage.getTotalPages(), cartPage.getTotalElements(), limit);
 	}
 
 
