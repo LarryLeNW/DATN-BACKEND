@@ -21,7 +21,10 @@ import com.backend.exception.ErrorCode;
 import com.backend.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class CustomJwtDecoder implements JwtDecoder {
 	@Value("${jwt.signerKey}")
 	private String signerKey;
@@ -32,24 +35,24 @@ public class CustomJwtDecoder implements JwtDecoder {
 	private NimbusJwtDecoder nimbusJwtDecoder = null;
 
 	@Override
-	public Jwt decode(String token) throws JwtException  {
+	public Jwt decode(String token) throws JwtException {
 		IntrospectResponse response;
-		
+
 		try {
-			
+
 			response = authenticationService.introspect(IntrospectRequest.builder().token(token).build());
 
 			if (!response.isValid())
-				throw new AppException(ErrorCode.UNAUTHENTICATED);
+				log.info("Token invalid");
 
-			if (Objects.isNull(nimbusJwtDecoder)) { 
+			if (Objects.isNull(nimbusJwtDecoder)) {
 				SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
 				nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512)
 						.build();
 			}
-			
+
 		} catch (JOSEException | ParseException e) {
-		     throw new JwtException(e.getMessage());
+			throw new JwtException(e.getMessage());
 		}
 		return nimbusJwtDecoder.decode(token);
 	}

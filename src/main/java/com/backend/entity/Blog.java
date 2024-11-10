@@ -34,8 +34,8 @@ public class Blog {
 	@Column(name = "content",columnDefinition = "NVARCHAR(MAX)")
 	private String content;
 
-	@Column(name = "images",  columnDefinition = "NVARCHAR(MAX)")
-	private String images;
+	@Column(name = "image",  columnDefinition = "NVARCHAR(MAX)")
+	private String image;
 
 	@ManyToOne
 	@JoinColumn(name = "userId", nullable = false)

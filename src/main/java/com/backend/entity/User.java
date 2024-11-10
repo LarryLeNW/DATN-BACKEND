@@ -1,6 +1,9 @@
 package com.backend.entity;
 
 import java.time.LocalDate;
+
+import java.util.List;
+
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,34 +45,32 @@ public class User {
 
     @Column(name = "refresh_token")
     String refresh_token;
-    
+
     @Size(min = 5, max = 5, message = "OTP required 5 characters")
     @Column(name = "otp")
     String otp;
-    
+
     @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
     int points;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     UserStatusType status = UserStatusType.INACTIVE;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "login_type", nullable = false)
     LoginType login_type = LoginType.DEFAULT;
-    
+
     @ManyToOne
     Role role;
-    
+
     @OneToMany
     Set<Address> address;
-    
+
     @OneToMany
     Set<Cart> cart;
-//    
-//    @ManyToOne
-//    @JoinColumn(name = "team_id", nullable = false)
-//    private Team team;
+    //
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders;
 
-	
 }

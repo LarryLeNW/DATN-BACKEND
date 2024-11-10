@@ -52,7 +52,7 @@ public class BlogService {
 	@Autowired
 	private UploadFile uploadFile;
 
-	public BlogResponse createBlog(BlogCreationRequest request, List<MultipartFile> images) {
+	public BlogResponse createBlog(BlogCreationRequest request,  MultipartFile image) {
 		Blog blog = new Blog();
 
 		if (request.getCategoryBlogId() != 0) {
@@ -69,16 +69,11 @@ public class BlogService {
 		blog.setTitle(request.getTitle());
 		blog.setContent(request.getContent());
 
-		StringBuilder imagesString = new StringBuilder();
-		for (MultipartFile image : images) {
-			String imageUrl = uploadFile.saveFile(image, "blogTest");
-			if (imagesString.length() > 0) {
-				imagesString.append(",");
-			}
-			imagesString.append(imageUrl);
-		}
 
-		blog.setImages(imagesString.toString());
+		if (image != null) {
+			String imageUrl = uploadFile.saveFile(image, "brandTest");
+			blog.setImage(imageUrl);
+		}
 		
 		return blogMapper.toBlogResponse(blogRepository.save(blog));
 
@@ -90,7 +85,7 @@ public class BlogService {
 	    return blogMapper.toBlogResponse(blog);
 	}
 
-	public BlogResponse updateBlog(BlogUpdateRequest request,List<MultipartFile> images, Integer blogId) {
+	public BlogResponse updateBlog(BlogUpdateRequest request, MultipartFile image, Integer blogId) {
 		Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
 
 		if (request.getCategoryBlogId() != 0) {
@@ -109,16 +104,10 @@ public class BlogService {
 			Helpers.updateFieldEntityIfChanged(request.getTitle(), blog.getTitle(), blog::setTitle);
 			Helpers.updateFieldEntityIfChanged(request.getContent(), blog.getContent(), blog::setContent);
 
-			StringBuilder imagesString = new StringBuilder();
-			for (MultipartFile image : images) {
-				String imageUrl = uploadFile.saveFile(image, "blogTest");
-				if (imagesString.length() > 0) {
-					imagesString.append(",");
-				}
-				imagesString.append(imageUrl);
+			if (image != null) {
+				String imageUrl = uploadFile.saveFile(image, "brandTest");
+				blog.setImage(imageUrl);
 			}
-
-			blog.setImages(imagesString.toString());
 		}
 		return blogMapper.toBlogResponse(blogRepository.save(blog));
 	}
