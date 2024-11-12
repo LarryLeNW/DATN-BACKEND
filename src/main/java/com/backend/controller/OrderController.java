@@ -56,12 +56,12 @@ public class OrderController {
 	}
 	
 	@PutMapping("/{orderId}")
-	ApiResponse<OrderResponse> update(@RequestBody OrderUpdateRequest request,@PathVariable String orderId ){
+	ApiResponse<OrderResponse> update(@RequestBody OrderUpdateRequest request,@PathVariable Long orderId ){
 		return ApiResponse.<OrderResponse>builder().result(orderService.updateOrder(orderId, request)).build();
 	}
 	
 	@DeleteMapping("/{orderId}")
-	public ApiResponse<String> delete(@PathVariable String orderId) {
+	public ApiResponse<String> delete(@PathVariable Long orderId) {
 		orderService.deleteOrder(orderId);
 		return ApiResponse.<String>builder().result("delete success order with id of: " + orderId).build();
 	}

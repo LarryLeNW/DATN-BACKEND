@@ -1,5 +1,6 @@
 package com.backend.dto.response.cart;
 
+import com.backend.dto.response.product.ProductResponse;
 import com.backend.dto.response.product.ProductResponse.SKUDTO;
 
 import lombok.AccessLevel;
@@ -15,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 public class CartDetailResponse {
 	Long id;
     Long productId;
-    String productName;
+    ProductResponse product;
+    Double quantity;
 	SKUDTO sku;
 }
