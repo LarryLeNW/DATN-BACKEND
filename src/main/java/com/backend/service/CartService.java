@@ -74,6 +74,7 @@ public class CartService {
 	
 	public PagedResponse<CartDetailResponse> getAll(Map<String, String> params) {
 	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    System.out.println("auth: "+auth);
 	    String roleUser = auth.getAuthorities().iterator().next().toString();
 	    String idUser = auth.getName(); 
 	    

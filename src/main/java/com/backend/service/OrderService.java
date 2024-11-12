@@ -64,7 +64,6 @@ public class OrderService {
 					.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 			order.setUser(user);
 		}
-		order.setTotal_amount(request.getTotalAmount());
 		order.setStatus(request.getStatus());
 
 		List<OrderDetail> orderDetails = request.getOrderDetails().stream().map(detailRequest -> {
@@ -85,6 +84,10 @@ public class OrderService {
 
 			return orderDetail;
 		}).collect(Collectors.toList());
+		double totalAmount = orderDetails.stream()
+	            .mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity())
+	            .sum();
+	    order.setTotal_amount(totalAmount);
 
 		order.setOrderDetails(orderDetails);
 
@@ -147,7 +150,12 @@ public class OrderService {
 			}).collect(Collectors.toList());
 
 			order.setOrderDetails(updatedOrderDetails);
+			
 		}
+		 double totalAmount = order.getOrderDetails().stream()
+		            .mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity())
+		            .sum();
+		    order.setTotal_amount(totalAmount);
 
 		return orderMapper.toOrderResponse(orderRepository.save(order));
 
