@@ -24,7 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -40,8 +42,8 @@ public class CartController {
 	CartService cartService; 
 	
 	@PostMapping
-	ApiResponse<CartDetailResponse> create(@RequestBody CartCreationRequest request) {
-		return ApiResponse.<CartDetailResponse>builder().result(cartService.create(request)).build();
+	ApiResponse<PagedResponse<CartDetailResponse>> create(@RequestBody CartCreationRequest request) {
+		return ApiResponse.<PagedResponse<CartDetailResponse>>builder().result(cartService.create(request)).build();
 	}
 	
 	@GetMapping
@@ -53,6 +55,13 @@ public class CartController {
 
 		return ApiResponse.<PagedResponse<CartDetailResponse>>builder().result(pagedResponse).build();
 	}
+	
+	@DeleteMapping("/{cartId}")
+	ApiResponse<String> delete(@PathVariable Long cartId) {
+		cartService.delete(cartId);
+		return ApiResponse.<String>builder().result("Deleted successfully").build();
+	}
+
 		
 	
 }

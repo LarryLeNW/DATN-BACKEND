@@ -28,7 +28,7 @@ public class Order {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	int id;
+	Long id;
 
 	@CreationTimestamp
 	@Column(name = "created_at")

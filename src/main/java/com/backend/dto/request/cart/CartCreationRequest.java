@@ -29,4 +29,5 @@ public class CartCreationRequest {
 	Long productId; 
 	
 	Long skuId; 
+	
 }

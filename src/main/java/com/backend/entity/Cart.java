@@ -28,14 +28,17 @@ public class Cart {
 
 	Double quantity;
 
-	@OneToOne
+	@ManyToOne
 	Product product;
 
-	@OneToOne
+	@ManyToOne
 	Sku sku;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "id")
 	@JsonIgnore
 	private User user;
+	
+	
+	
 }

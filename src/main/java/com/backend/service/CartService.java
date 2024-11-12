@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -106,7 +107,7 @@ public class CartService {
 	}
 
 
-	public CartDetailResponse create(CartCreationRequest request) {
+	public PagedResponse<CartDetailResponse> create(CartCreationRequest request) {
 		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -116,16 +117,28 @@ public class CartService {
 
 		Sku sku = skuRepository.findById(request.getSkuId())
 				.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
+		
+		Cart cartUpdate = cartRepository.findOneCartByUserAndProductAndSku(user, product, sku) ; 
 
-		if (cartRepository.findOneCartByUserAndProductAndSku(user, product, sku) != null)
-			throw new AppException(ErrorCode.CART_EXISTED);
+		if (cartUpdate == null)
+		{
+			cartUpdate = new Cart();
+			cartUpdate.setUser(user);
+			cartUpdate.setProduct(product);
+			cartUpdate.setSku(sku);
+			cartUpdate.setQuantity(request.getQuantity());
+		}else {
+			cartUpdate.setQuantity(cartUpdate.getQuantity() + request.getQuantity());
+		}
 
-		Cart newCart = new Cart();
-		newCart.setUser(user);
-		newCart.setProduct(product);
-		newCart.setSku(sku);
-
-		return cartMapper.toCartDetailResponse(cartRepository.save(newCart));
+		cartRepository.save(cartUpdate); 
+		
+		return this.getAll(new HashMap<>());
 	}
 
+	public void delete(Long cartId) {
+		cartRepository.deleteById(cartId);
+	}
+	
+	
 }
