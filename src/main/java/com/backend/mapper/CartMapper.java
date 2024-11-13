@@ -8,6 +8,8 @@ import java.util.HashMap;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.backend.dto.request.cart.CartCreationRequest;
 import com.backend.dto.request.order.OrderCreationRequest;
 import com.backend.dto.response.order.OrderResponse;
 import com.backend.dto.response.product.ProductResponse;
@@ -27,7 +29,6 @@ public interface CartMapper {
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "quantity", target = "quantity")
-    @Mapping(source = "product.id", target = "productId")
     @Mapping(source = "product", target = "product")
     @Mapping(source = "sku", target = "sku") 
     CartDetailResponse toCartDetailResponse(Cart cartDetail);
@@ -64,8 +65,8 @@ public interface CartMapper {
 		productDTO.setSlug(product.getSlug());
 		productDTO.setSlug(product.getSlug());
 		productDTO.setDescription(product.getDescription());
-		productDTO.setCategory(product.getCategory() != null ? product.getCategory() : null);
-		productDTO.setBrand(product.getBrand() != null ? product.getBrand() : null);
+//		productDTO.setCategory(product.getCategory() != null ? product.getCategory() : null);
+//		productDTO.setBrand(product.getBrand() != null ? product.getBrand() : null);
 		productDTO.setCreatedAt(product.getCreatedAt());
 		productDTO.setUpdatedAt(product.getUpdatedAt());
 
@@ -95,4 +96,5 @@ public interface CartMapper {
 		return productDTO;
 	}
 
+	Cart toCart(CartCreationRequest request);
 }

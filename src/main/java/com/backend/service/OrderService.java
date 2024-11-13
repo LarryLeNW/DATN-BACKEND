@@ -112,7 +112,7 @@ public class OrderService {
 		return new PagedResponse<>(orderResponses, page, totalPages, totalElements, limit);
 	}
 
-	public OrderResponse updateOrder(Long orderId, OrderUpdateRequest request) {
+	public OrderResponse updateOrder(Integer orderId, OrderUpdateRequest request) {
 
 		Order order = orderRepository.findById(orderId)
 				.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
@@ -153,7 +153,7 @@ public class OrderService {
 
 	}
 
-	public void deleteOrder(Long orderId) {
+	public void deleteOrder(Integer orderId) {
 		orderRepository.deleteById(orderId);
 	}
 

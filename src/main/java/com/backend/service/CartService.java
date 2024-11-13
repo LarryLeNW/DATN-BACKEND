@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.backend.dto.request.brand.BrandCreationRequest;
 import com.backend.dto.request.brand.BrandUpdateRequest;
 import com.backend.dto.request.cart.CartCreationRequest;
+import com.backend.dto.request.cart.CartUpdateRequest;
 import com.backend.dto.request.category.CategoryCreationRequest;
 import com.backend.dto.request.category.CategoryUpdateRequest;
 import com.backend.dto.response.cart.CartDetailResponse;
@@ -50,6 +51,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -72,40 +74,39 @@ public class CartService {
 	UserRepository userRepository;
 	ProductRepository productRepository;
 	CartMapper cartMapper;
-	
+
 	public PagedResponse<CartDetailResponse> getAll(Map<String, String> params) {
-	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    String roleUser = auth.getAuthorities().iterator().next().toString();
-	    String idUser = auth.getName(); 
-	    
-	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
-	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
-	    String sortField = params.getOrDefault("sortBy", "id");
-	    String orderBy = params.getOrDefault("orderBy", "asc");
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+		String idUser = auth.getName();
 
-	    Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
-	    Sort sort = Sort.by(direction, sortField);
-	    Pageable pageable = PageRequest.of(page, limit, sort);
+		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
+		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
+		String sortField = params.getOrDefault("sortBy", "id");
+		String orderBy = params.getOrDefault("orderBy", "asc");
 
-	    Specification<Cart> spec = Specification.where(null);
+		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
+		Sort sort = Sort.by(direction, sortField);
+		Pageable pageable = PageRequest.of(page, limit, sort);
 
-	    if ("ROLE_USER".equals(roleUser)) {
-	        spec = spec.and(CartSpecification.belongsToUser(idUser));
-	    }
+		Specification<Cart> spec = Specification.where(null);
 
-	    if (params.containsKey("quantity")) {
-	        Double quantity = Double.parseDouble(params.get("quantity"));
-	        spec = spec.and(CartSpecification.hasQuantity(quantity));
-	    }
+		if ("ROLE_USER".equals(roleUser)) {
+			spec = spec.and(CartSpecification.belongsToUser(idUser));
+		}
 
-	    Page<Cart> cartPage = cartRepository.findAll(spec, pageable);
-	    List<CartDetailResponse> cartResponses = cartPage.getContent().stream()
-	            .map(cartMapper::toCartDetailResponse)
-	            .collect(Collectors.toList());
+		if (params.containsKey("quantity")) {
+			Double quantity = Double.parseDouble(params.get("quantity"));
+			spec = spec.and(CartSpecification.hasQuantity(quantity));
+		}
 
-	    return new PagedResponse<>(cartResponses, page + 1, cartPage.getTotalPages(), cartPage.getTotalElements(), limit);
+		Page<Cart> cartPage = cartRepository.findAll(spec, pageable);
+		List<CartDetailResponse> cartResponses = cartPage.getContent().stream().map(cartMapper::toCartDetailResponse)
+				.collect(Collectors.toList());
+
+		return new PagedResponse<>(cartResponses, page + 1, cartPage.getTotalPages(), cartPage.getTotalElements(),
+				limit);
 	}
-
 
 	public PagedResponse<CartDetailResponse> create(CartCreationRequest request) {
 		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -117,28 +118,67 @@ public class CartService {
 
 		Sku sku = skuRepository.findById(request.getSkuId())
 				.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
-		
-		Cart cartUpdate = cartRepository.findOneCartByUserAndProductAndSku(user, product, sku) ; 
 
-		if (cartUpdate == null)
-		{
+		Cart cartUpdate = cartRepository.findOneCartByUserAndProductAndSku(user, product, sku);
+
+		if (cartUpdate == null) {
 			cartUpdate = new Cart();
 			cartUpdate.setUser(user);
 			cartUpdate.setProduct(product);
 			cartUpdate.setSku(sku);
 			cartUpdate.setQuantity(request.getQuantity());
-		}else {
+		} else {
 			cartUpdate.setQuantity(cartUpdate.getQuantity() + request.getQuantity());
 		}
 
-		cartRepository.save(cartUpdate); 
+		cartRepository.save(cartUpdate);
+
+		return this.getAll(new HashMap<>());
+	}
+	
+	public PagedResponse<CartDetailResponse> update(CartUpdateRequest request) {
+		log.info("request : " + request.toString());
+		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		
+		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		
+		Product product = productRepository.findById(request.getProductId())
+				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+		
+		Sku sku = skuRepository.findById(request.getSkuId())
+				.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
+		
+		Cart cartUpdate = cartRepository.findByIdAndUser(request.getId(), user); 
+		
+		if(cartUpdate != null &&  request.getProductId() == cartUpdate.getProduct().getId() && request.getSkuId() == cartUpdate.getSku().getId())
+			cartUpdate.setQuantity(request.getQuantity());
+		else {
+			Cart foundCart = cartRepository.findOneCartByUserAndProductAndSku(user, product, sku);
+			if(foundCart != null) {
+				 foundCart.setQuantity(request.getQuantity());
+				 cartRepository.delete(cartUpdate);
+				 cartUpdate = foundCart;
+			}
+			else cartUpdate = new Cart();
+			cartUpdate.setUser(user);
+			cartUpdate.setProduct(product);
+			cartUpdate.setSku(sku);
+			cartUpdate.setQuantity(request.getQuantity());
+		}
+		
+		cartRepository.save(cartUpdate);
 		
 		return this.getAll(new HashMap<>());
 	}
 
-	public void delete(Long cartId) {
-		cartRepository.deleteById(cartId);
+	@Transactional
+	public PagedResponse<CartDetailResponse> delete(Long cartId) {
+		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		cartRepository.deleteByIdAndUser(cartId, user);
+		return this.getAll(new HashMap<>());
 	}
+
 	
 	
 }

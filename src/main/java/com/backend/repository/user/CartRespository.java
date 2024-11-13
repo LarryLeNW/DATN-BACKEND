@@ -14,5 +14,6 @@ import com.backend.entity.Sku;
 @Repository
 public interface CartRespository extends JpaRepository<Cart, Long>, JpaSpecificationExecutor<Cart>  {
 	Cart findOneCartByUserAndProductAndSku(User user, Product product, Sku sku);
-
+	void deleteByIdAndUser(Long id, User user);
+	Cart findByIdAndUser(Long id, User user);
 }

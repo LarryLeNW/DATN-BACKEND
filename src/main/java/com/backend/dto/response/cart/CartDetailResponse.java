@@ -15,7 +15,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartDetailResponse {
 	Long id;
-    Long productId;
     ProductResponse product;
     Double quantity;
 	SKUDTO sku;
