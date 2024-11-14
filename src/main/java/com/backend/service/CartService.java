@@ -137,7 +137,6 @@ public class CartService {
 	}
 	
 	public PagedResponse<CartDetailResponse> update(CartUpdateRequest request) {
-		log.info("request : " + request.toString());
 		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
 		
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));

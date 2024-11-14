@@ -53,7 +53,6 @@ public class ProductController {
 		return ResponseEntity.ok(productService.updateProduct(id, productRequest, files));
 	}
 
-	// Get Products
 	@GetMapping
 	ApiResponse<Page<ProductResponse>> getProducts(@RequestParam Map<String, String> params,
 			@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
