@@ -18,31 +18,37 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import com.backend.constant.EndpointConstants;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Slf4j
 public class SecurityConfig {
 
 	@Autowired
 	@Lazy
 	private CustomJwtDecoder customJwtDecoder;
 
-	private final String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/categories", "/api/brands" , "/api/blogs"  , "/api/auth/**" };
-	private final String[] PUBLIC_POST_ENDPOINTS = { "/api/product", "/api/auth/**", "/api/users", "/api/categories", 
-			"/api/brands" };
-	private final String[] PUBLIC_DELETE_ENDPOINTS = { "/api/users" };
-	private final String[] PUBLIC_PUT_ENDPOINTS = {};
-
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
+		String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/categories", "/api/brands", "/api/blogs", "/api/auth/**" };
+		String[] PUBLIC_POST_ENDPOINTS = { "/api/product", "/api/auth/**", "/api/users", "/api/categories", "/api/brands" };
+		String[] PUBLIC_DELETE_ENDPOINTS = { "/api/users" };
+		String[] PUBLIC_PUT_ENDPOINTS = {};
+		
+		
 		httpSecurity
 				.cors()
 				.and()
-				.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
+				.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET,PUBLIC_GET_ENDPOINTS)
 						.permitAll().requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
 						.requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
-						.requestMatchers(HttpMethod.DELETE, PUBLIC_DELETE_ENDPOINTS).permitAll().anyRequest()
+						.requestMatchers(HttpMethod.DELETE, 
+								PUBLIC_DELETE_ENDPOINTS).permitAll().anyRequest()
 						.authenticated());
 
 		httpSecurity.oauth2ResourceServer(oauth2 -> oauth2
