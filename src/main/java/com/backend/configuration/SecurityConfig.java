@@ -27,11 +27,11 @@ public class SecurityConfig {
 	@Lazy
 	private CustomJwtDecoder customJwtDecoder;
 
-	private final String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/categories", "/api/brands" , "/api/blogs"  , "/api/auth/**","/api/orders/**" };
-	private final String[] PUBLIC_POST_ENDPOINTS = { "/api/product", "/api/auth/**", "/api/users", "/api/categories", 
+	private final String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/categories", "/api/brands" , "/api/blogs/**"  , "/api/auth/**","/api/orders/**","/api/categoryBlog" };
+	private final String[] PUBLIC_POST_ENDPOINTS = { "/api/product", "/api/auth/**", "/api/users", "/api/categories","/api/orders","/api/categoryBlog", "/api/blogs" , 
 			"/api/brands" };
-	private final String[] PUBLIC_DELETE_ENDPOINTS = { "/api/users" };
-	private final String[] PUBLIC_PUT_ENDPOINTS = {};
+	private final String[] PUBLIC_DELETE_ENDPOINTS = { "/api/users","/api/orders" };
+	private final String[] PUBLIC_PUT_ENDPOINTS = {"/api/orders"};
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {

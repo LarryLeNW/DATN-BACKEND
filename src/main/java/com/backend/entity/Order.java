@@ -1,6 +1,7 @@
 package com.backend.entity;
 
 import java.sql.Timestamp;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -55,5 +56,8 @@ public class Order {
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "delivery_id", referencedColumnName = "id")
 	private Delivery delivery;
+	
+	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+    private Payment payment;
 
 }
