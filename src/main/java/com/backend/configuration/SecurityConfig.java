@@ -35,21 +35,14 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
-		String[] PUBLIC_GET_ENDPOINTS = { "/api/product", "/api/categories", "/api/brands", "/api/blogs",
-				"/api/auth/**" };
-		String[] PUBLIC_POST_ENDPOINTS = { "/api/product", "/api/auth/**", "/api/users", "/api/categories",
-				"/api/brands" };
-		String[] PUBLIC_DELETE_ENDPOINTS = { "/api/users" };
-		String[] PUBLIC_PUT_ENDPOINTS = {};
-
 		httpSecurity
 				.cors()
 				.and()
-				.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
-						.permitAll().requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-						.requestMatchers(HttpMethod.PUT, PUBLIC_PUT_ENDPOINTS).permitAll()
+				.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, EndpointConstants.PUBLIC_GET_ENDPOINTS)
+						.permitAll().requestMatchers(HttpMethod.POST, EndpointConstants.PUBLIC_POST_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.PUT, EndpointConstants.PUBLIC_PUT_ENDPOINTS).permitAll()
 						.requestMatchers(HttpMethod.DELETE,
-								PUBLIC_DELETE_ENDPOINTS)
+								EndpointConstants.PUBLIC_DELETE_ENDPOINTS)
 						.permitAll().anyRequest()
 						.authenticated());
 

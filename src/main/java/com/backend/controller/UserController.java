@@ -1,17 +1,26 @@
 package com.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.ApiResponse;
+import com.backend.dto.response.cart.CartDetailResponse;
+import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.user.UserResponse;
+import com.backend.entity.Cart;
 import com.backend.entity.User;
 import com.backend.service.UserService;
 
@@ -33,21 +42,9 @@ public class UserController {
 		return ApiResponse.<UserResponse>builder().result(userService.createUser(request)).build();
 	}
 
-
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasAuthority('USER_VIEWALL')")
 	@GetMapping
-	ApiResponse<List<User>> getUsers() {
-		var context = SecurityContextHolder.getContext();
-		var authentication = context.getAuthentication();
-		
-
-		if (authentication != null && authentication.isAuthenticated()) {
-			log.info(authentication.getAuthorities().toString());
-		} else {
-			log.info("No authenticated user found or request does not require authentication.");
-		}
-
-		return ApiResponse.<List<User>>builder().result(userService.getUsers()).build();
+	ApiResponse<PagedResponse<UserResponse>> getUsers(@RequestParam Map<String, String> params) {
+		return ApiResponse.<PagedResponse<UserResponse>>builder().result(userService.getUsers(params)).build();
 	}
 
 	@GetMapping("/{userId}")

@@ -2,10 +2,17 @@ package com.backend.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
+import com.backend.dto.response.cart.CartDetailResponse;
+import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
@@ -21,6 +30,7 @@ import com.backend.mapper.UserMapper;
 import com.backend.repository.user.RoleRepository;
 import com.backend.repository.user.UserRepository;
 import com.backend.constant.PredefinedRole;
+import com.backend.entity.Cart;
 import com.backend.entity.Role;
 import com.backend.entity.User;
 
@@ -58,7 +68,6 @@ public class UserService {
 
     public UserResponse getMyInfo() {
         User user = userRepository.findByUsername("test").orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
         return userMapper.toUserResponse(user);
     }
 
@@ -76,9 +85,22 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    public List<User> getUsers() {
-        log.info("In method get Users");
-        return userRepository.findAll();
+    @PreAuthorize("hasRole('ROLE_SUPERADMIN') or hasAuthority('USER_VIEWALL')")
+    public PagedResponse<UserResponse> getUsers(Map<String, String> params) {
+    	int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
+		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
+		String sortField = params.getOrDefault("sortBy", "id");
+		String orderBy = params.getOrDefault("orderBy", "asc");
+		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
+		Sort sort = Sort.by(direction, sortField);
+		Pageable pageable = PageRequest.of(page, limit, sort);
+
+		Page<User> userPage = userRepository.findAll( pageable);
+		List<UserResponse> userResponses = userPage.getContent().stream().map(userMapper::toUserResponse)
+				.collect(Collectors.toList());
+		
+		return new PagedResponse<>(userResponses, page + 1, userPage.getTotalPages(), userPage.getTotalElements(),
+				limit);
     }
 
     public UserResponse getUser(String id) {
