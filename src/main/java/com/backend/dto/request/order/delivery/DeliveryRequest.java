@@ -1,8 +1,10 @@
-package com.backend.dto.request.order;
+package com.backend.dto.request.order.delivery;
 
 import java.util.List;
 
 import com.backend.constant.Type.OrderStatusType;
+import com.backend.dto.request.order.OrderCreationRequest;
+import com.backend.dto.request.order.OrderDetailCreationRequest;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,12 +18,11 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderDetailCreationRequest {
+public class DeliveryRequest {
 
-	double quantity;
-    double price;
-	String orderId;
-    Long productId;    
-    Long skuid;
-
+	String username;
+	String address;
+	String email;
+	String numberPhone;
+	String note;
 }

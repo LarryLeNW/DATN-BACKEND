@@ -4,6 +4,9 @@ package com.backend.dto.request.order;
 import java.util.List;
 
 import com.backend.constant.Type.OrderStatusType;
+import com.backend.dto.request.order.delivery.DeliveryRequest;
+import com.backend.dto.request.order.payment.PaymentRequest;
+import com.backend.entity.Delivery;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,12 +22,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCreationRequest {
 
-	String id;
 	double totalAmount;
 	OrderStatusType status;
 	String userId;
-	String deliveryId;
-    List<OrderDetailCreationRequest> orderDetails;  
+	DeliveryRequest delivery;
+    List<OrderDetailCreationRequest> orderDetails; 
+    PaymentRequest payment;
     
 
 }

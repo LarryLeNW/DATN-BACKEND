@@ -1,4 +1,4 @@
-package com.backend.dto.response.reply;
+package com.backend.dto.response.blog.reply;
 
 import java.time.LocalDateTime;
 import java.util.List;
