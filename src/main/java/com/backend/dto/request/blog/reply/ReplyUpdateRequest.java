@@ -1,4 +1,4 @@
-package com.backend.dto.request.reply;
+package com.backend.dto.request.blog.reply;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

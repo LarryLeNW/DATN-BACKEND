@@ -1,23 +1,24 @@
-package com.backend.dto.response.comment;
+package com.backend.dto.request.blog.comment;
 
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CommentResponse {
+public class CommentUpdateRequest {
 
-	int commentId;
+	@NotNull
 	String content;
-	int blog_id;
-	int user_id;
-	LocalDateTime createdAt;
-	LocalDateTime updateAt;
+	
+
 }

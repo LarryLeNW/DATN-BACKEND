@@ -42,7 +42,7 @@ public class Product {
 	@JsonIgnore
 	private Brand brand;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER , orphanRemoval = true)
 	private List<Sku> skus;
 	
 	@Column(name = "stars")

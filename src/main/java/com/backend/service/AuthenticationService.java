@@ -116,8 +116,9 @@ public class AuthenticationService {
 
 		var token = generateToken(userFound, REGISTER_DURATION);
 
+		log.info(token);
 		String message = "<h1> This is link to confirm register DATN WEBSITE  <a href='" + CLIENT_URL
-				+ "/confirm-register?token=" + token
+				+ "/confirm-register/" + token
 				+ " ' style='color : blue'>Please click here to confirm</a> Thank You !!!</h1>";
 		mailService.send("DATN WEBSITE", message, request.getEmail());
 
@@ -128,9 +129,11 @@ public class AuthenticationService {
 		SignedJWT signedJWT = verifyToken(token, false);
 
 		String userId = signedJWT.getJWTClaimsSet().getSubject();
-
+		System.out.println(userId);
+		
+		
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
+		
 		if (user.getStatus().equals(UserStatusType.ACTIVED))
 			throw new AppException(ErrorCode.USER_NOT_EXISTED);
 

@@ -1,30 +1,23 @@
-package com.backend.dto.request.comment;
+package com.backend.dto.response.blog.comment;
 
 import java.time.LocalDateTime;
 
-import com.backend.dto.request.categoryBlog.CategoryBlogCreationRequest;
-
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class CommentCreationRequest {
 
-	@NotNull
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class CommentResponse {
+
+	int commentId;
 	String content;
-	
-	int blogId;
-	
-	String userId;
-	
+	int blog_id;
+	int user_id;
 	LocalDateTime createdAt;
 	LocalDateTime updateAt;
 }
