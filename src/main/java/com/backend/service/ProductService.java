@@ -4,12 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductCreationRequest.SKUDTO;
 import com.backend.dto.request.product.ProductUpdateRequest;
+import com.backend.dto.response.cart.CartDetailResponse;
+import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.entity.*;
 import com.backend.exception.AppException;
@@ -24,6 +27,7 @@ import com.backend.repository.product.ProductRepository;
 import com.backend.specification.ProductSpecification;
 import com.backend.utils.UploadFile;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
@@ -271,6 +275,13 @@ public class ProductService {
 				.collect(Collectors.toList());
 
 		return new PageImpl<>(productDTOs, pageable, productsPage.getTotalElements());
+	}
+	
+	
+	@Transactional
+	public String delete(Long productId) {
+		productRepository.deleteById(productId);
+		return "Deleted product successfully";
 	}
 
 }

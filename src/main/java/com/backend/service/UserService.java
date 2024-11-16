@@ -44,18 +44,9 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Role roleUser = roleRepository.findById(request.getRole().getId()).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
-        
-        
-//        
-//    	if (roleUser == null)
-//			throw new RuntimeException("Role " + PredefinedRole.USER_NAME + "not creating");
 
-    	user.setRole(roleUser);
+        user.setRole(roleUser);
         
-//        if(userRepository.findByUsername(user.getUsername()).isPresent()) {
-//            throw new AppException(ErrorCode.USER_EXISTED);
-//        }
-
         try {
             user = userRepository.save(user);
         } catch (DataIntegrityViolationException exception) {

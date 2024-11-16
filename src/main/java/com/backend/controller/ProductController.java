@@ -16,6 +16,7 @@ import com.backend.entity.Product;
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductUpdateRequest;
 import com.backend.dto.response.ApiResponse;
+import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.service.ProductService;
@@ -61,5 +62,13 @@ public class ProductController {
 
 		return ApiResponse.<Page<ProductResponse>>builder().result(productsPage).build();
 	}
+	
+
+	@DeleteMapping("/{productId}")
+	ApiResponse<String> delete(@PathVariable Long productId) {
+		return ApiResponse.<String>builder().result(productService.delete(productId)).build();
+	}
+
+	
 
 }
