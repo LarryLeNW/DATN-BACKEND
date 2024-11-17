@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import com.backend.dto.request.order.delivery.DeliveryRequest;
 import com.backend.dto.request.order.payment.PaymentRequest;
 import com.backend.dto.response.blog.BlogResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.order.OrderDetailResponse;
 import com.backend.dto.response.order.OrderResponse;
 import com.backend.entity.Blog;
 import com.backend.entity.Delivery;
@@ -88,12 +90,12 @@ public class OrderService {
 			delivery.setNote(deliveryRequest.getNote());
 			delivery.setNumberPhone(deliveryRequest.getNumberPhone());
 
-			delivery = deliveryRepository.save(delivery); // Save delivery here
+			delivery = deliveryRepository.save(delivery);
 			order.setDelivery(delivery);
 		}
 
 		order.setStatus(request.getStatus());
-		orderRepository.save(order); // Save Order here
+		orderRepository.save(order);
 
 		List<OrderDetail> orderDetails = Optional.ofNullable(request.getOrderDetails()).orElse(Collections.emptyList())
 				.stream().map(detailRequest -> {
@@ -108,7 +110,7 @@ public class OrderService {
 					orderDetail.setSku(sku);
 
 					orderDetail.setQuantity(detailRequest.getQuantity());
-					orderDetail.setPrice(detailRequest.getPrice());
+//					orderDetail.setPrice(detailRequest.getPrice());
 					orderDetail.setOrder(order);
 
 					return orderDetail;
@@ -116,9 +118,6 @@ public class OrderService {
 
 		orderDetailRepository.saveAll(orderDetails);
 
-		double totalAmount = orderDetails.stream()
-				.mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()).sum();
-		order.setTotal_amount(totalAmount);
 		order.setOrderDetails(orderDetails);
 
 		if (request.getPayment() != null) {
@@ -157,7 +156,6 @@ public class OrderService {
 		List<OrderResponse> orderResponses = orders.stream().map(orderMapper::toOrderResponse)
 				.collect(Collectors.toList());
 
-		// Truy vấn đếm số lượng bản ghi cho phân trang
 		CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Order.class, search);
 		long totalElements = entityManager.createQuery(countQuery).getSingleResult();
 
@@ -203,9 +201,9 @@ public class OrderService {
 			order.setOrderDetails(updatedOrderDetails);
 
 		}
-		double totalAmount = order.getOrderDetails().stream()
-				.mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()).sum();
-		order.setTotal_amount(totalAmount);
+//		double totalAmount = order.getOrderDetails().stream()
+//				.mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()).sum();
+//		order.setTotal_amount(totalAmount);
 
 		return orderMapper.toOrderResponse(orderRepository.save(order));
 
@@ -221,5 +219,6 @@ public class OrderService {
 
 		return orderMapper.toOrderResponse(order);
 	}
+
 
 }

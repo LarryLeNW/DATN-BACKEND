@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.dto.request.cart.CartCreationRequest;
+import com.backend.dto.request.cart.CartUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
@@ -45,6 +47,11 @@ public class CartController {
 	ApiResponse<PagedResponse<CartDetailResponse>> create(@RequestBody CartCreationRequest request) {
 		return ApiResponse.<PagedResponse<CartDetailResponse>>builder().result(cartService.create(request)).build();
 	}
+
+	@PutMapping
+	ApiResponse<PagedResponse<CartDetailResponse>> create(@RequestBody CartUpdateRequest request) {
+		return ApiResponse.<PagedResponse<CartDetailResponse>>builder().result(cartService.update(request)).build();
+	}
 	
 	@GetMapping
 	ApiResponse<PagedResponse<CartDetailResponse>> getAlls(
@@ -57,9 +64,8 @@ public class CartController {
 	}
 	
 	@DeleteMapping("/{cartId}")
-	ApiResponse<String> delete(@PathVariable Long cartId) {
-		cartService.delete(cartId);
-		return ApiResponse.<String>builder().result("Deleted successfully").build();
+	ApiResponse<PagedResponse<CartDetailResponse>> delete(@PathVariable Long cartId) {
+		return ApiResponse.<PagedResponse<CartDetailResponse>>builder().result(cartService.delete(cartId)).build();
 	}
 
 		

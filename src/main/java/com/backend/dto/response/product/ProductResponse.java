@@ -26,8 +26,8 @@ public class ProductResponse {
 	Long id;
 	String name;
 	String slug;
-	Category category;
-	Brand brand;
+//	Category category;
+//	Brand brand;
 	String description;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;

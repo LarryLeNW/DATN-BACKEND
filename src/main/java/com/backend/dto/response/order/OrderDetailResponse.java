@@ -1,6 +1,8 @@
 package com.backend.dto.response.order;
 
+import com.backend.dto.response.product.ProductResponse;
 import com.backend.dto.response.product.ProductResponse.SKUDTO;
+import com.backend.entity.Product;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -13,9 +15,11 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderDetailResponse {
-	String id;
+	Integer id;
+	Double quantity;
     long productId;
     String productName;
 	String orderId;
 	SKUDTO sku;
+	ProductResponse product;
 }

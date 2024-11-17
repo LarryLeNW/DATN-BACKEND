@@ -31,11 +31,12 @@ public class DataSeeder {
 	
 	
 
-//	@PostConstruct
+	@PostConstruct
 	public void seed() {
 		log.warn("Start generate data");
 
 		// create permission
+		
 		if (permissionRespository.count() == 0) {
 			permissionRespository.saveAll(permissions);
 		}

@@ -121,7 +121,7 @@ public class AuthenticationService {
 				+ " ' style='color : blue'>Please click here to confirm</a> Thank You !!!</h1>";
 		mailService.send("DATN WEBSITE", message, request.getEmail());
 
-		return token;
+		return "Chúng tôi đã gửi link xác nhận đăng kí vào mail "+ request.getEmail() + " của bạn, vui lòng xác nhận trước 10p kể từ bây giờ. Chúc bạn có một trải nghiệm tuyệt vời.";
 	}
 
 	public UserResponse verifyRegister(String token) throws JOSEException, ParseException {

@@ -18,9 +18,7 @@ public class OrderDetail {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer id;
 
-	double quantity;
-
-	double price;
+	Double quantity;
 
 	@ManyToOne
 	@JoinColumn(name = "orderId", nullable = false)
