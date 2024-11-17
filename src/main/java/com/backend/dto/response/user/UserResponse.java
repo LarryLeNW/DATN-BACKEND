@@ -5,7 +5,6 @@ import java.util.Set;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
-import com.backend.dto.response.auth.RoleResponse;
 import com.backend.entity.Address;
 import com.backend.entity.Role;
 

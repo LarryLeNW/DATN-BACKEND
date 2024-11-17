@@ -12,8 +12,7 @@ import com.backend.constant.PredefinedRole;
 import com.backend.constant.Type.UserStatusType;
 import com.backend.entity.*;
 import com.backend.repository.*;
-import com.backend.repository.user.RoleRepository;
-import com.backend.repository.user.UserRepository;
+import com.backend.repository.user.*;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -61,8 +60,13 @@ public class DataSeeder {
 		if (userRole == null)
 			userRole = roleRepository.save(new Role(PredefinedRole.USER_NAME, "This role for customer"));
 
-		// create users
-		userRepository.saveAll(users);
+		for(User customer : users)
+		{
+			customer.setRole(userRole);
+			// create users
+			userRepository.save(customer);
+		}
+
 
 		// create admin role
 		Role adminRole = roleRepository.findByName(PredefinedRole.ADMIN_NAME);
