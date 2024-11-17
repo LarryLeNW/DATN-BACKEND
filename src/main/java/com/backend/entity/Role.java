@@ -2,6 +2,8 @@ package com.backend.entity;
 
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,7 +26,11 @@ public class Role {
 	String description;
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
 	List<RoleModulePermission> roleModulePermissions;
+
+	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<User> users;
 
 	public Role(String name, String description) {
 		super();

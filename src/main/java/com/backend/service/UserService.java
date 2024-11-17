@@ -81,6 +81,7 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    @PreAuthorize("hasRole('ROLE_SUPERADMIN') or hasAuthority('USER_DELETE')")
     public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }
