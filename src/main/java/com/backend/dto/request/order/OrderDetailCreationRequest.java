@@ -19,7 +19,6 @@ import lombok.experimental.FieldDefaults;
 public class OrderDetailCreationRequest {
 
 	double quantity;
-    double price;
 	String orderId;
     Long productId;    
     Long skuid;

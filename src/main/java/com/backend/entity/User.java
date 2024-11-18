@@ -69,8 +69,17 @@ public class User {
 
     @OneToMany
     Set<Cart> cart;
-    //
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
+
+	public User(String username, String password, String email) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		this.login_type = LoginType.DEFAULT;
+		this.status  = UserStatusType.INACTIVE; 
+	}
 
 }

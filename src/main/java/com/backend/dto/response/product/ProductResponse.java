@@ -26,8 +26,8 @@ public class ProductResponse {
 	Long id;
 	String name;
 	String slug;
-//	Category category;
-//	Brand brand;
+	CategoryDTO category;
+	BrandDTO brand;
 	String description;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
@@ -45,6 +45,22 @@ public class ProductResponse {
 		String code;
 		String images;
 		HashMap<String, String> attributes;
+	}
+	
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class BrandDTO {
+		Long id ; 
+		String name;
+	}
+	
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class CategoryDTO {
+		Long id ; 
+		String name;
 	}
 
 }

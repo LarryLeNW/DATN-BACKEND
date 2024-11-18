@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.constant.Type.OrderStatusType;
 import com.backend.dto.request.order.OrderCreationRequest;
+import com.backend.dto.request.order.OrderDetailUpdateRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.request.order.delivery.DeliveryRequest;
 import com.backend.dto.request.order.payment.PaymentRequest;
@@ -51,6 +53,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -163,51 +166,64 @@ public class OrderService {
 
 		return new PagedResponse<>(orderResponses, page, totalPages, totalElements, limit);
 	}
-
+	
+	@Transactional
 	public OrderResponse updateOrder(Integer orderId, OrderUpdateRequest request) {
+	    Order order = orderRepository.findById(orderId)
+	        .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+	    if (request != null) {
+	        if (request.getDeliveryId() != null) {
+	            Delivery delivery = deliveryRepository.findById(Integer.parseInt(request.getDeliveryId()))
+	                .orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
+	            if (!delivery.equals(order.getDelivery())) {
+	                order.setDelivery(delivery);
+	            }
+	        }
+	        Helpers.updateFieldEntityIfChanged(request.getTotalAmount(), order.getTotal_amount(), order::setTotal_amount);
+	        Helpers.updateFieldEntityIfChanged(request.getStatus(), order.getStatus(), order::setStatus);
 
-		if (request != null) {
-			if (request.getDeliveryId() != null && !request.getDeliveryId().equals(order.getDelivery().getId())) {
-				Delivery delivery = deliveryRepository.findById(Integer.parseInt(request.getDeliveryId()))
-						.orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
-				order.setDelivery(delivery);
-			}
+	        if (request.getOrderDetails() != null) {
+	            for (OrderDetailUpdateRequest detailRequest : request.getOrderDetails()) {
+	                Product product = productRepository.findById(detailRequest.getProductId())
+	                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-			Helpers.updateFieldEntityIfChanged(request.getTotalAmount(), order.getTotal_amount(),
-					order::setTotal_amount);
-			Helpers.updateFieldEntityIfChanged(request.getStatus(), order.getStatus(), order::setStatus);
+	                Sku sku = skuRepository.findById(detailRequest.getSkuid())
+	                    .orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
 
-		}
-		if (request.getOrderDetails() != null) {
-			List<OrderDetail> updatedOrderDetails = request.getOrderDetails().stream().map(detailRequest -> {
-				OrderDetail orderDetail = new OrderDetail();
+	                OrderDetail currentOrderDetail = orderDetailRepository.findById(detailRequest.getId())
+	                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_DETAIL_NOT_EXISTED));
 
-				Product product = productRepository.findById(detailRequest.getProductId())
-						.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
-				orderDetail.setProduct(product);
+	                OrderDetail foundOrderDetail = orderDetailRepository.findOneByOrderAndProductAndSku(order, product, sku);
+                    System.out.println("hihi: "+foundOrderDetail.getId());
+                    System.out.println("hihi: "+foundOrderDetail.getProduct());
+                    System.out.println("hihi: "+foundOrderDetail.getSku());
+	                
+	                
+	                
+	                if (currentOrderDetail != null && foundOrderDetail.getId() != foundOrderDetail.getId()) {	                  
+	                    foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
 
-				Sku sku = skuRepository.findById(detailRequest.getSkuid())
-						.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
-				orderDetail.setSku(sku);
+	                    orderDetailRepository.delete(currentOrderDetail);
+	                    currentOrderDetail = foundOrderDetail;
+	                    
+	                } else {
+	                    currentOrderDetail.setQuantity(detailRequest.getQuantity());
+	                    currentOrderDetail.setSku(sku);
+	                    currentOrderDetail.setProduct(product);
+	                }
+                    orderDetailRepository.save(currentOrderDetail);
 
-				orderDetail.setQuantity(detailRequest.getQuantity());
-				orderDetail.setOrder(order);
-				return orderDetail;
-			}).collect(Collectors.toList());
+	            }
+	        }
 
-			order.setOrderDetails(updatedOrderDetails);
 
-		}
-//		double totalAmount = order.getOrderDetails().stream()
-//				.mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()).sum();
-//		order.setTotal_amount(totalAmount);
+	     
+	    }
 
-		return orderMapper.toOrderResponse(orderRepository.save(order));
-
+	    return orderMapper.toOrderResponse(orderRepository.save(order));
 	}
+
 
 	public void deleteOrder(Integer orderId) {
 		orderRepository.deleteById(orderId);

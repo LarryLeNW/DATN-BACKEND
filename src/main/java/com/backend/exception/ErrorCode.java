@@ -21,6 +21,7 @@ public enum ErrorCode {
     DELIVERY_NOT_EXISTED(1005,"DELIVERt not existed" ,HttpStatus.NOT_FOUND),
     BLOG_NOT_EXISTED(1005,"blog not existed",HttpStatus.NOT_FOUND),
     ORDER_NOT_EXISTED(1005,"order not existed ",HttpStatus.NOT_FOUND),
+    ORDER_DETAIL_NOT_EXISTED(1005,"order detail not existed ",HttpStatus.NOT_FOUND),
     COMMENT_NOT_EXISTED(1005,"comment not existed",HttpStatus.NOT_FOUND),
     REPLY_NOT_EXISTED(1005,"comment not existed",HttpStatus.NOT_FOUND),
     REVIEW_NOT_FOUND(1005,"review not found",HttpStatus.NOT_FOUND),
