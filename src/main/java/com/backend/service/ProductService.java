@@ -100,7 +100,6 @@ public class ProductService {
 
 			skusToSave.add(skuCreated);
 
-			// Xử lý thuộc tính (attributes)
 			for (Map.Entry<String, String> entry : skuDTO.getAttributes().entrySet()) {
 				String attributeName = entry.getKey();
 				String attributeValue = entry.getValue();
@@ -223,7 +222,7 @@ public class ProductService {
 		return response;
 	}
 
-	public Page<ProductResponse> getProducts(Map<String, String> params) {
+	public PagedResponse<ProductResponse> getProducts(Map<String, String> params) {
 
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
@@ -271,10 +270,12 @@ public class ProductService {
 		}
 
 		Page<Product> productsPage = productRepository.findAll(spec, pageable);
+		
 		List<ProductResponse> productDTOs = productsPage.getContent().stream().map(productMapper::toDTO)
 				.collect(Collectors.toList());
 
-		return new PageImpl<>(productDTOs, pageable, productsPage.getTotalElements());
+		return new PagedResponse<>(productDTOs, page + 1, productsPage.getTotalPages(), productsPage.getTotalElements(),
+				limit);
 	}
 	
 	

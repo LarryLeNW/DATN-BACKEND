@@ -14,7 +14,7 @@
     <groupId>com.backend</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>Server</name>
     <description>Backend Fashion E-Commerce</description>
 

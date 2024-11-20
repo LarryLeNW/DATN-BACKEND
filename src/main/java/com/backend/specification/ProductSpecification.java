@@ -75,16 +75,12 @@ public class ProductSpecification {
                 criteriaBuilder.lessThanOrEqualTo(root.join("skus").get("price"), maxPrice);
     }
     
-    
 
-    // Lấy thông tin của SKU và Attribute
     public static Specification<Product> getProductWithSkus() {
         return (root, query, criteriaBuilder) -> {
-            // Fetch SKUs và các thuộc tính liên quan
             root.fetch("skus", JoinType.LEFT).fetch("attributeOptionSkus", JoinType.LEFT)
                 .fetch("attributeOption", JoinType.LEFT).fetch("attribute", JoinType.LEFT);
 
-            // Thêm logic để tránh dữ liệu bị duplicate khi fetch nhiều join
             query.distinct(true);
 
             return criteriaBuilder.conjunction();
