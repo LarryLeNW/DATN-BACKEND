@@ -1,8 +1,11 @@
 package com.backend.entity;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import com.backend.constant.Type.VoucheType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,7 +38,7 @@ public class Voucher {
 	@Column(name = "code")
 	String code;
 
-	@Column(name = "name", nullable = false)
+	@Column(name = "name", nullable = false,unique = true)
 	String name;
 	
 	@Column(name = "discount_type", nullable = false)
@@ -50,8 +53,13 @@ public class Voucher {
 	@Column(name = "min_order")
 	Double min_order;
 
+	@Column(name = "start_date")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	LocalDateTime start_date;
+	
 	@Column(name = "expiry_date")
-	Double expiry_date;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	LocalDateTime expiry_date;
 
 	@Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 1")
 	int usage_limit;

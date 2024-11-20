@@ -1,5 +1,6 @@
 package com.backend.dto.response.voucher;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -46,16 +47,17 @@ public class VoucherResponse {
 
 	Double min_order;
 
-	Double expiry_date;
+	LocalDateTime expiry_date;
 
+	LocalDateTime  start_date;
+	
 	int usage_limit;
 	
 	int usageCount;
 	
+	
 	Boolean isPublic ; 
 	
 	Boolean isDestroy; 
-	
-	List<ProductResponse> products;
 	
 }
