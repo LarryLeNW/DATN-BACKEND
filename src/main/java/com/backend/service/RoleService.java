@@ -10,6 +10,7 @@ import com.backend.repository.PermissionRepository;
 import com.backend.repository.RoleModulePermissionRepository;
 import com.backend.repository.user.ModuleRepository;
 import com.backend.repository.user.RoleRepository;
+import com.backend.specification.CommonSpecification;
 import com.backend.utils.Helpers;
 
 import jakarta.transaction.Transactional;
@@ -27,6 +28,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Set;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +52,7 @@ public class RoleService {
 
 	@Autowired
 	private PermissionRepository permissionRepository;
-	
-	
+
 	@Autowired
 	private RoleModulePermissionRepository roleModulePermissionRepository;
 
@@ -87,8 +91,9 @@ public class RoleService {
 		Role foundRole = roleRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
 		roleModulePermissionRepository.deleteAllByRole(foundRole);
 		Helpers.updateFieldEntityIfChanged(request.getName(), foundRole.getName(), foundRole::setName);
-		Helpers.updateFieldEntityIfChanged(request.getDescription(), foundRole.getDescription(), foundRole::setDescription);
-		
+		Helpers.updateFieldEntityIfChanged(request.getDescription(), foundRole.getDescription(),
+				foundRole::setDescription);
+
 		if (request.getModules() != null) {
 			for (ModuleDTO moduleDTO : request.getModules()) {
 				Module module = moduleRepository.findById(moduleDTO.getId())
@@ -115,19 +120,45 @@ public class RoleService {
 	}
 
 	public PagedResponse<RoleResponse> getAll(Map<String, String> params) {
-		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
-		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
-		String sortField = params.getOrDefault("sortBy", "id");
-		String orderBy = params.getOrDefault("orderBy", "asc");
-		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
-		Sort sort = Sort.by(direction, sortField);
-		Pageable pageable = PageRequest.of(page, limit, sort);
-		Page<Role> rolePage = roleRepository.findAll(pageable);
-		List<RoleResponse> roleResponses = rolePage.getContent().stream().map(roleMapper::toRoleResponse)
-				.collect(Collectors.toList());
+	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
+	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
+	    String sortField = params.getOrDefault("sortBy", "id");
+	    String orderBy = params.getOrDefault("orderBy", "asc");
+	    String fieldsParam = params.getOrDefault("fields", "");
+	    String excludeFieldsParam = params.getOrDefault("excludeFields", "");
 
-		return new PagedResponse<>(roleResponses, page + 1, rolePage.getTotalPages(), rolePage.getTotalElements(),
-				limit);
+	    Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
+	    Sort sort = Sort.by(direction, sortField);
+	    Pageable pageable = PageRequest.of(page, limit, sort);
+
+	    Page<Role> rolePage = roleRepository.findAll(pageable);
+
+	    final Set<String> requestedFields = new HashSet<>();
+	    if (!fieldsParam.isEmpty()) {
+	        requestedFields.addAll(Arrays.asList(fieldsParam.split(",")));
+	    }
+
+	    final Set<String> excludedFields = new HashSet<>();
+	    if (!excludeFieldsParam.isEmpty()) {
+	        excludedFields.addAll(Arrays.asList(excludeFieldsParam.split(",")));
+	    }
+
+	    List<RoleResponse> roleResponses = rolePage.getContent().stream().map(role -> {
+	        RoleResponse response = roleMapper.toRoleResponse(role);
+
+	        if (!requestedFields.isEmpty()) {
+	            CommonSpecification.handleFields(response, requestedFields, true); 
+	        }
+
+	        if (!excludedFields.isEmpty()) {
+	            CommonSpecification.handleFields(response, excludedFields, false); 
+	        }
+
+	        return response;
+	    }).collect(Collectors.toList());
+
+	    return new PagedResponse<>(roleResponses, page + 1, rolePage.getTotalPages(), rolePage.getTotalElements(),
+	            limit);
 	}
 
 	public void delete(Long roleId) {
