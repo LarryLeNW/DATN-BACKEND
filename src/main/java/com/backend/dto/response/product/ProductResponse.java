@@ -31,7 +31,6 @@ public class ProductResponse {
 	CategoryDTO category;
 	BrandDTO brand;
 	String description;
-	List<Voucher> vouchers;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 	Double stars;
