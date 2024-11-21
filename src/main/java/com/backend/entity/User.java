@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -46,10 +47,6 @@ public class User {
     @Column(name = "refresh_token")
     String refresh_token;
 
-    @Size(min = 5, max = 5, message = "OTP required 5 characters")
-    @Column(name = "otp")
-    String otp;
-
     @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
     int points;
 
@@ -61,6 +58,7 @@ public class User {
     @Column(name = "login_type", nullable = false)
     LoginType login_type = LoginType.DEFAULT;
 
+    @JsonIgnore
     @ManyToOne
     Role role;
 

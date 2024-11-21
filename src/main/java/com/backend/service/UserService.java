@@ -30,7 +30,9 @@ import com.backend.mapper.UserMapper;
 import com.backend.repository.user.RoleRepository;
 import com.backend.repository.user.UserRepository;
 import com.backend.constant.PredefinedRole;
+import com.backend.constant.Type.UserStatusType;
 import com.backend.entity.Cart;
+import com.backend.entity.Product;
 import com.backend.entity.Role;
 import com.backend.entity.User;
 
@@ -44,50 +46,68 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class UserService {
-    UserRepository userRepository;
-    RoleRepository roleRepository;
-    UserMapper userMapper;
-    PasswordEncoder passwordEncoder;
+	UserRepository userRepository;
+	RoleRepository roleRepository;
+	UserMapper userMapper;
+	PasswordEncoder passwordEncoder;
 
-    public UserResponse createUser(UserCreationRequest request) {
-        User user = userMapper.toUser(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+	public UserResponse createUser(UserCreationRequest request) {
 
-        Role roleUser = roleRepository.findById(request.getRole().getId()).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+		User userFound = userRepository.findByEmail(request.getEmail());
+		if (userFound != null) {
+			throw new RuntimeException("Email has already been used.");
+		}
 
-        user.setRole(roleUser);
-        
-        try {
-            user = userRepository.save(user);
-        } catch (DataIntegrityViolationException exception) {
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
+		User user = userMapper.toUser(request);
+		user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        return userMapper.toUserResponse(user);
-    }
+		Role roleUser = roleRepository.findById(request.getRole().getId())
+				.orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
 
-    public UserResponse getMyInfo() {
-        User user = userRepository.findByUsername("test").orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userMapper.toUserResponse(user);
-    }
+		user.setRole(roleUser);
 
-    @PostAuthorize("returnObject.username == authentication.name")
-    public UserResponse updateUser(String userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		try {
+			user = userRepository.save(user);
+		} catch (DataIntegrityViolationException exception) {
+			throw new AppException(ErrorCode.USER_EXISTED);
+		}
 
-//        userMapper.updateUser(user, request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+		return userMapper.toUserResponse(user);
+	}
 
-        return userMapper.toUserResponse(userRepository.save(user));
-    }
+	public UserResponse getMyInfo() {
+		User user = userRepository.findByUsername("test")
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		return userMapper.toUserResponse(user);
+	}
 
-    public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
-    }
+	@PreAuthorize("hasRole('ROLE_SUPERADMIN') or returnObject.id == authentication.name")
+	public UserResponse updateUser(String userId, UserUpdateRequest request) {
+		System.out.println("UserUpdateRequest :" + request.toString());
+		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-    @PreAuthorize("hasRole('ROLE_SUPERADMIN') or hasAuthority('USER_VIEWALL')")
-    public PagedResponse<UserResponse> getUsers(Map<String, String> params) {
-    	int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
+		if (request.getEmail() != null) {
+			User checkExitByEmail = userRepository.findByEmail(request.getEmail());
+			if (checkExitByEmail != null && checkExitByEmail.getId() != user.getId())
+				throw new RuntimeException("Email has already been used.");
+		}
+
+		userMapper.updateUser(user, request);
+
+		if (request.getPassword() != null)
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+		return userMapper.toUserResponse(userRepository.save(user));
+	}
+
+	@PreAuthorize("hasRole('ROLE_SUPERADMIN') or hasAuthority('USER_DELETE')")
+	public void deleteUser(String userId) {
+		userRepository.deleteById(userId);
+	}
+
+	@PreAuthorize("hasRole('ROLE_SUPERADMIN') or hasAuthority('USER_VIEWALL')")
+	public PagedResponse<UserResponse> getUsers(Map<String, String> params) {
+		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 		String sortField = params.getOrDefault("sortBy", "id");
 		String orderBy = params.getOrDefault("orderBy", "asc");
@@ -95,16 +115,39 @@ public class UserService {
 		Sort sort = Sort.by(direction, sortField);
 		Pageable pageable = PageRequest.of(page, limit, sort);
 
-		Page<User> userPage = userRepository.findAll( pageable);
+		Specification<User> spec = Specification.where(null);
+		if (params.containsKey("keyword")) {
+			String keyword = params.get("keyword").toLowerCase();
+			spec = spec.and((root, query, builder) -> builder.or(
+					builder.like(builder.lower(root.get("username")), "%" + keyword + "%"),
+					builder.like(builder.lower(root.get("id")), "%" + keyword + "%"),
+					builder.like(builder.lower(root.get("email")), "%" + keyword + "%"),
+					builder.like(builder.lower(root.get("avatar")), "%" + keyword + "%"),
+					builder.like(builder.lower(root.get("phone_number")), "%" + keyword + "%")));
+		}
+
+		if (params.containsKey("role")) {
+			String roleId = params.get("role");
+			spec = spec.and((root, query, builder) -> builder.equal(root.get("role").get("id"), roleId));
+		}
+
+		if (params.containsKey("status")) {
+			String status = params.get("status");
+			spec = spec
+					.and((root, query, builder) -> builder.equal(root.get("status"), UserStatusType.valueOf(status)));
+		}
+
+		Page<User> userPage = userRepository.findAll(spec, pageable);
+
 		List<UserResponse> userResponses = userPage.getContent().stream().map(userMapper::toUserResponse)
 				.collect(Collectors.toList());
-		
+
 		return new PagedResponse<>(userResponses, page + 1, userPage.getTotalPages(), userPage.getTotalElements(),
 				limit);
-    }
+	}
 
-    public UserResponse getUser(String id) {
-        return userMapper.toUserResponse(
-                userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
-    }
+	public UserResponse getUser(String id) {
+		return userMapper.toUserResponse(
+				userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
+	}
 }

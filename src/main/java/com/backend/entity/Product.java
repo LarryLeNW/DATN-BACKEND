@@ -42,12 +42,15 @@ public class Product {
 	@JsonIgnore
 	private Brand brand;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER , orphanRemoval = true)
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
 	private List<Sku> skus;
-	
+
 	@Column(name = "stars")
 	Double stars;
 
+	@ManyToMany(mappedBy = "products")
+    List<Voucher> vouchers;
+	
 	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
@@ -63,10 +66,9 @@ public class Product {
 
 	@PrePersist
 	public void prePersist() {
-	    if (stars == null) {
-	        stars = 5.0;
-	    }
+		if (stars == null) {
+			stars = 5.0;
+		}
 	}
 
-	
 }

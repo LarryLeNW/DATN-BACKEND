@@ -1,37 +1,37 @@
 package com.backend.mapper;
 
-import org.mapstruct.Mapper;
-
-import org.mapstruct.Mapping;
-
 import java.util.HashMap;
-
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.backend.dto.request.cart.CartCreationRequest;
-import com.backend.dto.request.order.OrderCreationRequest;
-import com.backend.dto.response.order.OrderResponse;
+import org.mapstruct.Mapper;
+
+import com.backend.dto.request.brand.BrandCreationRequest;
+import com.backend.dto.request.voucher.VoucherCreationRequest;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.dto.response.product.ProductResponse.SKUDTO;
-import com.backend.dto.response.cart.CartDetailResponse;
-import com.backend.dto.response.order.OrderDetailResponse;
-import com.backend.entity.Cart;
-import com.backend.entity.Order;
-import com.backend.entity.OrderDetail;
+import com.backend.dto.response.voucher.VoucherResponse;
+import com.backend.entity.Brand;
 import com.backend.entity.Product;
 import com.backend.entity.Sku;
-
+import com.backend.entity.Voucher;
 
 @Mapper(componentModel = "spring")
-public interface CartMapper {
+public interface VoucherMapper {
 
+    Voucher toVoucher(VoucherCreationRequest request);
 
-    @Mapping(source = "id", target = "id")
-    @Mapping(source = "quantity", target = "quantity")
-    @Mapping(source = "product", target = "product")
-    @Mapping(source = "sku", target = "sku") 
-    CartDetailResponse toCartDetailResponse(Cart cartDetail);
+    VoucherResponse toVoucherResponse(Voucher voucher);
+
+    default List<ProductResponse> mapProducts(Set<Product> products) {
+        if (products == null) {
+            return null;
+        }
+        return products.stream()
+                .map(this::toDTO)
+                .toList();
+    }
 
     default SKUDTO toSkuDTO(Sku sku) {
         if (sku == null) {
@@ -59,7 +59,6 @@ public interface CartMapper {
     }
     
 	default ProductResponse toDTO(Product product) {
-		System.out.println(product.toString());
 		ProductResponse productDTO = new ProductResponse();
 		productDTO.setId(product.getId());
 		productDTO.setName(product.getName());
@@ -68,8 +67,7 @@ public interface CartMapper {
 		productDTO.setDescription(product.getDescription());
 		productDTO.setCreatedAt(product.getCreatedAt());
 		productDTO.setUpdatedAt(product.getUpdatedAt());
-		productDTO.setVouchers(product.getVouchers());
-		
+
 		List<ProductResponse.SKUDTO> skuDTOs = product.getSkus().stream().map(sku -> {
 			ProductResponse.SKUDTO skuDTO = new ProductResponse.SKUDTO();
 			skuDTO.setPrice(sku.getPrice());
@@ -94,6 +92,4 @@ public interface CartMapper {
 		productDTO.setSkus(skuDTOs);
 		return productDTO;
 	}
-
-	Cart toCart(CartCreationRequest request);
 }

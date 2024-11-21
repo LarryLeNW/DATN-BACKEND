@@ -18,7 +18,11 @@ public class OrderDetail {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer id;
 
-	Double quantity;
+	@Column(name = "quantity",nullable = false, columnDefinition = "FLOAT DEFAULT 1.0")
+	double quantity;
+
+	@Column(name = "price", nullable = false, columnDefinition = "FLOAT DEFAULT 0.0")
+	double price;
 
 	@ManyToOne
 	@JoinColumn(name = "orderId", nullable = false)

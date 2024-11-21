@@ -16,6 +16,43 @@ public class Helpers {
 			setter.accept(newValue);
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	public static <T> void updateEntityFields(Object request, Object entity) {
 		Field[] requestFields = request.getClass().getDeclaredFields();
@@ -50,7 +87,7 @@ public class Helpers {
 		}
 	}
 
-    public static String handleRandomOTP(int size) {
+    public static String handleRandom(int size) {
         Random random = new Random();
         StringBuilder randomNumber = new StringBuilder(5);
         for (int i = 0; i < size; i++) {

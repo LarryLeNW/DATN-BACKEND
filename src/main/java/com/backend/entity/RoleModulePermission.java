@@ -14,10 +14,12 @@ public class RoleModulePermission {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "permission_id", referencedColumnName = "id")
     private Permission permission;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "module_id", referencedColumnName = "id")
     private Module module;
 

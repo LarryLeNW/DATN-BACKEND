@@ -47,7 +47,7 @@ public class AuthenticationController {
                 .build();
     }
      
-
+    
     @GetMapping("/{verifyToken}")
     public ApiResponse<UserResponse> verifyAccount(@PathVariable("verifyToken") @NotNull String verifyToken) throws JOSEException, ParseException {
     	return ApiResponse.<UserResponse>builder().result(authenticationService.verifyRegister(verifyToken)).build();

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,6 +70,7 @@ public class OrderService {
 	UserRepository userRepository;
 	ProductRepository productRepository;
 	SkuRepository skuRepository;
+	@Autowired
 	OrderRepository orderRepository;
 	EntityManager entityManager;
 	DeliveryRepository deliveryRepository;

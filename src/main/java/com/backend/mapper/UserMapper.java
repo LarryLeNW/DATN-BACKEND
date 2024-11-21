@@ -35,7 +35,5 @@ public interface UserMapper {
     }
 
     @Mapping(target = "id", ignore = true) 
-    @Mapping(target = "password", ignore = true) 
-    @Mapping(target = "avatar", ignore = true) 
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 }
