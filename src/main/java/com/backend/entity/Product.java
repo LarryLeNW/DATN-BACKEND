@@ -49,7 +49,7 @@ public class Product {
 	Double stars;
 
 	@ManyToMany(mappedBy = "products")
-    Set<Voucher> vouchers;
+    List<Voucher> vouchers;
 	
 	@CreationTimestamp
 	@Column(name = "created_at")

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import com.backend.dto.request.brand.BrandUpdateRequest;
 import com.backend.dto.request.category.CategoryCreationRequest;
 import com.backend.dto.request.category.CategoryUpdateRequest;
 import com.backend.dto.request.voucher.VoucherCreationRequest;
+import com.backend.dto.request.voucher.VoucherUpdateRequest;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.voucher.VoucherResponse;
 import com.backend.entity.Brand;
@@ -51,7 +53,7 @@ public class VoucherService {
 	VoucherRepository voucherRepository;
 
 	VoucherMapper voucherMapper;
-	
+
 	public PagedResponse<VoucherResponse> getAll(Map<String, String> params) {
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
@@ -73,8 +75,8 @@ public class VoucherService {
 		List<VoucherResponse> voucherResponses = voucherPage.getContent().stream().map(voucherMapper::toVoucherResponse)
 				.collect(Collectors.toList());
 
-		return new PagedResponse<>(voucherResponses, page + 1, voucherPage.getTotalPages(), voucherPage.getTotalElements(),
-				limit);
+		return new PagedResponse<>(voucherResponses, page + 1, voucherPage.getTotalPages(),
+				voucherPage.getTotalElements(), limit);
 	}
 
 	public Voucher create(VoucherCreationRequest request) {
@@ -82,30 +84,29 @@ public class VoucherService {
 		return voucherRepository.save(voucher);
 	}
 
-//	public Brand updateBrand(Long brandId, BrandUpdateRequest request, MultipartFile image) {
-//		Brand brand = brandRepository.findById(brandId)
-//				.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
-//
-//		
-//		if(request != null) {
-//			Helpers.updateFieldEntityIfChanged(request.getName(), brand.getName(), brand::setName);
-//			Helpers.updateFieldEntityIfChanged(request.getDescription(), brand.getDescription(), brand::setDescription);
-//
-//			if (request.getName() != null)
-//				brand.setSlug(Helpers.toSlug(request.getName()));
-//		}
-//	
-//
-//		if (image != null) {
-//			String imageUrl = uploadFile.saveFile(image, "brandTest");
-//			brand.setImage(imageUrl);
-//		}
-//
-//		return brandRepository.save(brand);
-//	}
-//
-//	public void deleteBrand(Long brandId) {
-//		brandRepository.deleteById(brandId);
-//	}
+	public Voucher update(Long voucherId, VoucherUpdateRequest request) throws BadRequestException {
+		Voucher voucherFound = voucherRepository.findById(voucherId)
+				.orElseThrow(() -> new BadRequestException("Not found voucher ..."));
+
+		if (request != null) {
+			Helpers.updateFieldEntityIfChanged(request.getName(), voucherFound.getName(), voucherFound::setName);
+			Helpers.updateFieldEntityIfChanged(request.getCode(), voucherFound.getCode(), voucherFound::setCode);
+			Helpers.updateFieldEntityIfChanged(request.getDiscount_type(), voucherFound.getDiscount_type(), voucherFound::setDiscount_type);
+			Helpers.updateFieldEntityIfChanged(request.getExpiry_date(), voucherFound.getExpiry_date(), voucherFound::setExpiry_date);
+			Helpers.updateFieldEntityIfChanged(request.getIsDestroy(), voucherFound.getIsDestroy(), voucherFound::setIsDestroy);
+			Helpers.updateFieldEntityIfChanged(request.getIsPublic(), voucherFound.getIsPublic(), voucherFound::setIsPublic);
+			Helpers.updateFieldEntityIfChanged(request.getMax_discount(), voucherFound.getMax_discount(), voucherFound::setMax_discount);
+			Helpers.updateFieldEntityIfChanged(request.getMin_order(), voucherFound.getMin_order(), voucherFound::setMin_order);
+			Helpers.updateFieldEntityIfChanged(request.getProducts(), voucherFound.getProducts(), voucherFound::setProducts);
+			Helpers.updateFieldEntityIfChanged(request.getStart_date(), voucherFound.getStart_date(), voucherFound::setStart_date);
+			Helpers.updateFieldEntityIfChanged(request.getValue(), voucherFound.getValue(), voucherFound::setValue);
+		}
+
+		return voucherRepository.save(voucherFound);
+	}
+
+	public void delete(Long voucherId) {
+		voucherRepository.deleteById(voucherId);
+	}
 
 }

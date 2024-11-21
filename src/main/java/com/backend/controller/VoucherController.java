@@ -3,6 +3,7 @@ package com.backend.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +27,7 @@ import com.backend.dto.request.brand.BrandUpdateRequest;
 import com.backend.dto.request.category.CategoryCreationRequest;
 import com.backend.dto.request.category.CategoryUpdateRequest;
 import com.backend.dto.request.voucher.VoucherCreationRequest;
+import com.backend.dto.request.voucher.VoucherUpdateRequest;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.voucher.VoucherResponse;
 import com.backend.entity.Brand;
@@ -60,6 +63,19 @@ public class VoucherController {
 	@GetMapping
 	ApiResponse<PagedResponse<VoucherResponse>> getAlls(@RequestParam Map<String, String> params) {
 		return ApiResponse.<PagedResponse<VoucherResponse>>builder().result(voucherService.getAll(params)).build();
+	}
+
+	
+	@PutMapping("/{voucherId}")
+	ApiResponse<Voucher> update(@PathVariable Long voucherId, @RequestBody @Valid VoucherUpdateRequest request) throws BadRequestException {
+		return ApiResponse.<Voucher>builder().result(voucherService.update(voucherId, request)).build();
+	}
+	
+	
+	@DeleteMapping("/{voucherId}")
+	ApiResponse<String> delete(@PathVariable Long voucherId) {
+		voucherService.delete(voucherId);
+		return ApiResponse.<String>builder().result("Delete Successfully...").build();
 	}
 
 

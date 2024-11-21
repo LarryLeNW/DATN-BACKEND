@@ -4,11 +4,15 @@ import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import com.backend.constant.Type.VoucheType;
+import com.backend.constant.Type.DiscountVoucherType;
+import com.backend.constant.Type.VoucherType;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,8 +46,12 @@ public class Voucher {
 	String name;
 	
 	@Column(name = "discount_type", nullable = false)
-	VoucheType discount_type;
+	DiscountVoucherType discount_type;
 
+    @Column(name = "voucher_category", nullable = false)
+    @Enumerated(EnumType.STRING)
+    VoucherType voucher_category;
+    
 	@Column(name = "value")
 	Double value;
 
@@ -71,6 +79,9 @@ public class Voucher {
 	
 	Boolean isDestroy; 
 	
+	Boolean applyAll;
+	
+	@JsonIgnore
 	@ManyToMany
 	@JoinTable(name = "voucher_product", 
 			joinColumns = @JoinColumn(name = "voucher_id"),
