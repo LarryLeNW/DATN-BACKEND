@@ -59,6 +59,7 @@ public interface CartMapper {
     }
     
 	default ProductResponse toDTO(Product product) {
+		System.out.println(product.toString());
 		ProductResponse productDTO = new ProductResponse();
 		productDTO.setId(product.getId());
 		productDTO.setName(product.getName());
@@ -67,7 +68,8 @@ public interface CartMapper {
 		productDTO.setDescription(product.getDescription());
 		productDTO.setCreatedAt(product.getCreatedAt());
 		productDTO.setUpdatedAt(product.getUpdatedAt());
-
+		productDTO.setVouchers(product.getVouchers());
+		
 		List<ProductResponse.SKUDTO> skuDTOs = product.getSkus().stream().map(sku -> {
 			ProductResponse.SKUDTO skuDTO = new ProductResponse.SKUDTO();
 			skuDTO.setPrice(sku.getPrice());
@@ -82,9 +84,8 @@ public interface CartMapper {
 					.collect(Collectors.toMap(
 							attributeOptionSku -> attributeOptionSku.getAttributeOption().getAttribute().getName(),
 							attributeOptionSku -> attributeOptionSku.getAttributeOption().getValue(),
-							(existing, replacement) -> existing, // xử lý trường hợp trùng lặp key, bạn có thể giữ lại
-																	// giá trị cũ
-							HashMap::new // chỉ định loại bản đồ là HashMap<String, String>
+							(existing, replacement) -> existing,
+							HashMap::new 
 			)));
 
 			return skuDTO;

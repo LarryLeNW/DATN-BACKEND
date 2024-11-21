@@ -1,5 +1,5 @@
 package com.backend.constant.Type;
 
-public enum VoucheType {
+public enum DiscountVoucherType {
 	PERCENT, FIXED 
 }

@@ -65,6 +65,7 @@ public class OrderService {
 	UserRepository userRepository;
 	ProductRepository productRepository;
 	SkuRepository skuRepository;
+	@Autowired
 	OrderRepository orderRepository;
 	EntityManager entityManager;
 	DeliveryRepository deliveryRepository;

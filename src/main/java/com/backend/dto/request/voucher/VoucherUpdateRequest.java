@@ -8,7 +8,6 @@ import org.hibernate.validator.constraints.Length;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
-import com.backend.constant.Type.VoucherType;
 import com.backend.constant.Type.DiscountVoucherType;
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.entity.Product;
@@ -31,44 +30,32 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class VoucherCreationRequest {
+public class VoucherUpdateRequest {
 
-	@Length(min = 10, max = 16)
-	String code = Helpers.handleRandom(11);
-
-	@NotNull
-	@Length(min = 10, max = 16)
-	String name;
-
-	DiscountVoucherType discount_type = DiscountVoucherType.PERCENT;
-
-	@NotNull
-	Double value;
-
-	@NotNull
-	VoucherType voucher_category;
-
-	Double max_discount;
+	String code ;
 	
+	String name ;
+
+	DiscountVoucherType discount_type ;
+
+	Double value; 
+	
+	Double max_discount;
+
 	Double min_order;
 
-	@NotNull
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	LocalDateTime expiry_date;
-
-	@NotNull
+	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	LocalDateTime start_date;
-
+	
 	@Min(1)
 	int usage_limit;
-
-	Boolean isDestroy = false;
-
-	Boolean isPublic = true;
 	
-	@NotNull
-	Boolean applyAll;
-
+	Boolean isDestroy ; 
+	
+	Boolean isPublic ; 
+	
 	Set<Product> products;
 }

@@ -6,7 +6,8 @@ import java.util.Set;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
-import com.backend.constant.Type.VoucheType;
+import com.backend.constant.Type.VoucherType;
+import com.backend.constant.Type.DiscountVoucherType;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.entity.Address;
@@ -34,10 +35,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class VoucherResponse {
 	Long id;
+	
+	VoucherType voucherCategory;
 
 	String code;
 
-	VoucheType discount_type;
+	DiscountVoucherType discount_type;
 
 	Double value;
 
@@ -55,9 +58,10 @@ public class VoucherResponse {
 	
 	int usageCount;
 	
-	
 	Boolean isPublic ; 
 	
 	Boolean isDestroy; 
+	
+	Boolean applyAll;
 	
 }

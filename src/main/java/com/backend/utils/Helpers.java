@@ -16,6 +16,43 @@ public class Helpers {
 			setter.accept(newValue);
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	public static <T> void updateEntityFields(Object request, Object entity) {
 		Field[] requestFields = request.getClass().getDeclaredFields();
