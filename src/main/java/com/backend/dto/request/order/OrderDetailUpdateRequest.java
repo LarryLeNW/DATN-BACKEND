@@ -18,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderDetailUpdateRequest {
 
+	Integer id;
 	double quantity;
 	String orderId;
 	Long productId;
