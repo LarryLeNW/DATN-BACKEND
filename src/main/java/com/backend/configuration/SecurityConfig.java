@@ -2,6 +2,7 @@ package com.backend.configuration;
 
 import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,7 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import com.backend.constant.EndpointConstants;
+import com.backend.constant.EndpointPublic;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +32,9 @@ public class SecurityConfig {
 	@Autowired
 	@Lazy
 	private CustomJwtDecoder customJwtDecoder;
+	
+	@Value("${CLIENT_URL}")
+	private String urL_client;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -38,11 +42,11 @@ public class SecurityConfig {
 		httpSecurity
 				.cors()
 				.and()
-				.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, EndpointConstants.PUBLIC_GET_ENDPOINTS)
-						.permitAll().requestMatchers(HttpMethod.POST, EndpointConstants.PUBLIC_POST_ENDPOINTS).permitAll()
-						.requestMatchers(HttpMethod.PUT, EndpointConstants.PUBLIC_PUT_ENDPOINTS).permitAll()
+				.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, EndpointPublic.PUBLIC_GET_ENDPOINTS)
+						.permitAll().requestMatchers(HttpMethod.POST, EndpointPublic.PUBLIC_POST_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.PUT, EndpointPublic.PUBLIC_PUT_ENDPOINTS).permitAll()
 						.requestMatchers(HttpMethod.DELETE,
-								EndpointConstants.PUBLIC_DELETE_ENDPOINTS)
+								EndpointPublic.PUBLIC_DELETE_ENDPOINTS)
 						.permitAll().anyRequest()
 						.authenticated());
 
@@ -59,8 +63,9 @@ public class SecurityConfig {
 	@Bean
 	public CorsFilter corsFilter() {
 		CorsConfiguration corsConfiguration = new CorsConfiguration();
+		log.info("urL_client :  " + urL_client );
 		corsConfiguration.setAllowCredentials(true);
-		corsConfiguration.addAllowedOrigin("http://localhost:3000"); // Cụ thể origin
+		corsConfiguration.addAllowedOrigin(urL_client); 
 		corsConfiguration.addAllowedHeader("*");
 		corsConfiguration.addAllowedMethod("*");
 

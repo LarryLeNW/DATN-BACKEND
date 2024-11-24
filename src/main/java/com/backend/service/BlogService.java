@@ -47,6 +47,7 @@ public class BlogService {
 
 	EntityManager entityManager;
 
+	@Autowired
 	BlogMapper blogMapper;
 
 	@Autowired

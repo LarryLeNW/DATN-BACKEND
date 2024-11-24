@@ -2,6 +2,7 @@ package com.backend.entity;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import com.backend.constant.Type.DiscountVoucherType;
@@ -39,7 +40,7 @@ public class Voucher {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 
-	@Column(name = "code")
+	@Column(name = "code",nullable = false,unique = true)
 	String code;
 
 	@Column(name = "name", nullable = false,unique = true)
@@ -88,5 +89,10 @@ public class Voucher {
 			inverseJoinColumns = @JoinColumn(name = "product_id") 
 	)
 	Set<Product> products;
+	
+	@ManyToMany(mappedBy = "vouchers") 
+	List<User> users; 
 
+
+	
 }

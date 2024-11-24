@@ -20,7 +20,7 @@ import org.springframework.util.PathMatcher;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.backend.constant.EndpointConstants;
+import com.backend.constant.EndpointPublic;
 import com.backend.dto.request.auth.IntrospectRequest;
 import com.backend.dto.response.auth.IntrospectResponse;
 import com.backend.exception.AppException;
@@ -53,6 +53,10 @@ public class CustomJwtDecoder implements JwtDecoder {
 		String requestMethod = request.getMethod();
 		IntrospectResponse response;
 		
+		log.info("requestUri " + requestUri);
+		log.info("requestMethod " + requestMethod);
+		log.info("isPublicEndpoint " + isPublicEndpoint(requestUri, requestMethod));
+		
 		try {
 
 			response = authenticationService.introspect(IntrospectRequest.builder().token(token).build());
@@ -75,13 +79,13 @@ public class CustomJwtDecoder implements JwtDecoder {
 	private boolean isPublicEndpoint(String uri, String method) {
 		switch (method) {
 		case "GET":
-			return matchesAny(uri, EndpointConstants.PUBLIC_GET_ENDPOINTS);
+			return matchesAny(uri, EndpointPublic.PUBLIC_GET_ENDPOINTS);
 		case "POST":
-			return matchesAny(uri, EndpointConstants.PUBLIC_POST_ENDPOINTS);
+			return matchesAny(uri, EndpointPublic.PUBLIC_POST_ENDPOINTS);
 		case "DELETE":
-			return matchesAny(uri, EndpointConstants.PUBLIC_DELETE_ENDPOINTS);
+			return matchesAny(uri, EndpointPublic.PUBLIC_DELETE_ENDPOINTS);
 		case "PUT":
-			return matchesAny(uri, EndpointConstants.PUBLIC_PUT_ENDPOINTS);
+			return matchesAny(uri, EndpointPublic.PUBLIC_PUT_ENDPOINTS);
 		default:
 			return false;
 		}
