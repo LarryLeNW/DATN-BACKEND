@@ -44,7 +44,7 @@ public class Order {
 	@Enumerated(EnumType.STRING)
 	OrderStatusType status;
 
-	@OneToMany(mappedBy = "order")
+	@OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JsonIgnore
 	private List<OrderDetail> orderDetails;
 

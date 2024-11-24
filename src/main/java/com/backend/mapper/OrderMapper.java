@@ -37,6 +37,7 @@ public interface OrderMapper {
 	@Mapping(source = "product.name", target = "productName")
 	@Mapping(source = "order.id", target = "orderId")
 	@Mapping(source = "sku", target = "sku")
+	@Mapping(source = "quantity", target = "quantity")
 	OrderDetailResponse toOrderDetailResponse(OrderDetail orderDetail);
 
 	default SKUDTO toSkuDTO(Sku sku) {

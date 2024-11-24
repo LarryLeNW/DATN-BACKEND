@@ -1,6 +1,7 @@
 package com.backend.controller;
 
 import java.util.Arrays;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,10 @@ import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.blog.BlogResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.order.OrderDetailResponse;
 import com.backend.dto.response.order.OrderResponse;
 import com.backend.entity.Order;
+import com.backend.entity.OrderDetail;
 import com.backend.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -74,7 +77,7 @@ public class OrderController {
 	}
 
 	@GetMapping("/{orderId}")
-	ApiResponse<OrderResponse> getBlogById(@PathVariable Integer orderId) {
+	ApiResponse<OrderResponse> getOrderById(@PathVariable Integer orderId) {
 		return ApiResponse.<OrderResponse>builder().result(orderService.getOrderById(orderId)).build();
 	}
 
@@ -83,5 +86,6 @@ public class OrderController {
 		List<OrderStatusType> orderStatuses = Arrays.asList(OrderStatusType.values());
 		return ResponseEntity.ok(orderStatuses);
 	}
+
 
 }
