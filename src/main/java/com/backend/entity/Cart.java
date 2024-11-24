@@ -39,6 +39,4 @@ public class Cart {
 	@JsonIgnore
 	private User user;
 	
-	
-	
 }

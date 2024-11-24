@@ -69,10 +69,21 @@ public class User {
     Set<Cart> cart;
     
     @ManyToMany
-    List<Voucher> vouchers;
+    @JoinTable(
+        name = "voucher_user", 
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "voucher_id")
+    )
+    List<Voucher> vouchers; 
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
+    
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Delivery> deliveries;
+
 
 	public User(String username, String password, String email) {
 		super();

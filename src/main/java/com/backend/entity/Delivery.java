@@ -2,13 +2,17 @@ package com.backend.entity;
 
 import java.sql.Timestamp;
 
+import com.backend.constant.Type.AddressType;
 import com.backend.constant.Type.OrderStatusType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -34,18 +38,38 @@ public class Delivery {
 	@Column(name = "username", columnDefinition = "NVARCHAR(MAX)")
 	String username;
 
-	@NotNull
-	@Column(name = "address", columnDefinition = "NVARCHAR(MAX)")
-	String address;
-
-	@Column(name = "email")
-	String email;
+	String company_name;
 
 	@NotNull
 	@Column(name = "numberPhone")
 	String numberPhone;
+	
+	String city_id; 
+	
+	@Column(name = "city", columnDefinition = "NVARCHAR(MAX)")
+	String city; 
+	
+	String district_id;
+	
+	@Column(name = "district", columnDefinition = "NVARCHAR(MAX)")
+	String district;
+	
+	String ward_id; 
 
-	@Column(name = "note", columnDefinition = "NVARCHAR(MAX)")
-	String note;
+	@Column(name = "ward", columnDefinition = "NVARCHAR(MAX)")
+	String ward;
+	
+	@Column(name = "street", columnDefinition = "NVARCHAR(MAX)")
+	String street;
+	
+	AddressType typeAddress;
+	
+	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	User user;
 
+	@NotNull
+	Boolean isDefault;
+	
 }

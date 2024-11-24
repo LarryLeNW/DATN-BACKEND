@@ -85,9 +85,6 @@ public class OrderService {
 			DeliveryRequest deliveryRequest = request.getDelivery();
 			Delivery delivery = new Delivery();
 			delivery.setUsername(deliveryRequest.getUsername());
-			delivery.setAddress(deliveryRequest.getAddress());
-			delivery.setEmail(deliveryRequest.getEmail());
-			delivery.setNote(deliveryRequest.getNote());
 			delivery.setNumberPhone(deliveryRequest.getNumberPhone());
 
 			delivery = deliveryRepository.save(delivery); // Save delivery here
