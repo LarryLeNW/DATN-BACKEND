@@ -67,6 +67,19 @@ public class DeliveryService {
 		return deliveryRepository.save(delivery);
 	}
 
+	public Delivery getDefaultDelivery() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String userId = auth.getName();
+		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+		Delivery currentDefault = deliveryRepository.findFirstByUserAndIsDefaultTrue(user);
+		
+		if(currentDefault == null)
+			throw new RuntimeException("Vui lòng cập nhật địa chỉ...");
+		
+		return currentDefault;
+	}
+
 	public PagedResponse<Delivery> getAll(Map<String, String> params) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String roleUser = auth.getAuthorities().iterator().next().toString();

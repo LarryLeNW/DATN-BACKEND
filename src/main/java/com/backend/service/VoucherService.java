@@ -1,5 +1,6 @@
 package com.backend.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,10 +108,16 @@ public class VoucherService {
 		Sort sort = Sort.by(direction, sortField);
 		Pageable pageable = PageRequest.of(page, limit, sort);
 
-		Specification<Voucher> spec = Specification.where(null);
+	    Specification<Voucher> spec = (root, query, builder) -> builder.and(
+	        builder.isFalse(root.get("isDestroy")), 
+	        builder.or(
+	            builder.isTrue(root.get("isPublic")), 
+	            builder.isMember(user, root.get("users")) 
+	        ),
+	        builder.greaterThan(root.get("expiry_date"), LocalDateTime.now())
+	    );
 
-		spec = Specification.where((root, query, builder) -> builder.isMember(user, root.get("users")));
-
+		
 		if (params.containsKey("keyword")) {
 			String keyword = params.get("keyword").toLowerCase();
 			spec = spec.and((root, query, builder) -> builder.or(
