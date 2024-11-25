@@ -47,6 +47,11 @@ public class DeliveryController {
 		return ApiResponse.<Delivery>builder().result(deliveryService.getOne(id)).build();
 	}
 	
+	@GetMapping("/default")
+	ApiResponse<Delivery> getDefault(){
+		return ApiResponse.<Delivery>builder().result(deliveryService.getDefaultDelivery()).build();
+	}
+	
 	@PutMapping("/{id}")
 	ApiResponse<Delivery> update(@RequestBody @Valid Delivery request,@PathVariable Integer id){
 		return ApiResponse.<Delivery>builder().result(deliveryService.updateDelivery(request, id)).build();				
