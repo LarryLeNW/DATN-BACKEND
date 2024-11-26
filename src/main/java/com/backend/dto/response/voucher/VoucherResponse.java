@@ -36,7 +36,7 @@ import lombok.experimental.FieldDefaults;
 public class VoucherResponse {
 	Long id;
 	
-	VoucherType voucherCategory;
+	VoucherType voucher_category;
 
 	String code;
 
@@ -49,7 +49,7 @@ public class VoucherResponse {
 	Double max_discount;
 
 	Double min_order;
-
+	
 	LocalDateTime expiry_date;
 
 	LocalDateTime  start_date;

@@ -67,6 +67,9 @@ public class User {
 
     @OneToMany
     Set<Cart> cart;
+    
+    @ManyToMany
+    List<Voucher> vouchers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
