@@ -15,9 +15,12 @@ public enum ErrorCode {
     USERNAME_INVALID(1003, "Username must be at least {min} characters", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(1004, "Password must be at least {min} characters", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
+    USER_BLOCKED(1005, "You has been blocked .", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
     CATEGORYBLOG_NOT_EXISTED(1005,"Category blog not existed",HttpStatus.NOT_FOUND),
+    DELIVERY_NOT_EXISTED(1005,"DELIVERt not existed" ,HttpStatus.NOT_FOUND),
     BLOG_NOT_EXISTED(1005,"blog not existed",HttpStatus.NOT_FOUND),
+    ORDER_NOT_EXISTED(1005,"order not existed ",HttpStatus.NOT_FOUND),
     COMMENT_NOT_EXISTED(1005,"comment not existed",HttpStatus.NOT_FOUND),
     REPLY_NOT_EXISTED(1005,"comment not existed",HttpStatus.NOT_FOUND),
     REVIEW_NOT_FOUND(1005,"review not found",HttpStatus.NOT_FOUND),
@@ -32,6 +35,7 @@ public enum ErrorCode {
     PRODUCT_EXISTED(1002, "Product existed", HttpStatus.BAD_REQUEST),
     CATEGORY_EXISTED(1002, "Category existed", HttpStatus.BAD_REQUEST),
     BRAND_EXISTED(1002, "Brand existed", HttpStatus.BAD_REQUEST),
+    CART_EXISTED(1002, "Cart existed", HttpStatus.BAD_REQUEST),
     INVALID_FIELD_ACCESS(1009, "Invalid Access Field", HttpStatus.BAD_REQUEST);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

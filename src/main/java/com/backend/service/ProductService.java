@@ -16,6 +16,11 @@ import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
 import com.backend.repository.*;
+import com.backend.repository.product.AttributeOptionRepository;
+import com.backend.repository.product.AttributeOptionSkuRepository;
+import com.backend.repository.product.AttributeProductRepository;
+import com.backend.repository.product.CategoryRepository;
+import com.backend.repository.product.ProductRepository;
 import com.backend.specification.ProductSpecification;
 import com.backend.utils.UploadFile;
 
@@ -178,14 +183,15 @@ public class ProductService {
 				sku = new Sku(productId, existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
 						skuDTO.getDiscount(), attributeOptionSkusToSave, null);
 			}
-	        if (skuDTO.getId() != null && existingSkuMap.containsKey(skuDTO.getId())) {
-	            sku = existingSkuMap.get(skuDTO.getId());
-	            sku.setPrice(skuDTO.getPrice());
-	            sku.setStock(skuDTO.getStock());
-	            sku.setDiscount(skuDTO.getDiscount());
-	        } else {
-	            sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(), skuDTO.getDiscount(), null);
-	        }
+			if (skuDTO.getId() != null && existingSkuMap.containsKey(skuDTO.getId())) {
+				sku = existingSkuMap.get(skuDTO.getId());
+				sku.setPrice(skuDTO.getPrice());
+				sku.setStock(skuDTO.getStock());
+				sku.setDiscount(skuDTO.getDiscount());
+			} else {
+				sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
+						skuDTO.getDiscount(), null);
+			}
 
 			skusToSave.add(sku);
 
@@ -214,7 +220,7 @@ public class ProductService {
 	}
 
 	public Page<ProductResponse> getProducts(Map<String, String> params) {
-		
+
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 

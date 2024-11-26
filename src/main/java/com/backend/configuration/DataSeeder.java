@@ -28,12 +28,15 @@ public class DataSeeder {
 	List<Permission> permissions = new ArrayList<>(Arrays.asList(new Permission((long) 1, "CREATE"),
 			new Permission((long) 2, "VIEWALL"), new Permission((long) 3, "VIEW"), new Permission((long) 4, "UPDATE"),
 			new Permission((long) 5, "DELETE")));
+	
+	
 
 	@PostConstruct
 	public void seed() {
 		log.warn("Start generate data");
 
 		// create permission
+		
 		if (permissionRespository.count() == 0) {
 			permissionRespository.saveAll(permissions);
 		}

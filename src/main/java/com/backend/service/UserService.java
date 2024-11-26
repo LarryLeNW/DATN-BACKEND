@@ -43,7 +43,6 @@ public class UserService {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-//        Role roleUser = roleRepository.findById(PredefinedRole.USER_NAME);
         Role roleUser = roleRepository.findById(request.getRole().getId()).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
         
         
@@ -76,7 +75,7 @@ public class UserService {
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        userMapper.updateUser(user, request);
+//        userMapper.updateUser(user, request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         return userMapper.toUserResponse(userRepository.save(user));
@@ -86,9 +85,9 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    public List<UserResponse> getUsers() {
+    public List<User> getUsers() {
         log.info("In method get Users");
-        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
+        return userRepository.findAll();
     }
 
     public UserResponse getUser(String id) {

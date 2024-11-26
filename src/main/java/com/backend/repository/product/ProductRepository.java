@@ -1,4 +1,4 @@
-package com.backend.repository;
+package com.backend.repository.product;
 
 import java.util.Optional;
 

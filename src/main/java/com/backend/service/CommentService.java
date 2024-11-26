@@ -20,10 +20,10 @@ import com.backend.exception.ErrorCode;
 import com.backend.mapper.CategoryMapper;
 import com.backend.mapper.CommentMapper;
 import com.backend.repository.BlogRepository;
-import com.backend.repository.CategoryRepository;
 import com.backend.repository.CommentRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.repository.product.CategoryRepository;
 import com.backend.repository.user.UserRepository;
 import com.backend.utils.UploadFile;
 

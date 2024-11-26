@@ -27,25 +27,25 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "delivery")
 public class Delivery {
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	String id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	int id;
 
-	@NotNull 
+	@NotNull
 	@Column(name = "username", columnDefinition = "NVARCHAR(MAX)")
-	String username; 
-	
+	String username;
+
 	@NotNull
 	@Column(name = "address", columnDefinition = "NVARCHAR(MAX)")
-	String address; 
-	
+	String address;
+
 	@Column(name = "email")
-	String email; 
-	
+	String email;
+
 	@NotNull
 	@Column(name = "numberPhone")
-	String numberPhone; 
-	
+	String numberPhone;
+
 	@Column(name = "note", columnDefinition = "NVARCHAR(MAX)")
 	String note;
-	
+
 }
