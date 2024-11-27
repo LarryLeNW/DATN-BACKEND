@@ -31,14 +31,9 @@ public class Order {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer id;
 
-	@CreationTimestamp
-	@Column(name = "created_at")
-	LocalDateTime createdAt;
-
-	@UpdateTimestamp
-	@Column(name = "updated_at")
-	LocalDateTime updatedAt;
-
+	@Column(name = "order_code", nullable = false,unique = true)
+	String orderCode;
+	
 	double total_amount;
 
 	@Enumerated(EnumType.STRING)
@@ -49,15 +44,24 @@ public class Order {
 	private List<OrderDetail> orderDetails;
 
 	@ManyToOne
-	@JoinColumn(name = "userid", nullable = false)
+	@JoinColumn(name = "userid", nullable = true)
 	@JsonIgnore
 	private User user;
 
-	@OneToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "delivery_id", referencedColumnName = "id")
 	private Delivery delivery;
 	
 	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
     private Payment payment;
+	
+	@CreationTimestamp
+	@Column(name = "created_at")
+	LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	@Column(name = "updated_at")
+	LocalDateTime updatedAt;
+
 
 }

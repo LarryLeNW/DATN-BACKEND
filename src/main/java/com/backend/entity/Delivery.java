@@ -66,7 +66,7 @@ public class Delivery {
 	
 	@JsonIgnore
 	@ManyToOne
-	@JoinColumn(name = "user_id", nullable = false)
+	@JoinColumn(name = "user_id", nullable = true)
 	User user;
 
 	@NotNull

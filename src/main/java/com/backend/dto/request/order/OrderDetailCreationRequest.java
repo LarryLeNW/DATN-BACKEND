@@ -3,6 +3,7 @@ package com.backend.dto.request.order;
 import java.util.List;
 
 import com.backend.constant.Type.OrderStatusType;
+import com.backend.entity.Cart;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class OrderDetailCreationRequest {
 	double quantity;
 	String orderId;
     Long productId;    
-    Long skuid;
-
+    Long skuId;
+    Cart cart;
+    
 }

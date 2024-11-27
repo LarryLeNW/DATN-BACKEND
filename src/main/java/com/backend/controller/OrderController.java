@@ -60,9 +60,8 @@ public class OrderController {
 	}
 
 	@PostMapping
-	ApiResponse<OrderResponse> createOrder(@RequestBody OrderCreationRequest request) {
-		System.out.println("dữ liệu order khi tạo: " + request);
-		return ApiResponse.<OrderResponse>builder().result(orderService.createOrder(request)).build();
+	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest request) {
+		return ApiResponse.<String>builder().result(orderService.createOrder(request)).build();
 	}
 
 	@PutMapping("/{orderId}")
@@ -79,6 +78,11 @@ public class OrderController {
 	@GetMapping("/{orderId}")
 	ApiResponse<OrderResponse> getOrderById(@PathVariable Integer orderId) {
 		return ApiResponse.<OrderResponse>builder().result(orderService.getOrderById(orderId)).build();
+	}
+	
+	@GetMapping("/code/{codeId}")
+	ApiResponse<OrderResponse> getOrderByCode(@PathVariable String codeId) {
+		return ApiResponse.<OrderResponse>builder().result(orderService.getOrderByCode(codeId)).build();
 	}
 
 	@GetMapping("/getAllStatusOrder")
