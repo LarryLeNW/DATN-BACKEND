@@ -1,9 +1,11 @@
 package com.backend.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import java.util.List;
 
+import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -60,7 +62,7 @@ public class OrderController {
 	}
 
 	@PostMapping
-	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest request) {
+	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest request) throws ClientProtocolException, IOException {
 		return ApiResponse.<String>builder().result(orderService.createOrder(request)).build();
 	}
 
