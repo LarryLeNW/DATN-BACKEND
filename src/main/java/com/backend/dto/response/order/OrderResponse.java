@@ -29,5 +29,5 @@ public class OrderResponse {
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 	List<OrderDetailResponse> orderDetails;
-
+	String orderCode;
 }

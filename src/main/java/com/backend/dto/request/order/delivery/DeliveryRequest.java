@@ -19,10 +19,5 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DeliveryRequest {
-
-	String username;
-	String address;
-	String email;
-	String numberPhone;
-	String note;
+	Long id;
 }

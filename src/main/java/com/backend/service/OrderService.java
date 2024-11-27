@@ -9,10 +9,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.constant.Type.OrderStatusType;
+import com.backend.constant.Type.PaymentMethod;
 import com.backend.dto.request.order.OrderCreationRequest;
 import com.backend.dto.request.order.OrderDetailUpdateRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
@@ -23,6 +26,7 @@ import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.order.OrderDetailResponse;
 import com.backend.dto.response.order.OrderResponse;
 import com.backend.entity.Blog;
+import com.backend.entity.Cart;
 import com.backend.entity.Delivery;
 import com.backend.entity.Order;
 import com.backend.entity.OrderDetail;
@@ -34,6 +38,7 @@ import com.backend.entity.User;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.BlogMapper;
+import com.backend.mapper.DeliveryMapper;
 import com.backend.mapper.OrderMapper;
 import com.backend.repository.BlogRepository;
 import com.backend.repository.CategoryBlogRepository;
@@ -45,7 +50,9 @@ import com.backend.repository.common.SearchType;
 import com.backend.repository.order.OrderDetailRepository;
 import com.backend.repository.order.OrderRepository;
 import com.backend.repository.order.PaymentRepository;
+import com.backend.repository.user.CartRespository;
 import com.backend.repository.user.UserRepository;
+import com.backend.specification.CartSpecification;
 import com.backend.utils.Helpers;
 import com.backend.utils.UploadFile;
 
@@ -67,36 +74,57 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderService {
 
 	OrderMapper orderMapper;
+
 	UserRepository userRepository;
+
 	ProductRepository productRepository;
+
 	SkuRepository skuRepository;
-	@Autowired
+
 	OrderRepository orderRepository;
+
 	EntityManager entityManager;
+
 	DeliveryRepository deliveryRepository;
+
 	OrderDetailRepository orderDetailRepository;
+
 	PaymentRepository paymentRepository;
 
-	public OrderResponse createOrder(OrderCreationRequest request) {
+	DeliveryMapper deliveryMapper;
+	
+	CartRespository cartRepository; 
+
+	public String createOrder(OrderCreationRequest request) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+		String idUser = auth.getName();
+
 		Order order = new Order();
 
-		if (request.getUserId() != null) {
-			User user = userRepository.findById(request.getUserId())
-					.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-			order.setUser(user);
-		}
+		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		order.setUser(user);
+		order.setOrderCode(request.getCode());
+
+		Delivery delivery;
 
 		if (request.getDelivery() != null) {
-			DeliveryRequest deliveryRequest = request.getDelivery();
-			Delivery delivery = new Delivery();
-			delivery.setUsername(deliveryRequest.getUsername());
-			delivery.setNumberPhone(deliveryRequest.getNumberPhone());
+			Delivery deliveryCreated = deliveryMapper.toDelivery(request.getDelivery());
+			deliveryCreated.setUser(user);
+			delivery = deliveryRepository.save(deliveryCreated);
+		}else {
+			delivery = deliveryRepository.findFirstByUserAndIsDefaultTrue(user);
+		}
+		
 
-			delivery = deliveryRepository.save(delivery);
-			order.setDelivery(delivery);
+		order.setDelivery(delivery);
+
+		if (request.getPayment().getMethod() == PaymentMethod.COD) {
+			order.setStatus(OrderStatusType.PENDING);
 		}
 
-		order.setStatus(request.getStatus());
+		order.setTotal_amount(request.getPayment().getAmount());
+
 		orderRepository.save(order);
 
 		List<OrderDetail> orderDetails = Optional.ofNullable(request.getOrderDetails()).orElse(Collections.emptyList())
@@ -107,14 +135,20 @@ public class OrderService {
 							.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 					orderDetail.setProduct(product);
 
-					Sku sku = skuRepository.findById(detailRequest.getSkuid())
+					Sku sku = skuRepository.findById(detailRequest.getSkuId())
 							.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
+
 					orderDetail.setSku(sku);
 
 					orderDetail.setQuantity(detailRequest.getQuantity());
-//					orderDetail.setPrice(detailRequest.getPrice());
+					orderDetail.setPrice(sku.getPrice());
 					orderDetail.setOrder(order);
 
+					if(detailRequest.getCart() != null) {
+						cartRepository.delete(detailRequest.getCart());
+					}
+					
+					
 					return orderDetail;
 				}).collect(Collectors.toList());
 
@@ -126,7 +160,8 @@ public class OrderService {
 			PaymentOrder(request.getPayment(), order);
 		}
 
-		return orderMapper.toOrderResponse(orderRepository.save(order));
+		orderRepository.save(order);
+		return request.getCode();
 	}
 
 	private void PaymentOrder(PaymentRequest paymentRequest, Order order) {
@@ -165,64 +200,61 @@ public class OrderService {
 
 		return new PagedResponse<>(orderResponses, page, totalPages, totalElements, limit);
 	}
-	
+
 	@Transactional
 	public OrderResponse updateOrder(Integer orderId, OrderUpdateRequest request) {
-	    Order order = orderRepository.findById(orderId)
-	        .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-	    if (request != null) {
-	        if (request.getDeliveryId() != null) {
-	            Delivery delivery = deliveryRepository.findById(Integer.parseInt(request.getDeliveryId()))
-	                .orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
-	            if (!delivery.equals(order.getDelivery())) {
-	                order.setDelivery(delivery);
-	            }
-	        }
-	        Helpers.updateFieldEntityIfChanged(request.getTotalAmount(), order.getTotal_amount(), order::setTotal_amount);
-	        Helpers.updateFieldEntityIfChanged(request.getStatus(), order.getStatus(), order::setStatus);
+		if (request != null) {
+			if (request.getDeliveryId() != null) {
+				Delivery delivery = deliveryRepository.findById(Integer.parseInt(request.getDeliveryId()))
+						.orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
+				if (!delivery.equals(order.getDelivery())) {
+					order.setDelivery(delivery);
+				}
+			}
+			Helpers.updateFieldEntityIfChanged(request.getTotalAmount(), order.getTotal_amount(),
+					order::setTotal_amount);
+			Helpers.updateFieldEntityIfChanged(request.getStatus(), order.getStatus(), order::setStatus);
 
-	        if (request.getOrderDetails() != null) {
-	            for (OrderDetailUpdateRequest detailRequest : request.getOrderDetails()) {
-	                Product product = productRepository.findById(detailRequest.getProductId())
-	                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+			if (request.getOrderDetails() != null) {
+				for (OrderDetailUpdateRequest detailRequest : request.getOrderDetails()) {
+					Product product = productRepository.findById(detailRequest.getProductId())
+							.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-	                Sku sku = skuRepository.findById(detailRequest.getSkuid())
-	                    .orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
+					Sku sku = skuRepository.findById(detailRequest.getSkuid())
+							.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
 
-	                OrderDetail currentOrderDetail = orderDetailRepository.findById(detailRequest.getId())
-	                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_DETAIL_NOT_EXISTED));
+					OrderDetail currentOrderDetail = orderDetailRepository.findById(detailRequest.getId())
+							.orElseThrow(() -> new AppException(ErrorCode.ORDER_DETAIL_NOT_EXISTED));
 
-	                OrderDetail foundOrderDetail = orderDetailRepository.findOneByOrderAndProductAndSku(order, product, sku);
-                    System.out.println("hihi: "+foundOrderDetail.getId());
-                    System.out.println("hihi: "+foundOrderDetail.getProduct());
-                    System.out.println("hihi: "+foundOrderDetail.getSku());
-	                
-	                
-	                
-	                if (currentOrderDetail != null && foundOrderDetail.getId() != foundOrderDetail.getId()) {	                  
-	                    foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
+					OrderDetail foundOrderDetail = orderDetailRepository.findOneByOrderAndProductAndSku(order, product,
+							sku);
+					System.out.println("hihi: " + foundOrderDetail.getId());
+					System.out.println("hihi: " + foundOrderDetail.getProduct());
+					System.out.println("hihi: " + foundOrderDetail.getSku());
 
-	                    orderDetailRepository.delete(currentOrderDetail);
-	                    currentOrderDetail = foundOrderDetail;
-	                    
-	                } else {
-	                    currentOrderDetail.setQuantity(detailRequest.getQuantity());
-	                    currentOrderDetail.setSku(sku);
-	                    currentOrderDetail.setProduct(product);
-	                }
-                    orderDetailRepository.save(currentOrderDetail);
+					if (currentOrderDetail != null && foundOrderDetail.getId() != foundOrderDetail.getId()) {
+						foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
 
-	            }
-	        }
+						orderDetailRepository.delete(currentOrderDetail);
+						currentOrderDetail = foundOrderDetail;
 
+					} else {
+						currentOrderDetail.setQuantity(detailRequest.getQuantity());
+						currentOrderDetail.setSku(sku);
+						currentOrderDetail.setProduct(product);
+					}
+					orderDetailRepository.save(currentOrderDetail);
 
-	     
-	    }
+				}
+			}
 
-	    return orderMapper.toOrderResponse(orderRepository.save(order));
+		}
+
+		return orderMapper.toOrderResponse(orderRepository.save(order));
 	}
-
 
 	public void deleteOrder(Integer orderId) {
 		orderRepository.deleteById(orderId);
@@ -234,6 +266,12 @@ public class OrderService {
 
 		return orderMapper.toOrderResponse(order);
 	}
-
+	
+	public OrderResponse getOrderByCode(String orderId) {
+		Order orderFound = orderRepository.findOneByOrderCode(orderId);
+		
+		if(orderFound == null) throw new RuntimeException("Not found info this order...");
+		return orderMapper.toOrderResponse(orderFound);
+	}
 
 }
