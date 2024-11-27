@@ -1,14 +1,32 @@
 package com.backend.service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -53,6 +71,7 @@ import com.backend.repository.order.PaymentRepository;
 import com.backend.repository.user.CartRespository;
 import com.backend.repository.user.UserRepository;
 import com.backend.specification.CartSpecification;
+import com.backend.utils.HMACUtil;
 import com.backend.utils.Helpers;
 import com.backend.utils.UploadFile;
 
@@ -61,6 +80,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -92,10 +112,86 @@ public class OrderService {
 	PaymentRepository paymentRepository;
 
 	DeliveryMapper deliveryMapper;
-	
-	CartRespository cartRepository; 
 
-	public String createOrder(OrderCreationRequest request) {
+	CartRespository cartRepository;
+
+	private static Map<String, String> stage_zalo_config = new HashMap<String, String>() {
+		{
+			put("app_id", "2553");
+			put("key1", "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL");
+			put("key2", "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz");
+			put("endpoint", "https://sb-openapi.zalopay.vn/v2/create");
+		}
+	};
+
+	static String createUrlPayment(double totalAmount) throws ClientProtocolException, IOException {
+			
+		Map<String, Object>[] item = new Map[] { new HashMap<>() {
+			{
+				put("itemid", "item001");
+				put("itemname", "Product A");
+				put("itemprice", totalAmount);
+				put("itemquantity", 1);
+			}
+		} };
+
+		int transition_id =  Integer.parseInt(Helpers.handleRandom(7));
+
+		Map<String, Object> embed_data = new HashMap<>();
+		embed_data.put("merchantinfo", "Test Merchant");
+		embed_data.put("redirecturl", "http://facebook.com");
+
+		Map<String, Object> order = new HashMap<String, Object>() {
+			{
+				put("app_id", stage_zalo_config.get("app_id"));
+				put("app_time", System.currentTimeMillis());
+				put("app_trans_id", Helpers.getCurrentTimeString("yyMMdd") + "_" + transition_id);
+				put("app_user", "datn");
+				put("amount", (int) totalAmount);
+				put("description", "Payment for the order - DATN DEV TEAM 2025 DEMO" + transition_id);
+				put("bank_code", "");
+				put("item", new JSONArray(Arrays.asList(item)).toString());
+				put("embed_data", new JSONObject(embed_data).toString());
+				put("callback_url", "hacker.com");
+			}
+		};
+
+		String data = order.get("app_id") + "|" + order.get("app_trans_id") + "|" + order.get("app_user") + "|"
+				+ order.get("amount") + "|" + order.get("app_time") + "|" + order.get("embed_data") + "|"
+				+ order.get("item");
+		String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, stage_zalo_config.get("key1"), data);
+		order.put("mac", mac);
+
+		CloseableHttpClient client = HttpClients.createDefault();
+		HttpPost post = new HttpPost(stage_zalo_config.get("endpoint"));
+
+		List<NameValuePair> params = new ArrayList<>();
+		for (Map.Entry<String, Object> e : order.entrySet()) {
+			params.add(new BasicNameValuePair(e.getKey(), e.getValue().toString()));
+		}
+
+		post.setEntity(new UrlEncodedFormEntity(params));
+
+		CloseableHttpResponse res = client.execute(post);
+
+		BufferedReader rd = new BufferedReader(new InputStreamReader(res.getEntity().getContent()));
+		StringBuilder resultJsonStr = new StringBuilder();
+		String line;
+		while ((line = rd.readLine()) != null) {
+			resultJsonStr.append(line);
+		}
+
+		JSONObject result = new JSONObject(resultJsonStr.toString());
+		
+		log.info(result.toString());
+		
+		if (result.has("order_url"))
+			return result.getString("order_url");
+
+		return null;
+	}
+
+	public String createOrder(OrderCreationRequest request) throws ClientProtocolException, IOException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 		String idUser = auth.getName();
@@ -112,10 +208,9 @@ public class OrderService {
 			Delivery deliveryCreated = deliveryMapper.toDelivery(request.getDelivery());
 			deliveryCreated.setUser(user);
 			delivery = deliveryRepository.save(deliveryCreated);
-		}else {
+		} else {
 			delivery = deliveryRepository.findFirstByUserAndIsDefaultTrue(user);
 		}
-		
 
 		order.setDelivery(delivery);
 
@@ -139,16 +234,14 @@ public class OrderService {
 							.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
 
 					orderDetail.setSku(sku);
-
 					orderDetail.setQuantity(detailRequest.getQuantity());
 					orderDetail.setPrice(sku.getPrice());
 					orderDetail.setOrder(order);
 
-					if(detailRequest.getCart() != null) {
+					if (detailRequest.getCart() != null) {
 						cartRepository.delete(detailRequest.getCart());
 					}
-					
-					
+
 					return orderDetail;
 				}).collect(Collectors.toList());
 
@@ -159,8 +252,15 @@ public class OrderService {
 		if (request.getPayment() != null) {
 			PaymentOrder(request.getPayment(), order);
 		}
-
 		orderRepository.save(order);
+
+		if (request.getPayment().getMethod() == PaymentMethod.ZaloPay) {
+			String url = createUrlPayment(request.getPayment().getAmount());
+			log.info(url);
+			if (url != null)
+				return url;
+		}
+
 		return request.getCode();
 	}
 
@@ -266,11 +366,12 @@ public class OrderService {
 
 		return orderMapper.toOrderResponse(order);
 	}
-	
+
 	public OrderResponse getOrderByCode(String orderId) {
 		Order orderFound = orderRepository.findOneByOrderCode(orderId);
-		
-		if(orderFound == null) throw new RuntimeException("Not found info this order...");
+
+		if (orderFound == null)
+			throw new RuntimeException("Not found info this order...");
 		return orderMapper.toOrderResponse(orderFound);
 	}
 
