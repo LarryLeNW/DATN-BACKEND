@@ -58,5 +58,5 @@ public class DeliveryCreationRequest {
 	@NotNull
 	AddressType typeAddress;
 
-	Boolean isDefault;
+	Boolean isDefault ;
 }

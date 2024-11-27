@@ -38,6 +38,13 @@ public class Payment {
 	@Column(nullable = false)
 	private Double amount;
 	
+	@Enumerated(EnumType.STRING)
+	PaymentMethod method;
+	
+	@Enumerated(EnumType.STRING)
+	PaymentStatus status;
+	
+	
 	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
@@ -45,13 +52,5 @@ public class Payment {
 	@UpdateTimestamp
 	@Column(name = "updated_at")
 	LocalDateTime updatedAt;
-	
-	@Enumerated(EnumType.STRING)
-	PaymentMethod method;
-	
-	@Enumerated(EnumType.STRING)
-	PaymentStatus status;
-
-	
 
 }
