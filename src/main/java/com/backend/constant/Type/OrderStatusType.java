@@ -1,6 +1,5 @@
 package com.backend.constant.Type;
 
 public enum OrderStatusType {
-	PENDING, CONFIRMED, SHIPPED, CANCELLED, DELIVERED
+	UNPAID,PENDING,CONFIRMED, SHIPPED, CANCELLED, DELIVERED
 }
-	

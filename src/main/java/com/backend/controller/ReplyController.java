@@ -1,5 +1,7 @@
 package com.backend.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-
 @RestController
 @RequestMapping("api/replys")
 @RequiredArgsConstructor
@@ -35,25 +36,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReplyController {
 
-	
 	ReplyService replyService;
-	
 
 	@PostMapping
-	ApiResponse<ReplyResponse> createReply (@RequestBody ReplyCreationRequest request){
+	ApiResponse<ReplyResponse> createReply(@RequestBody ReplyCreationRequest request) {
 		return ApiResponse.<ReplyResponse>builder().result(replyService.createReply(request)).build();
 	}
-	
+
 	@PutMapping("/{replyId}")
-	ApiResponse<ReplyResponse> updateComment(@RequestBody ReplyUpdateRequest request,@PathVariable Integer replyId){
-		return ApiResponse.<ReplyResponse>builder().result(replyService.updateReply(request, replyId)).build();				
+	ApiResponse<ReplyResponse> updateComment(@RequestBody ReplyUpdateRequest request, @PathVariable Integer replyId) {
+		return ApiResponse.<ReplyResponse>builder().result(replyService.updateReply(request, replyId)).build();
 	}
+
 	@DeleteMapping("/{replyId}")
-	ApiResponse<String> deleteComment (@PathVariable Integer replyId){
+	ApiResponse<String> deleteComment(@PathVariable Integer replyId) {
 		replyService.deleteReply(replyId);
 		return ApiResponse.<String>builder().result("delete success comment ").build();
 	}
-	
+
 	@GetMapping
 	ApiResponse<PagedResponse<Reply>> getReplys(
 			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
@@ -64,5 +64,13 @@ public class ReplyController {
 
 		return ApiResponse.<PagedResponse<Reply>>builder().result(pagedResponse).build();
 	}
+
+	@GetMapping("/comment/{commentId}")
+	ApiResponse<List<ReplyResponse>> getRepliesByComment(@PathVariable Integer commentId) {
+	    return ApiResponse.<List<ReplyResponse>>builder()
+	                      .result(replyService.getRepliesByCommentId(commentId))
+	                      .build();
+	}
+
 
 }

@@ -18,7 +18,7 @@ public enum ErrorCode {
     USER_BLOCKED(1005, "You has been blocked .", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_EXISTED(1005, "Category not existed", HttpStatus.NOT_FOUND),
     CATEGORYBLOG_NOT_EXISTED(1005,"Category blog not existed",HttpStatus.NOT_FOUND),
-    DELIVERY_NOT_EXISTED(1005,"DELIVERt not existed" ,HttpStatus.NOT_FOUND),
+    DELIVERY_NOT_EXISTED(1005,"Delivery not existed" ,HttpStatus.NOT_FOUND),
     BLOG_NOT_EXISTED(1005,"blog not existed",HttpStatus.NOT_FOUND),
     ORDER_NOT_EXISTED(1005,"order not existed ",HttpStatus.NOT_FOUND),
     ORDER_DETAIL_NOT_EXISTED(1005,"order detail not existed ",HttpStatus.NOT_FOUND),

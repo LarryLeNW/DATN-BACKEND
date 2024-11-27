@@ -29,6 +29,7 @@ import com.backend.dto.request.category.CategoryUpdateRequest;
 import com.backend.dto.request.voucher.VoucherCreationRequest;
 import com.backend.dto.request.voucher.VoucherUpdateRequest;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.user.UserResponse;
 import com.backend.dto.response.voucher.VoucherResponse;
 import com.backend.entity.Brand;
 import com.backend.entity.Category;
@@ -59,10 +60,21 @@ public class VoucherController {
 	ApiResponse<Voucher> create(@RequestBody @Valid  VoucherCreationRequest request) {
 		return ApiResponse.<Voucher>builder().result(voucherService.create(request)).build();
 	}
+	
 
+	@PostMapping("/save/{voucherCode}")
+	ApiResponse<PagedResponse<VoucherResponse>> saveByUser(@PathVariable String voucherCode) throws BadRequestException  {
+		return ApiResponse.<PagedResponse<VoucherResponse>>builder().result(voucherService.saveVoucherByUser(voucherCode)).build();
+	}
+	
 	@GetMapping
 	ApiResponse<PagedResponse<VoucherResponse>> getAlls(@RequestParam Map<String, String> params) {
 		return ApiResponse.<PagedResponse<VoucherResponse>>builder().result(voucherService.getAll(params)).build();
+	}
+	
+	@GetMapping("/getUserVouchers")
+	ApiResponse<PagedResponse<VoucherResponse>> getUserVouchers(@RequestParam Map<String, String> params) {
+		return ApiResponse.<PagedResponse<VoucherResponse>>builder().result(voucherService.getVoucherByCustomer(params)).build();
 	}
 
 	
@@ -70,7 +82,6 @@ public class VoucherController {
 	ApiResponse<Voucher> update(@PathVariable Long voucherId, @RequestBody @Valid VoucherUpdateRequest request) throws BadRequestException {
 		return ApiResponse.<Voucher>builder().result(voucherService.update(voucherId, request)).build();
 	}
-	
 	
 	@DeleteMapping("/{voucherId}")
 	ApiResponse<String> delete(@PathVariable Long voucherId) {

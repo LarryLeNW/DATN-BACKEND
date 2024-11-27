@@ -2,8 +2,8 @@ package com.backend.service;
 
 import java.util.ArrayList;
 
-
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -40,50 +40,53 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class CommentService {
-	
+
 	CommentRepository commentRepository;
-	
+
 	EntityManager entityManager;
 
 	BlogRepository blogRepository;
-	
+
 	UserRepository userRepository;
-	
-	CommentMapper  commentMapper;
- 	
+
+	CommentMapper commentMapper;
+
 	public CommentResponse createComment(CommentCreationRequest request) {
-		
+
+		System.out.println("dữ liệu lấy được  từ request ; "+request);
 		Comment comment = new Comment();
-		
+
 		if (request.getBlogId() != 0) {
 			Blog blog = blogRepository.findById(request.getBlogId())
 					.orElseThrow(() -> new AppException(ErrorCode.CATEGORYBLOG_NOT_EXISTED));
 			comment.setBlog(blog);
 		}
 
-		if (request.getUserId() != null) {
-			User user = userRepository.findById(request.getUserId())
-					.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-			comment.setUser(user);
-		}
-		
+		 if (request.getUserId() != null) {
+		        User user = userRepository.findById(request.getUserId())  
+		                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		        comment.setUser(user);
+		    }
 		comment.setContent(request.getContent());
-		
+
 		return commentMapper.toCommentResponse(commentRepository.save(comment));
-		
+
 	}
-	public CommentResponse updateComment(CommentUpdateRequest request,int commentId) {
-		
-		Comment comment = commentRepository.findById(commentId).orElseThrow(()-> new AppException(ErrorCode.COMMENT_NOT_EXISTED));
+
+	public CommentResponse updateComment(CommentUpdateRequest request, int commentId) {
+
+		Comment comment = commentRepository.findById(commentId)
+				.orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXISTED));
 
 		comment.setContent(request.getContent());
-		
+
 		return commentMapper.toCommentResponse(commentRepository.save(comment));
 	}
+
 	public void deleteComment(int commentId) {
-		 commentRepository.deleteById(commentId);
+		commentRepository.deleteById(commentId);
 	}
-	
+
 	public PagedResponse<Comment> getComment(int page, int limit, String sort, String... search) {
 		List<SearchType> criteriaList = new ArrayList<>();
 		CustomSearchRepository<Comment> customSearchService = new CustomSearchRepository<>(entityManager);
@@ -101,5 +104,8 @@ public class CommentService {
 		return new PagedResponse<>(comments, page, totalPages, totalElements, limit);
 	}
 
+	public List<Comment> getCommentsByBlogId(Integer blogId) {
+		return commentRepository.findByBlog_BlogId(blogId);
+	}
 
 }

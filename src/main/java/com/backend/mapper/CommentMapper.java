@@ -17,5 +17,6 @@ public interface CommentMapper {
 	
 	@Mapping(source = "user.id", target = "user_id")
 	@Mapping(source = "blog.blogId", target = "blog_id")
+	@Mapping(source = "user.username", target = "userName")
 	CommentResponse toCommentResponse(Comment comment);
 }

@@ -38,7 +38,7 @@ public class Product {
 	private Category category;
 
 	@ManyToOne
-	@JoinColumn(name = "brandId", nullable = false)
+	@JoinColumn(name = "brandId", nullable = true)
 	@JsonIgnore
 	private Brand brand;
 

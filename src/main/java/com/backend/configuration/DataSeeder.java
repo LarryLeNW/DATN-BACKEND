@@ -57,7 +57,6 @@
 //			new User("Nguyễn Văn F", "123456", "nguyenvanf@gmail.com"),
 //			new User("Nguyễn Văn G", "123456", "nguyenvang@gmail.com")));
 //
-////	@PostConstruct
 //	public void seed() {
 //		log.info("Start generate data");
 //
