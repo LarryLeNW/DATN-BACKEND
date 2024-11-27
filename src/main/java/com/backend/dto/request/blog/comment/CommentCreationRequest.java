@@ -1,6 +1,7 @@
 package com.backend.dto.request.blog.comment;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.backend.dto.request.categoryBlog.CategoryBlogCreationRequest;
 
@@ -21,8 +22,9 @@ public class CommentCreationRequest {
 	@NotNull
 	String content;
 	
-	int blogId;
+	Integer blogId;
 	
+	@NotNull
 	String userId;
 	
 	LocalDateTime createdAt;

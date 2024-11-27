@@ -1,6 +1,7 @@
 package com.backend.repository.user;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -19,5 +20,6 @@ public interface UserRepository extends JpaRepository<User, String> , JpaSpecifi
     Optional<User> findByEmailAndStatusNot(String email, UserStatusType status);
 
     Optional<User> findByUsername(String username);
+    
     
 }
