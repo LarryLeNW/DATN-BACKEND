@@ -25,6 +25,11 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -41,6 +46,7 @@ import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.request.order.delivery.DeliveryRequest;
 import com.backend.dto.request.order.payment.PaymentRequest;
 import com.backend.dto.response.blog.BlogResponse;
+import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.order.OrderDetailResponse;
 import com.backend.dto.response.order.OrderResponse;
@@ -153,7 +159,7 @@ public class OrderService {
 				put("item", new JSONArray(Arrays.asList(item)).toString());
 				put("embed_data", new JSONObject(embed_data).toString());
 				put("callback_url",
-						"https://93bd-2402-800-629c-f6b2-f9a3-626c-f017-b82c.ngrok-free.app/api/payment/zalo/callback");
+						"https://f5aa-2402-800-629c-f6b2-e84a-d4dd-8856-98bc.ngrok-free.app/api/payment/zalo/callback");
 			}
 		};
 
@@ -275,34 +281,39 @@ public class OrderService {
 		paymentRepository.save(payment);
 	}
 
-	public PagedResponse<OrderResponse> getOrders(int page, int limit, String sort, String[] search,
-			OrderStatusType status) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+	public PagedResponse<OrderResponse> getOrders(Map<String, String> params) {
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    String roleUser = auth.getAuthorities().iterator().next().toString();
+	    String idUser = auth.getName();
 
-		CustomSearchRepository<Order> customSearchService = new CustomSearchRepository<>(entityManager);
+	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
+	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
+	    String sortField = params.getOrDefault("sortBy", "id");
+	    String orderBy = params.getOrDefault("orderBy", "asc");
 
-		CriteriaQuery<Order> query = customSearchService.buildSearchQuery(Order.class, search, sort);
+	    Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
+	    Sort sort = Sort.by(direction, sortField);
+	    Pageable pageable = PageRequest.of(page, limit, sort);
 
-		Root<Order> root = (Root<Order>) query.getRoots().iterator().next();
+	    Specification<Order> spec = Specification.where(null);
 
-		if (status != null) {
-			Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), status);
-			query.where(criteriaBuilder.and(query.getRestriction(), statusPredicate));
-		}
+	    if (params.containsKey("status")) {
+	        String status = params.get("status");
+	        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status));
+	    }
 
-		List<Order> orders = entityManager.createQuery(query).setFirstResult((page - 1) * limit).setMaxResults(limit)
-				.getResultList();
+	    if ("ROLE_USER".equals(roleUser)) {
+	        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), idUser));
+	    }
 
-		List<OrderResponse> orderResponses = orders.stream().map(orderMapper::toOrderResponse)
-				.collect(Collectors.toList());
+	    Page<Order> orderPage = orderRepository.findAll(spec, pageable);
+	    List<OrderResponse> cartResponses = orderPage.getContent().stream().map(orderMapper::toOrderResponse)
+	            .collect(Collectors.toList());
 
-		CriteriaQuery<Long> countQuery = customSearchService.buildCountQuery(Order.class, search);
-		long totalElements = entityManager.createQuery(countQuery).getSingleResult();
-
-		int totalPages = (int) Math.ceil((double) totalElements / limit);
-
-		return new PagedResponse<>(orderResponses, page, totalPages, totalElements, limit);
+	    return new PagedResponse<>(cartResponses, page + 1, orderPage.getTotalPages(), orderPage.getTotalElements(),
+	            limit);
 	}
+
 
 	@Transactional
 	public OrderResponse updateOrder(Integer orderId, OrderUpdateRequest request) {

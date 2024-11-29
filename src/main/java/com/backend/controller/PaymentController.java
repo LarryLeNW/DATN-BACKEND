@@ -87,9 +87,6 @@ public class PaymentController {
 				result.put("return_code", 1);
 				result.put("return_message", "success");
 				
-				
-				
-				 String redirectUrl = "http://localhost:3000"  + "/payment?apptransid=" + data.getString("app_trans_id");
 		         
 			}
 		} catch (Exception ex) {
