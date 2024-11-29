@@ -25,5 +25,5 @@ public class ReplyResponse {
 	int user_id;
 	LocalDateTime createdAt;
 	LocalDateTime updateAt;
-	
+    List<ReplyResponse> replies; 
 }

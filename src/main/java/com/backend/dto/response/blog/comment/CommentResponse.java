@@ -1,6 +1,9 @@
 package com.backend.dto.response.blog.comment;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.backend.dto.response.blog.reply.ReplyResponse;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -20,6 +23,7 @@ public class CommentResponse {
 	String user_id;
 	String userName;
 	String avatar;
+	List<ReplyResponse> replyResponse; 
 	LocalDateTime createdAt;
 	LocalDateTime updateAt;
 }

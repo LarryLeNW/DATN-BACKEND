@@ -49,24 +49,31 @@ public class ReplyService {
 
 	public ReplyResponse createReply(ReplyCreationRequest request) {
 
-		Reply reply = new Reply();
+	    Reply reply = new Reply();
 
-		if (request.getUserId() != null) {
-			User user = userRepository.findById(request.getUserId())
-					.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-			reply.setUser(user);
-		}
+	    if (request.getUserId() != null) {
+	        User user = userRepository.findById(request.getUserId())
+	                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+	        reply.setUser(user);
+	    }
 
-		if (request.getCommentId() != 0) {
-			Comment comment = commentRepository.findById(request.getCommentId())
-					.orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXISTED));
-			reply.setComment(comment);
-		}
+	    if (request.getCommentId() != 0) {
+	        Comment comment = commentRepository.findById(request.getCommentId())
+	                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXISTED));
+	        reply.setComment(comment);
+	    }
 
-		reply.setContent(reply.getContent());
-		return replyMapper.toReplyResponse(replyRepository.save(reply));
+	    if (request.getParentReplyId() != 0) {
+	        Reply parentReply = replyRepository.findById(request.getParentReplyId())
+	                .orElseThrow(() -> new AppException(ErrorCode.REPLY_NOT_EXISTED));
+	        reply.setParentReply(parentReply);
+	    }
 
+	    reply.setContent(request.getContent());
+
+	    return replyMapper.toReplyResponse(replyRepository.save(reply));
 	}
+
 	public ReplyResponse updateReply(ReplyUpdateRequest request, int replyId) {
 		
 		Reply reply = replyRepository.findById(replyId).orElseThrow(()-> new AppException(ErrorCode.REVIEW_NOT_FOUND));
@@ -97,9 +104,28 @@ public class ReplyService {
 	}
 	public List<ReplyResponse> getRepliesByCommentId(Integer commentId) {
 	    List<Reply> replies = replyRepository.findByComment_CommentId(commentId);
+
 	    return replies.stream()
-	                  .map(replyMapper::toReplyResponse) // Chuyển đổi từ entity sang DTO
-	                  .collect(Collectors.toList());
+	        .map(reply -> mapToReplyResponseWithNestedReplies(reply))
+	        .collect(Collectors.toList());
 	}
+
+	private ReplyResponse mapToReplyResponseWithNestedReplies(Reply reply) {
+	    ReplyResponse response = replyMapper.toReplyResponse(reply);
+	    
+	    List<ReplyResponse> nestedReplies = fetchNestedReplies(reply.getReplyId());
+	    response.setReplies(nestedReplies);
+	    
+	    return response;
+	}
+
+	private List<ReplyResponse> fetchNestedReplies(Integer parentReplyId) {
+		
+	    List<Reply> nestedReplies = replyRepository.findByParentReply_ReplyId(parentReplyId);
+	    return nestedReplies.stream()
+	                        .map(replyMapper::toReplyResponse)
+	                        .collect(Collectors.toList());
+	}
+
 
 }
