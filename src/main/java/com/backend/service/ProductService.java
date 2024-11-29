@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductCreationRequest.SKUDTO;
 import com.backend.dto.request.product.ProductUpdateRequest;
+import com.backend.dto.response.blog.BlogResponse;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
@@ -283,6 +284,12 @@ public class ProductService {
 	public String delete(Long productId) {
 		productRepository.deleteById(productId);
 		return "Deleted product successfully";
+	}
+	public ProductResponse getProductById(String id) {
+	    Product product = productRepository.findById(Long.parseLong(id))
+	            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+
+	    return productMapper.toDTO(product);
 	}
 
 }

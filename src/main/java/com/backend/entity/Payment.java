@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import com.backend.constant.Type.PaymentMethod;
 import com.backend.constant.Type.PaymentStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 
@@ -27,24 +28,28 @@ public class Payment {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer id;
 
+	@Column(name = "app_trans_id", nullable = false, unique = true)
+	String appTransId;
+
 	@OneToOne
 	@JoinColumn(name = "orderId", nullable = false)
 	private Order order;
 
 	@ManyToOne
+	@JsonIgnore
 	@JoinColumn(name = "userid", nullable = false)
+	
 	private User user;
 
 	@Column(nullable = false)
 	private Double amount;
-	
+
 	@Enumerated(EnumType.STRING)
 	PaymentMethod method;
-	
+
 	@Enumerated(EnumType.STRING)
 	PaymentStatus status;
-	
-	
+
 	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
