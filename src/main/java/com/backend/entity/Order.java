@@ -40,7 +40,6 @@ public class Order {
 	OrderStatusType status;
 
 	@OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JsonIgnore
 	private List<OrderDetail> orderDetails;
 
 	@ManyToOne
@@ -53,7 +52,8 @@ public class Order {
 	private Delivery delivery;
 	
 	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
-    private Payment payment;
+    @JsonIgnore
+	private Payment payment;
 	
 	@CreationTimestamp
 	@Column(name = "created_at")
