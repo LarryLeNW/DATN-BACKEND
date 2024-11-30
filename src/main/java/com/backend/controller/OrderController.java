@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,12 +52,9 @@ public class OrderController {
 
 	@GetMapping
 	ApiResponse<PagedResponse<OrderResponse>> getAlls(
-			@RequestParam(defaultValue = "1") @Min(value = 1, message = "page param be greater than 0") int page,
-			@RequestParam(defaultValue = "10") @Min(value = 1, message = "limit param be greater than 0") int limit,
-			@RequestParam(required = false) String sort, @RequestParam(required = false) String[] search,
-			@RequestParam(required = false) OrderStatusType status) {
+			@RequestParam Map<String, String> params) {
 
-		PagedResponse<OrderResponse> pagedResponse = orderService.getOrders(page, limit, sort, search, status);
+		PagedResponse<OrderResponse> pagedResponse = orderService.getOrders(params);
 
 		return ApiResponse.<PagedResponse<OrderResponse>>builder().result(pagedResponse).build();
 	}

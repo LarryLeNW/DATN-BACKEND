@@ -21,5 +21,6 @@ public class OrderDetailResponse {
     String productName;
 	String orderId;
 	SKUDTO sku;
+	double price;
 	ProductResponse product;
 }
