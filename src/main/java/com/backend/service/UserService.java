@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
@@ -29,6 +31,8 @@ import com.backend.exception.ErrorCode;
 import com.backend.mapper.UserMapper;
 import com.backend.repository.user.RoleRepository;
 import com.backend.repository.user.UserRepository;
+import com.backend.utils.Helpers;
+import com.backend.utils.UploadFile;
 import com.backend.constant.PredefinedRole;
 import com.backend.constant.Type.UserStatusType;
 import com.backend.entity.Cart;
@@ -50,6 +54,8 @@ public class UserService {
 	RoleRepository roleRepository;
 	UserMapper userMapper;
 	PasswordEncoder passwordEncoder;
+	
+	UploadFile uploadFile;
 
 	public UserResponse createUser(UserCreationRequest request) {
 
@@ -96,6 +102,43 @@ public class UserService {
 
 		if (request.getPassword() != null)
 			user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+		return userMapper.toUserResponse(userRepository.save(user));
+	}
+
+	public UserResponse updateInfoUser(String userId, UserUpdateRequest request, MultipartFile avatar) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+		if (avatar != null) {
+			String avatarUrl = uploadFile.saveFile(avatar, "brandTest");
+			System.out.println("hihiih,"+avatarUrl);
+			user.setAvatar(avatarUrl);
+		}
+		
+		if (request.getUsername() != null && !request.getUsername().isEmpty()) {
+			user.setUsername(request.getUsername());
+		}
+
+		if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
+		}
+
+		if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+			User existingUser = userRepository.findByEmail(request.getEmail());
+			if (existingUser != null && !existingUser.getId().equals(user.getId())) {
+				throw new RuntimeException("Email has already been used.");
+			}
+			user.setEmail(request.getEmail());
+		}
+
+		if (request.getPhone_number() != null && !request.getPhone_number().isEmpty()) {
+			user.setPhone_number(request.getPhone_number());
+		}
+
+		if (request.getRole() != null) {
+			user.setRole(request.getRole());
+		}
+
 
 		return userMapper.toUserResponse(userRepository.save(user));
 	}

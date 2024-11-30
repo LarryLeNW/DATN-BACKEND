@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.constant.Type.OrderStatusType;
 import com.backend.constant.Type.PaymentMethod;
+import com.backend.constant.Type.PaymentStatus;
 import com.backend.dto.request.order.OrderCreationRequest;
 import com.backend.dto.request.order.OrderDetailUpdateRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
@@ -124,8 +125,9 @@ public class OrderService {
 		}
 	};
 
-	static String createUrlPayment(double totalAmount) throws ClientProtocolException, IOException {
-			
+	static String createUrlPayment(double totalAmount, String app_trans_id)
+			throws ClientProtocolException, IOException {
+
 		Map<String, Object>[] item = new Map[] { new HashMap<>() {
 			{
 				put("itemid", "item001");
@@ -135,24 +137,23 @@ public class OrderService {
 			}
 		} };
 
-		int transition_id =  Integer.parseInt(Helpers.handleRandom(7));
-
 		Map<String, Object> embed_data = new HashMap<>();
 		embed_data.put("merchantinfo", "Test Merchant");
-		embed_data.put("redirecturl", "http://facebook.com");
+		embed_data.put("redirecturl", "http://localhost:3000/checkout/payment/success");
 
 		Map<String, Object> order = new HashMap<String, Object>() {
 			{
 				put("app_id", stage_zalo_config.get("app_id"));
 				put("app_time", System.currentTimeMillis());
-				put("app_trans_id", Helpers.getCurrentTimeString("yyMMdd") + "_" + transition_id);
+				put("app_trans_id", app_trans_id);
 				put("app_user", "datn");
 				put("amount", (int) totalAmount);
-				put("description", "Payment for the order - DATN DEV TEAM 2025 DEMO" + transition_id);
+				put("description", "Payment for the order - DATN DEV TEAM 2025 DEMO");
 				put("bank_code", "");
 				put("item", new JSONArray(Arrays.asList(item)).toString());
 				put("embed_data", new JSONObject(embed_data).toString());
-				put("callback_url", "hacker.com");
+				put("callback_url",
+						"https://f66a-113-166-213-84.ngrok-free.app/api/payment/zalo/callback");
 			}
 		};
 
@@ -182,9 +183,7 @@ public class OrderService {
 		}
 
 		JSONObject result = new JSONObject(resultJsonStr.toString());
-		
-		log.info(result.toString());
-		
+
 		if (result.has("order_url"))
 			return result.getString("order_url");
 
@@ -196,9 +195,9 @@ public class OrderService {
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 		String idUser = auth.getName();
 
-		Order order = new Order();
 
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		Order order = new Order();
 		order.setUser(user);
 		order.setOrderCode(request.getCode());
 
@@ -249,25 +248,30 @@ public class OrderService {
 
 		order.setOrderDetails(orderDetails);
 
-		if (request.getPayment() != null) {
-			PaymentOrder(request.getPayment(), order);
-		}
+		String app_trans_id = Helpers.getCurrentTimeString("yyMMdd") + "_" + Integer.parseInt(Helpers.handleRandom(7));
+
+		OrderStatusType orderStatus = request.getPayment().getMethod() != PaymentMethod.COD ? OrderStatusType.UNPAID
+				: OrderStatusType.PENDING;
+		
+		order.setStatus(orderStatus);
+		
 		orderRepository.save(order);
+		PaymentOrder(request.getPayment(), order, app_trans_id);
 
 		if (request.getPayment().getMethod() == PaymentMethod.ZaloPay) {
-			String url = createUrlPayment(request.getPayment().getAmount());
+			String url = createUrlPayment(request.getPayment().getAmount(), app_trans_id);
 			log.info(url);
 			if (url != null)
 				return url;
 		}
 
-		return request.getCode();
+		return app_trans_id;
 	}
 
-	private void PaymentOrder(PaymentRequest paymentRequest, Order order) {
+	private void PaymentOrder(PaymentRequest paymentRequest, Order order, String app_trans_id) {
 		Payment payment = Payment.builder().amount(paymentRequest.getAmount()).method(paymentRequest.getMethod())
-				.status(paymentRequest.getStatus()).order(order).user(order.getUser()).build();
-
+				.status(paymentRequest.getStatus()).order(order).user(order.getUser()).appTransId(app_trans_id)
+				.build();
 		paymentRepository.save(payment);
 	}
 
@@ -283,7 +287,6 @@ public class OrderService {
 
 		if (status != null) {
 			Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), status);
-
 			query.where(criteriaBuilder.and(query.getRestriction(), statusPredicate));
 		}
 

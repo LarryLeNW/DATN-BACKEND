@@ -92,6 +92,9 @@ public class OrderController {
 		List<OrderStatusType> orderStatuses = Arrays.asList(OrderStatusType.values());
 		return ResponseEntity.ok(orderStatuses);
 	}
+	
+	
+	
 
 
 }
