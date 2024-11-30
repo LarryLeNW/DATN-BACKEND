@@ -201,12 +201,12 @@ public class OrderService {
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 		String idUser = auth.getName();
 
-
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 		Order order = new Order();
 		order.setUser(user);
 		order.setOrderCode(request.getCode());
-
+		order.setDiscountValue(request.getDiscountValue());
+		
 		Delivery delivery;
 
 		if (request.getDelivery() != null) {
@@ -258,9 +258,9 @@ public class OrderService {
 
 		OrderStatusType orderStatus = request.getPayment().getMethod() != PaymentMethod.COD ? OrderStatusType.UNPAID
 				: OrderStatusType.PENDING;
-		
+
 		order.setStatus(orderStatus);
-		
+
 		orderRepository.save(order);
 		PaymentOrder(request.getPayment(), order, app_trans_id);
 
@@ -276,44 +276,43 @@ public class OrderService {
 
 	private void PaymentOrder(PaymentRequest paymentRequest, Order order, String app_trans_id) {
 		Payment payment = Payment.builder().amount(paymentRequest.getAmount()).method(paymentRequest.getMethod())
-				.status(paymentRequest.getStatus()).order(order).user(order.getUser()).appTransId(app_trans_id)
-				.build();
+				.status(paymentRequest.getStatus()).order(order).user(order.getUser()).appTransId(app_trans_id).build();
 		paymentRepository.save(payment);
 	}
 
 	public PagedResponse<OrderResponse> getOrders(Map<String, String> params) {
-	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    String roleUser = auth.getAuthorities().iterator().next().toString();
-	    String idUser = auth.getName();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+		String idUser = auth.getName();
 
-	    int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
-	    int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
-	    String sortField = params.getOrDefault("sortBy", "id");
-	    String orderBy = params.getOrDefault("orderBy", "asc");
+		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
+		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
+		String sortField = params.getOrDefault("sortBy", "id");
+		String orderBy = params.getOrDefault("orderBy", "desc");
 
-	    Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
-	    Sort sort = Sort.by(direction, sortField);
-	    Pageable pageable = PageRequest.of(page, limit, sort);
+		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
+		Sort sort = Sort.by(direction, sortField);
+		Pageable pageable = PageRequest.of(page, limit, sort);
 
-	    Specification<Order> spec = Specification.where(null);
+		Specification<Order> spec = Specification.where(null);
 
-	    if (params.containsKey("status")) {
-	        String status = params.get("status");
-	        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status));
-	    }
+		if (params.containsKey("status")) {
+			String status = params.get("status");
+			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status));
+		}
 
-	    if ("ROLE_USER".equals(roleUser)) {
-	        spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), idUser));
-	    }
+		if ("ROLE_USER".equals(roleUser)) {
+			spec = spec
+					.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), idUser));
+		}
 
-	    Page<Order> orderPage = orderRepository.findAll(spec, pageable);
-	    List<OrderResponse> cartResponses = orderPage.getContent().stream().map(orderMapper::toOrderResponse)
-	            .collect(Collectors.toList());
+		Page<Order> orderPage = orderRepository.findAll(spec, pageable);
+		List<OrderResponse> cartResponses = orderPage.getContent().stream().map(orderMapper::toOrderResponse)
+				.collect(Collectors.toList());
 
-	    return new PagedResponse<>(cartResponses, page + 1, orderPage.getTotalPages(), orderPage.getTotalElements(),
-	            limit);
+		return new PagedResponse<>(cartResponses, page + 1, orderPage.getTotalPages(), orderPage.getTotalElements(),
+				limit);
 	}
-
 
 	@Transactional
 	public OrderResponse updateOrder(Integer orderId, OrderUpdateRequest request) {
@@ -345,9 +344,6 @@ public class OrderService {
 
 					OrderDetail foundOrderDetail = orderDetailRepository.findOneByOrderAndProductAndSku(order, product,
 							sku);
-					System.out.println("hihi: " + foundOrderDetail.getId());
-					System.out.println("hihi: " + foundOrderDetail.getProduct());
-					System.out.println("hihi: " + foundOrderDetail.getSku());
 
 					if (currentOrderDetail != null && foundOrderDetail.getId() != foundOrderDetail.getId()) {
 						foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
@@ -375,10 +371,23 @@ public class OrderService {
 	}
 
 	public OrderResponse getOrderById(Integer orderId) {
-		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
 
-		return orderMapper.toOrderResponse(order);
+		Order orderFound = null;
+
+		if ("ROLE_USER".equals(roleUser)) {
+			User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+			orderFound = orderRepository.findByIdAndUser(orderId, user);
+		} else
+			orderFound = orderRepository.findById(orderId)
+					.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+
+		if(orderFound == null)
+			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
+		
+		return orderMapper.toOrderResponse(orderFound);
 	}
 
 	public OrderResponse getOrderByCode(String orderId) {
