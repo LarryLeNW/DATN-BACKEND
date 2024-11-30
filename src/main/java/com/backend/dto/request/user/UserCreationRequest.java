@@ -30,6 +30,8 @@ public class UserCreationRequest {
 	@NotNull
 	@Email
 	String email;
+	
+	String phone_number;
 
 	LoginType login_type = LoginType.DEFAULT;;
 

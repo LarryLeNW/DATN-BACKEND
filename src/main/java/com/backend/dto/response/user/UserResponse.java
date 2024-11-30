@@ -5,7 +5,6 @@ import java.util.Set;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
-import com.backend.dto.response.auth.RoleResponse;
 import com.backend.entity.Address;
 import com.backend.entity.Role;
 
@@ -22,9 +21,10 @@ public class UserResponse {
     String username;
     String phone_number;
     String email;
+    String avatar;
     int points; 
     UserStatusType status; 
     LoginType login_type; 
-    Role role;
     Set<Address> address;
+    String role;
 }

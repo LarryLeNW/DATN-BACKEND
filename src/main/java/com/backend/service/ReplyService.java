@@ -2,14 +2,15 @@ package com.backend.service;
 
 import java.util.ArrayList;
 
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.backend.dto.request.reply.ReplyCreationRequest;
-import com.backend.dto.request.reply.ReplyUpdateRequest;
+import com.backend.dto.request.blog.reply.ReplyCreationRequest;
+import com.backend.dto.request.blog.reply.ReplyUpdateRequest;
+import com.backend.dto.response.blog.reply.ReplyResponse;
 import com.backend.dto.response.common.PagedResponse;
-import com.backend.dto.response.reply.ReplyResponse;
 import com.backend.entity.Blog;
 import com.backend.entity.Comment;
 import com.backend.entity.Reply;

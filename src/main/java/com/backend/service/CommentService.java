@@ -2,13 +2,14 @@ package com.backend.service;
 
 import java.util.ArrayList;
 
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.backend.dto.request.comment.CommentCreationRequest;
-import com.backend.dto.request.comment.CommentUpdateRequest;
-import com.backend.dto.response.comment.CommentResponse;
+import com.backend.dto.request.blog.comment.CommentCreationRequest;
+import com.backend.dto.request.blog.comment.CommentUpdateRequest;
+import com.backend.dto.response.blog.comment.CommentResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.entity.Blog;
 import com.backend.entity.Category;
@@ -20,10 +21,10 @@ import com.backend.exception.ErrorCode;
 import com.backend.mapper.CategoryMapper;
 import com.backend.mapper.CommentMapper;
 import com.backend.repository.BlogRepository;
-import com.backend.repository.CategoryRepository;
 import com.backend.repository.CommentRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.repository.product.CategoryRepository;
 import com.backend.repository.user.UserRepository;
 import com.backend.utils.UploadFile;
 

@@ -1,7 +1,9 @@
 // ModuleController.java
 package com.backend.controller;
 
+import com.backend.dto.response.ApiResponse;
 import com.backend.entity.Module;
+import com.backend.entity.Permission;
 import com.backend.service.ModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +19,10 @@ public class ModuleController {
     private ModuleService moduleService;
 
     @GetMapping
-    public List<Module> getAllModules() {
-        return moduleService.getAllModules();
+    public ApiResponse<List<Module> > getAllModules() {
+        return ApiResponse.<List<Module>>builder()
+                .result(moduleService.getAllModules())
+                .build();
     }
 
     @GetMapping("/{id}")

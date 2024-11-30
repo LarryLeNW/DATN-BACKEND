@@ -22,6 +22,8 @@ import com.backend.dto.response.user.UserResponse;
 import com.backend.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -45,16 +47,21 @@ public class AuthenticationController {
                 .build();
     }
      
-
+    
     @GetMapping("/{verifyToken}")
     public ApiResponse<UserResponse> verifyAccount(@PathVariable("verifyToken") @NotNull String verifyToken) throws JOSEException, ParseException {
     	return ApiResponse.<UserResponse>builder().result(authenticationService.verifyRegister(verifyToken)).build();
     }
     
-    @PostMapping("/token")
-    ApiResponse<AuthenticationResponse> authenticate(@RequestBody  AuthenticationRequest request) {
-        var result = authenticationService.authenticate(request);
-        return ApiResponse.<AuthenticationResponse>builder().result(result).build();
+    @PostMapping("/login")
+    ApiResponse<AuthenticationResponse> authenticate(@RequestBody  AuthenticationRequest request , HttpServletResponse response) {
+    	AuthenticationResponse result = authenticationService.authenticate(request);
+    	Cookie cookie = new Cookie("accessToken", result.getToken());
+    	cookie.setSecure(true);
+    	cookie.setPath("/");
+    	cookie.setMaxAge(7 * 24 * 60 * 60);
+    	response.addCookie(cookie);
+    	return ApiResponse.<AuthenticationResponse>builder().result(result).build();
     }
     
 

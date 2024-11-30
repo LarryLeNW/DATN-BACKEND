@@ -1,17 +1,20 @@
 package com.backend.controller;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
+
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.dto.request.comment.CommentCreationRequest;
-import com.backend.dto.request.comment.CommentUpdateRequest;
+import com.backend.dto.request.blog.comment.CommentCreationRequest;
+import com.backend.dto.request.blog.comment.CommentUpdateRequest;
 import com.backend.dto.response.ApiResponse;
-import com.backend.dto.response.comment.CommentResponse;
+import com.backend.dto.response.blog.comment.CommentResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.entity.Category;
 import com.backend.entity.Comment;
@@ -35,16 +38,17 @@ public class CommentController {
 	CommentService commentService;
 	
 	@PostMapping
-	ApiResponse<CommentResponse> createComment (CommentCreationRequest request){
+	ApiResponse<CommentResponse> createComment (@RequestBody CommentCreationRequest request){
 		return ApiResponse.<CommentResponse>builder().result(commentService.createComment(request)).build();
 	}
 	
 	@PutMapping("/{commentId}")
-	ApiResponse<CommentResponse> updateComment(CommentUpdateRequest request,Integer commentId){
+	ApiResponse<CommentResponse> updateComment(@RequestBody CommentUpdateRequest request,@PathVariable Integer commentId){
 		return ApiResponse.<CommentResponse>builder().result(commentService.updateComment(request, commentId)).build();				
 	}
 	@DeleteMapping("/{commentId}")
-	ApiResponse<String> deleteComment (Integer commentId){
+	ApiResponse<String> deleteComment (@PathVariable Integer commentId){
+		commentService.deleteComment(commentId);
 		return ApiResponse.<String>builder().result("delete success comment ").build();
 	}
 	

@@ -17,7 +17,7 @@ public class BlogResponse {
 	int blogId;
 	String title;
 	String content;
-	String images;
+	String image;
 	String user_id;
     String userName;  
 	String categoryBlog_id;

@@ -1,53 +1,69 @@
 package com.backend.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Component;
-
 import com.backend.dto.response.product.ProductResponse;
+import com.backend.dto.response.product.ProductResponse.SKUDTO;
+import com.backend.dto.response.product.ProductResponse.BrandDTO;
+import com.backend.dto.response.product.ProductResponse.CategoryDTO;
+import com.backend.entity.Brand;
+import com.backend.entity.Category;
 import com.backend.entity.Product;
+import com.backend.entity.Sku;
 
-@Component
-public class ProductMapper {
+@Mapper(componentModel = "spring")
+public interface ProductMapper {
 
-	public ProductResponse toDTO(Product product) {
-		ProductResponse productDTO = new ProductResponse();
-		productDTO.setId(product.getId());
-		productDTO.setName(product.getName());
-		productDTO.setSlug(product.getSlug());
-		productDTO.setSlug(product.getSlug());
-		productDTO.setDescription(product.getDescription());
-		productDTO.setCategory(product.getCategory() != null ? product.getCategory() : null);
-		productDTO.setBrand(product.getBrand() != null ? product.getBrand() : null);
-		productDTO.setCreatedAt(product.getCreatedAt());
-		productDTO.setUpdatedAt(product.getUpdatedAt());
+    @Mapping(source = "category", target = "category")
+    @Mapping(source = "brand", target = "brand")
+    @Mapping(source = "skus", target = "skus", qualifiedByName = "toSkuDTOs")
+    ProductResponse toDTO(Product product);
 
-		List<ProductResponse.SKUDTO> skuDTOs = product.getSkus().stream().map(sku -> {
-			ProductResponse.SKUDTO skuDTO = new ProductResponse.SKUDTO();
-			skuDTO.setPrice(sku.getPrice());
-			skuDTO.setPrice(sku.getPrice());
-			skuDTO.setStock(sku.getStock());
-			skuDTO.setDiscount(sku.getDiscount());
-			skuDTO.setCode(sku.getCode());
-			skuDTO.setId(sku.getId());
-			skuDTO.setImages(sku.getImages());
+    default CategoryDTO toCategoryDTO(Category category) {
+        if (category == null) return null;
+        return new CategoryDTO(category.getId(), category.getName());
+    }
+    
+    default BrandDTO toBrandDTO(Brand brand) {
+        if (brand == null) return null;
+        return new BrandDTO(brand.getId(), brand.getName());
+    }
 
-			skuDTO.setAttributes(sku.getAttributeOptionSkus().stream()
-					.collect(Collectors.toMap(
-							attributeOptionSku -> attributeOptionSku.getAttributeOption().getAttribute().getName(),
-							attributeOptionSku -> attributeOptionSku.getAttributeOption().getValue(),
-							(existing, replacement) -> existing, // xử lý trường hợp trùng lặp key, bạn có thể giữ lại
-																	// giá trị cũ
-							HashMap::new // chỉ định loại bản đồ là HashMap<String, String>
-			)));
+    @Named("toSkuDTOs")
+    default List<SKUDTO> toSkuDTOs(List<Sku> skus) {
+        if (skus == null || skus.isEmpty()) return List.of();
+        return skus.stream()
+                .map(this::toSkuDTO)
+                .collect(Collectors.toList());
+    }
 
-			return skuDTO;
-		}).collect(Collectors.toList());
+    default SKUDTO toSkuDTO(Sku sku) {
+        if (sku == null) return null;
 
-		productDTO.setSkus(skuDTOs);
-		return productDTO;
-	}
+        SKUDTO skuDTO = new SKUDTO();
+        skuDTO.setId(sku.getId());
+        skuDTO.setCode(sku.getCode());
+        skuDTO.setPrice(sku.getPrice());
+        skuDTO.setStock(sku.getStock());
+        skuDTO.setDiscount(sku.getDiscount());
+        skuDTO.setImages(sku.getImages());
 
+        skuDTO.setAttributes(
+                sku.getAttributeOptionSkus().stream()
+                        .collect(Collectors.toMap(
+                                attributeOptionSku -> attributeOptionSku.getAttributeOption().getAttribute().getName(),
+                                attributeOptionSku -> attributeOptionSku.getAttributeOption().getValue(),
+                                (existing, replacement) -> existing, 
+                                HashMap::new 
+                        ))
+        );
+
+        return skuDTO;
+    }
 }

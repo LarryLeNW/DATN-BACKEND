@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.backend.entity.Brand;
 import com.backend.entity.Category;
 import com.backend.entity.Sku;
+import com.backend.entity.Voucher;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,12 +28,13 @@ public class ProductResponse {
 	Long id;
 	String name;
 	String slug;
-	Category category;
-	Brand brand;
+	CategoryDTO category;
+	BrandDTO brand;
 	String description;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 	Double stars;
+
 	private List<SKUDTO> skus;
 
 	@Data
@@ -45,7 +48,22 @@ public class ProductResponse {
 		String code;
 		String images;
 		HashMap<String, String> attributes;
+	}
 
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class BrandDTO {
+		Long id;
+		String name;
+	}
+
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class CategoryDTO {
+		Long id;
+		String name;
 	}
 
 }
