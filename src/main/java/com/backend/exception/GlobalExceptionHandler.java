@@ -33,6 +33,20 @@ public class GlobalExceptionHandler {
 
     private static final String MIN_ATTRIBUTE = "min";
 
+    
+    private static String extractDuplicateValue(String message) {
+        try {
+            int start = message.indexOf("(");
+            int end = message.indexOf(")", start);
+            if (start != -1 && end != -1) {
+                return message.substring(start + 1, end);
+            }
+        } catch (Exception e) {
+        }
+        return "giá trị không xác định";
+    }
+    
+    
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
         log.error("Exception: ", exception);
@@ -115,12 +129,24 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
-    	ApiResponse apiResponse = new ApiResponse();
-    	apiResponse.setCode(ErrorCode.INVALID_FIELD_ACCESS.getCode());  
-    	apiResponse.setMessage( exception.getMessage());
-    	return ResponseEntity.badRequest().body(apiResponse);
+        String message = exception.getMessage();
+        ApiResponse apiResponse = new ApiResponse();
+        
+        if (message != null && message.contains("Violation of UNIQUE KEY constraint")) {
+            String duplicateValue = extractDuplicateValue(message);
+            apiResponse.setCode(ErrorCode.DUPLICATE_KEY.getCode());
+            apiResponse.setMessage(String.format(
+                "Tồn tại dữ liệu với giá trị '%s'",
+                  duplicateValue
+            ));
+        } else {
+            apiResponse.setCode(ErrorCode.INVALID_FIELD_ACCESS.getCode());
+            apiResponse.setMessage("Vi phạm dữ liệu: " + exception.getMessage());
+        }
+
+        return ResponseEntity.badRequest().body(apiResponse);
     }
-    
+
    
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse> HttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {

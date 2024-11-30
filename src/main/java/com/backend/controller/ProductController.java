@@ -16,6 +16,7 @@ import com.backend.entity.Product;
 import com.backend.dto.request.product.ProductCreationRequest;
 import com.backend.dto.request.product.ProductUpdateRequest;
 import com.backend.dto.response.ApiResponse;
+import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.service.ProductService;
@@ -31,7 +32,6 @@ public class ProductController {
 	@Autowired
 	private ProductService productService;
 
-	// Create Product
 	@PostMapping
 	public ResponseEntity<?> createProduct(@RequestBody ProductCreationRequest data) {
 		return ResponseEntity.ok(productService.createProduct(data));
@@ -53,14 +53,19 @@ public class ProductController {
 		return ResponseEntity.ok(productService.updateProduct(id, productRequest, files));
 	}
 
-	// Get Products
 	@GetMapping
-	ApiResponse<Page<ProductResponse>> getProducts(@RequestParam Map<String, String> params,
+	ApiResponse<PagedResponse<ProductResponse>> getProducts(@RequestParam Map<String, String> params,
 			@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
 
-		Page<ProductResponse> productsPage = productService.getProducts(params);
-
-		return ApiResponse.<Page<ProductResponse>>builder().result(productsPage).build();
+		return ApiResponse.<PagedResponse<ProductResponse>>builder().result(productService.getProducts(params)).build();
 	}
+	
+
+	@DeleteMapping("/{productId}")
+	ApiResponse<String> delete(@PathVariable Long productId) {
+		return ApiResponse.<String>builder().result(productService.delete(productId)).build();
+	}
+
+	
 
 }

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -46,10 +47,6 @@ public class User {
     @Column(name = "refresh_token")
     String refresh_token;
 
-    @Size(min = 5, max = 5, message = "OTP required 5 characters")
-    @Column(name = "otp")
-    String otp;
-
     @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
     int points;
 
@@ -61,6 +58,7 @@ public class User {
     @Column(name = "login_type", nullable = false)
     LoginType login_type = LoginType.DEFAULT;
 
+    @JsonIgnore
     @ManyToOne
     Role role;
 
@@ -69,8 +67,31 @@ public class User {
 
     @OneToMany
     Set<Cart> cart;
-    //
+    
+    @ManyToMany
+    @JoinTable(
+        name = "voucher_user", 
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "voucher_id")
+    )
+    List<Voucher> vouchers; 
+
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
+    
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Delivery> deliveries;
+
+
+	public User(String username, String password, String email) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		this.login_type = LoginType.DEFAULT;
+		this.status  = UserStatusType.INACTIVE; 
+	}
 
 }

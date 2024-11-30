@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.backend.constant.Type.OrderStatusType;
 import com.backend.entity.Delivery;
+import com.backend.entity.Product;
+import com.backend.entity.User;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,9 +21,11 @@ import lombok.experimental.FieldDefaults;
 public class OrderResponse {
 
 	String id;
-	double totalAmount;
+	double total_amount;
 	OrderStatusType status;
 	Delivery delivery;
+	OrderUserResponse user;
+	PaymentResponse payment;
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 	List<OrderDetailResponse> orderDetails;

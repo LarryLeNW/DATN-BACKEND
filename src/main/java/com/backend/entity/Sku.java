@@ -42,7 +42,7 @@ public class Sku {
 	@Column(name = "discount")
 	private Long discount;
 
-	@OneToMany(mappedBy = "sku")
+	@OneToMany(mappedBy = "sku" ,cascade = CascadeType.REMOVE)
 	private List<AttributeOptionSku> attributeOptionSkus;
 
 	@Column(name = "images", columnDefinition = "NVARCHAR(MAX)")

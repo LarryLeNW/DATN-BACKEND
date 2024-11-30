@@ -135,39 +135,34 @@ public class CartService {
 
 		return this.getAll(new HashMap<>());
 	}
-	
+
 	public PagedResponse<CartDetailResponse> update(CartUpdateRequest request) {
-		log.info("request : " + request.toString());
 		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
-		
+
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-		
+
 		Product product = productRepository.findById(request.getProductId())
 				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
-		
+
 		Sku sku = skuRepository.findById(request.getSkuId())
 				.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
-		
-		Cart cartUpdate = cartRepository.findByIdAndUser(request.getId(), user); 
-		
-		if(cartUpdate != null &&  request.getProductId() == cartUpdate.getProduct().getId() && request.getSkuId() == cartUpdate.getSku().getId())
+
+		Cart cartUpdate = cartRepository.findByIdAndUser(request.getId(), user);
+		System.out.println("cartUpdate" + cartUpdate);
+
+		Cart foundCart = cartRepository.findOneCartByUserAndProductAndSku(user, product, sku);
+		if (foundCart != null && foundCart.getId() != cartUpdate.getId()) {
+			foundCart.setQuantity(request.getQuantity() + foundCart.getQuantity());
+			cartRepository.delete(cartUpdate);
+			cartUpdate = foundCart;
+		} else {
 			cartUpdate.setQuantity(request.getQuantity());
-		else {
-			Cart foundCart = cartRepository.findOneCartByUserAndProductAndSku(user, product, sku);
-			if(foundCart != null) {
-				 foundCart.setQuantity(request.getQuantity());
-				 cartRepository.delete(cartUpdate);
-				 cartUpdate = foundCart;
-			}
-			else cartUpdate = new Cart();
-			cartUpdate.setUser(user);
 			cartUpdate.setProduct(product);
 			cartUpdate.setSku(sku);
-			cartUpdate.setQuantity(request.getQuantity());
 		}
-		
+
 		cartRepository.save(cartUpdate);
-		
+
 		return this.getAll(new HashMap<>());
 	}
 
@@ -179,6 +174,4 @@ public class CartService {
 		return this.getAll(new HashMap<>());
 	}
 
-	
-	
 }

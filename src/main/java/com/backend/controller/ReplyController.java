@@ -1,6 +1,7 @@
 package com.backend.controller;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,14 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.dto.request.comment.CommentCreationRequest;
-import com.backend.dto.request.comment.CommentUpdateRequest;
-import com.backend.dto.request.reply.ReplyCreationRequest;
-import com.backend.dto.request.reply.ReplyUpdateRequest;
+import com.backend.dto.request.blog.reply.ReplyCreationRequest;
+import com.backend.dto.request.blog.reply.ReplyUpdateRequest;
 import com.backend.dto.response.ApiResponse;
-import com.backend.dto.response.comment.CommentResponse;
+import com.backend.dto.response.blog.reply.ReplyResponse;
 import com.backend.dto.response.common.PagedResponse;
-import com.backend.dto.response.reply.ReplyResponse;
 import com.backend.entity.Comment;
 import com.backend.entity.Reply;
 import com.backend.service.CommentService;

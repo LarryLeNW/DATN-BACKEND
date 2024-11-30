@@ -18,9 +18,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderDetailCreationRequest {
 
-    String id;
-    double quantity;
-    double price;
+	double quantity;
 	String orderId;
     Long productId;    
     Long skuid;
