@@ -29,4 +29,5 @@ public class OrderCreationRequest {
     PaymentRequest payment;
     List<Voucher> vouchers;
     String code = Helpers.handleRandom(11);
+    Double discountValue;
 }

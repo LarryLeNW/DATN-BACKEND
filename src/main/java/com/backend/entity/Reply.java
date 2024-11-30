@@ -25,6 +25,7 @@ public class Reply {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int replyId;
 
+	@Column(name = "content", columnDefinition = "NVARCHAR(MAX)")
 	private String content;
 
 	@ManyToOne

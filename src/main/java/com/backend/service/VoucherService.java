@@ -103,7 +103,7 @@ public class VoucherService {
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 		String sortField = params.getOrDefault("sortBy", "id");
-		String orderBy = params.getOrDefault("orderBy", "asc");
+		String orderBy = params.getOrDefault("orderBy", "desc");
 		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
 		Sort sort = Sort.by(direction, sortField);
 		Pageable pageable = PageRequest.of(page, limit, sort);

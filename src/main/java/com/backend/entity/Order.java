@@ -31,30 +31,33 @@ public class Order {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer id;
 
-	@Column(name = "order_code", nullable = false,unique = true)
+	@Column(name = "order_code", nullable = false, unique = true)
 	String orderCode;
-	
+
 	double total_amount;
 
 	@Enumerated(EnumType.STRING)
 	OrderStatusType status;
 
 	@OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JsonIgnore
-	private List<OrderDetail> orderDetails;
+	List<OrderDetail> orderDetails;
 
 	@ManyToOne
 	@JoinColumn(name = "userid", nullable = true)
 	@JsonIgnore
-	private User user;
+	User user;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "delivery_id", referencedColumnName = "id")
-	private Delivery delivery;
-	
+	Delivery delivery;
+
+	@Column(name = "discount_value")
+	Double discountValue;
+
 	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
-    private Payment payment;
-	
+	@JsonIgnore
+	Payment payment;
+
 	@CreationTimestamp
 	@Column(name = "created_at")
 	LocalDateTime createdAt;
@@ -62,6 +65,5 @@ public class Order {
 	@UpdateTimestamp
 	@Column(name = "updated_at")
 	LocalDateTime updatedAt;
-
 
 }

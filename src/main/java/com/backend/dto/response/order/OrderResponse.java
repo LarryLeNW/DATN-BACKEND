@@ -30,4 +30,5 @@ public class OrderResponse {
 	LocalDateTime updatedAt;
 	List<OrderDetailResponse> orderDetails;
 	String orderCode;
+	Double discountValue;
 }

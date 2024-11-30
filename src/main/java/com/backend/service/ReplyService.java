@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -93,6 +94,12 @@ public class ReplyService {
 		int totalPages = (int) Math.ceil((double) totalElements / limit);
 
 		return new PagedResponse<>(reply, page, totalPages, totalElements, limit);
+	}
+	public List<ReplyResponse> getRepliesByCommentId(Integer commentId) {
+	    List<Reply> replies = replyRepository.findByComment_CommentId(commentId);
+	    return replies.stream()
+	                  .map(replyMapper::toReplyResponse) // Chuyển đổi từ entity sang DTO
+	                  .collect(Collectors.toList());
 	}
 
 }
