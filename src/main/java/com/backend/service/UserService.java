@@ -120,7 +120,7 @@ public class UserService {
 		}
 
 		if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-			user.setPassword(passwordEncoder.encode(request.getPassword()));
+		    user.setPassword(passwordEncoder.encode(request.getPassword()));
 		}
 
 		if (request.getEmail() != null && !request.getEmail().isEmpty()) {
@@ -192,5 +192,20 @@ public class UserService {
 	public UserResponse getUser(String id) {
 		return userMapper.toUserResponse(
 				userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
+	}
+	
+	public boolean changePassword(String email, String oldPassword, String newPassword) {
+	    User user = userRepository.findByEmail(email);
+	    
+	    if (user != null) {
+	        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+	            user.setPassword(passwordEncoder.encode(newPassword));
+	            userRepository.save(user);
+	            return true;
+	        } else {
+	            return false;
+	        }
+	    }
+	    return false;
 	}
 }
