@@ -37,30 +37,25 @@ public class ProductController {
 		return ResponseEntity.ok(productService.createProduct(data));
 	}
 
-	@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateProduct(@RequestPart("files") List<MultipartFile> files, @PathVariable Long id,
-			@RequestPart("productData") String productData) {
-
-		ObjectMapper objectMapper = new ObjectMapper();
-		ProductUpdateRequest productRequest;
-
-		try {
-			productRequest = objectMapper.readValue(productData, ProductUpdateRequest.class);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-
-		return ResponseEntity.ok(productService.updateProduct(id, productRequest, files));
+	@PutMapping("/{productId}")
+	public ResponseEntity<?> updateProduct(@PathVariable Long productId,@RequestBody ProductUpdateRequest data) {
+		return ResponseEntity.ok(productService.updateProduct(productId, data));
 	}
 
+	@GetMapping("/{productId}")
+	ApiResponse<ProductResponse> getProducts(@PathVariable Long productId) {
+		return ApiResponse.<ProductResponse>builder().result(productService.getProductById(productId)).build();
+	}
+	
 	@GetMapping
-	ApiResponse<PagedResponse<ProductResponse>> getProducts(@RequestParam Map<String, String> params,
+	ApiResponse<PagedResponse<ProductResponse>> getOneById(@RequestParam Map<String, String> params,
 			@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
-
+		
 		return ApiResponse.<PagedResponse<ProductResponse>>builder().result(productService.getProducts(params)).build();
 	}
 	
-
+	
+	
 	@DeleteMapping("/{productId}")
 	ApiResponse<String> delete(@PathVariable Long productId) {
 		return ApiResponse.<String>builder().result(productService.delete(productId)).build();
