@@ -34,6 +34,7 @@ public class ProductResponse {
 	LocalDateTime createdAt;
 	LocalDateTime updatedAt;
 	Double stars;
+	Long totalSold;
 
 	private List<SKUDTO> skus;
 
