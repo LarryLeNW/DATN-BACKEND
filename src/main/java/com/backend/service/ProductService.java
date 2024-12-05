@@ -186,7 +186,6 @@ public class ProductService {
 			} else {
 				sku = new Sku(existingProduct, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
 						skuDTO.getDiscount(), skuDTO.getImages());
-				log.info("create new sku : " + sku.toString());
 				log.info("skuDTO : " + skuDTO.toString());
 			}
 
@@ -267,14 +266,14 @@ public class ProductService {
 					builder.like(builder.lower(root.get("description")), "%" + keyword + "%")));
 		}
 
-		if (params.containsKey("category")) {
+		if (params.containsKey("category") && !params.get("category").isEmpty()) {
 			spec = spec.and((root, query, criteriaBuilder) -> root.get("category").get("slug")
 					.in(params.get("category").split(",")));
 		}
 
 		if (params.containsKey("brand")) {
-			spec = spec.and(
-					(root, query, criteriaBuilder) -> root.get("brand").get("slug").in(params.get("brand").split(",")));
+			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("brand").get("slug"),
+					params.get("brand")));
 		}
 
 		if (params.containsKey("price")) {
@@ -293,12 +292,18 @@ public class ProductService {
 		}
 
 		Map<String, String> attributes = params.entrySet().stream()
-				.filter(entry -> !List.of("page", "limit", "sortBy", "orderBy", "category", "price", "minPrice",
-						"maxPrice", "keyword").contains(entry.getKey()))
+				.filter(entry -> !List.of("page", "limit", "sortBy", "orderBy", "category", "brand","price", "minPrice",
+						"maxPrice", "keyword", "stars").contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (!attributes.isEmpty()) {
 			spec = spec.and(ProductSpecification.hasAttributes(attributes));
+		}
+
+		if (params.containsKey("stars")) {
+			Double minStars = Double.parseDouble(params.get("stars"));
+			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("stars"),
+					minStars));
 		}
 
 		List<Product> productsList = productRepository.findAll(spec);
@@ -340,8 +345,8 @@ public class ProductService {
 					? Comparator.comparing(product -> product.getSkus().get(0).getStock())
 					: Comparator.comparing(product -> product.getSkus().get(0).getStock(), Comparator.reverseOrder());
 		default:
-			return direction == Sort.Direction.ASC ? Comparator.comparing(Product::getId) : // Default sort by ID
-					Comparator.comparing(Product::getId, Comparator.reverseOrder());
+			return direction == Sort.Direction.ASC ? Comparator.comparing(Product::getId)
+					: Comparator.comparing(Product::getId, Comparator.reverseOrder());
 		}
 	}
 

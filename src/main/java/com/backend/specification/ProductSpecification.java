@@ -56,7 +56,7 @@ public class ProductSpecification {
 	public static Specification<Product> hasAttributes(Map<String, String> attributes) {
 		return (root, query, criteriaBuilder) -> {
 			if (attributes == null || attributes.isEmpty()) {
-				return criteriaBuilder.conjunction(); // Không có điều kiện lọc
+				return criteriaBuilder.conjunction(); 
 			}
 
 			Predicate predicate = criteriaBuilder.conjunction();
@@ -65,17 +65,14 @@ public class ProductSpecification {
 			Join<AttributeOptionSku, AttributeOption> aoJoin = aosJoin.join("attributeOption", JoinType.INNER);
 			Join<AttributeOption, Attribute> attributeJoin = aoJoin.join("attribute", JoinType.INNER);
 
-			// Xây dựng điều kiện lọc cho từng thuộc tính
 			for (Map.Entry<String, String> entry : attributes.entrySet()) {
 				String attributeName = entry.getKey();
 				String attributeValue = entry.getValue();
 
-				// Thêm điều kiện lọc cho từng thuộc tính
-				Predicate attributePredicate = criteriaBuilder.and(
-						criteriaBuilder.equal(attributeJoin.get("name"), attributeName),
-						criteriaBuilder.equal(aoJoin.get("value"), attributeValue));
+		        Predicate attributePredicate = criteriaBuilder.and(
+	                    criteriaBuilder.like(criteriaBuilder.lower(attributeJoin.get("name")), "%" + attributeName.toLowerCase() + "%"),
+	                    criteriaBuilder.like(criteriaBuilder.lower(aoJoin.get("value")), "%" + attributeValue.toLowerCase() + "%"));
 
-				// Kết hợp tất cả các điều kiện lọc
 				predicate = criteriaBuilder.and(predicate, attributePredicate);
 			}
 
