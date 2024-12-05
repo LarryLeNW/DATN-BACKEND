@@ -2,7 +2,9 @@ package com.backend.dto.request.product;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.backend.entity.Attribute;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -31,6 +33,7 @@ public class ProductUpdateRequest {
         private Long stock;
         private Long discount;
         private String code; 
-        private int imageCount; 
+        private HashMap<String, String> attributes;
+        private String images;
     }
 }

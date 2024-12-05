@@ -10,81 +10,98 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 public class ProductSpecification {
 
-    // Điều kiện lọc theo Category ID
-    public static Specification<Product> hasCategory(Long categoryId) {
-        return (root, query, criteriaBuilder) -> {
-            if (categoryId == null) {
-                return criteriaBuilder.conjunction();
-            }
-            return criteriaBuilder.equal(root.get("category").get("id"), categoryId);
-        };
-    }
+	  public static Specification<Product> hasSkuSortField(String sortField, Sort.Direction direction) {
+	        return (root, query, criteriaBuilder) -> {
+	            Join<Product, Sku> skuJoin = root.join("skus", JoinType.LEFT);
 
-    // Điều kiện lọc theo Attributes
-    public static Specification<Product> hasAttributes(Map<String, String> attributes) {
-        return (root, query, criteriaBuilder) -> {
-            if (attributes == null || attributes.isEmpty()) {
-                return criteriaBuilder.conjunction(); // Không có điều kiện lọc
-            }
+	            if ("discount".equals(sortField)) {
+	                if (direction == Sort.Direction.ASC) {
+	                    query.orderBy(criteriaBuilder.asc(skuJoin.get("discount")));
+	                } else {
+	                    query.orderBy(criteriaBuilder.desc(skuJoin.get("discount")));
+	                }
+	            } else if ("price".equals(sortField)) {
+	                if (direction == Sort.Direction.ASC) {
+	                    query.orderBy(criteriaBuilder.asc(skuJoin.get("price")));
+	                } else {
+	                    query.orderBy(criteriaBuilder.desc(skuJoin.get("price")));
+	                }
+	            } else if ("stock".equals(sortField)) {
+	                if (direction == Sort.Direction.ASC) {
+	                    query.orderBy(criteriaBuilder.asc(skuJoin.get("stock")));
+	                } else {
+	                    query.orderBy(criteriaBuilder.desc(skuJoin.get("stock")));
+	                }
+	            }
 
-            Predicate predicate = criteriaBuilder.conjunction();
-            Join<Product, Sku> skuJoin = root.join("skus", JoinType.LEFT);
-            Join<Sku, AttributeOptionSku> aosJoin = skuJoin.join("attributeOptionSkus", JoinType.LEFT);
-            Join<AttributeOptionSku, AttributeOption> aoJoin = aosJoin.join("attributeOption", JoinType.INNER);
-            Join<AttributeOption, Attribute> attributeJoin = aoJoin.join("attribute", JoinType.INNER);
+	            return criteriaBuilder.conjunction();
+	        };
+	    }
 
-            // Xây dựng điều kiện lọc cho từng thuộc tính
-            for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                String attributeName = entry.getKey();
-                String attributeValue = entry.getValue();
 
-                // Thêm điều kiện lọc cho từng thuộc tính
-                Predicate attributePredicate = criteriaBuilder.and(
-                        criteriaBuilder.equal(attributeJoin.get("name"), attributeName),
-                        criteriaBuilder.equal(aoJoin.get("value"), attributeValue)
-                );
+	public static Specification<Product> hasExactPrice(Long price) {
+		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.join("skus").get("price"), price);
+	}
 
-                // Kết hợp tất cả các điều kiện lọc
-                predicate = criteriaBuilder.and(predicate, attributePredicate);
-            }
+	public static Specification<Product> hasAttributes(Map<String, String> attributes) {
+		return (root, query, criteriaBuilder) -> {
+			if (attributes == null || attributes.isEmpty()) {
+				return criteriaBuilder.conjunction(); // Không có điều kiện lọc
+			}
 
-            return predicate;
-        };
-    }
-    
-    
-    public static Specification<Product> hasExactPrice(Long price) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.join("skus").get("price"), price);
-    }
-    
-    
-    public static Specification<Product> hasMinPrice(Long minPrice) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.join("skus").get("price"), minPrice);
-    }
+			Predicate predicate = criteriaBuilder.conjunction();
+			Join<Product, Sku> skuJoin = root.join("skus", JoinType.LEFT);
+			Join<Sku, AttributeOptionSku> aosJoin = skuJoin.join("attributeOptionSkus", JoinType.LEFT);
+			Join<AttributeOptionSku, AttributeOption> aoJoin = aosJoin.join("attributeOption", JoinType.INNER);
+			Join<AttributeOption, Attribute> attributeJoin = aoJoin.join("attribute", JoinType.INNER);
 
-    public static Specification<Product> hasMaxPrice(Long maxPrice) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.join("skus").get("price"), maxPrice);
-    }
-    
+			// Xây dựng điều kiện lọc cho từng thuộc tính
+			for (Map.Entry<String, String> entry : attributes.entrySet()) {
+				String attributeName = entry.getKey();
+				String attributeValue = entry.getValue();
 
-    public static Specification<Product> getProductWithSkus() {
-        return (root, query, criteriaBuilder) -> {
-            root.fetch("skus", JoinType.LEFT).fetch("attributeOptionSkus", JoinType.LEFT)
-                .fetch("attributeOption", JoinType.LEFT).fetch("attribute", JoinType.LEFT);
+				// Thêm điều kiện lọc cho từng thuộc tính
+				Predicate attributePredicate = criteriaBuilder.and(
+						criteriaBuilder.equal(attributeJoin.get("name"), attributeName),
+						criteriaBuilder.equal(aoJoin.get("value"), attributeValue));
 
-            query.distinct(true);
+				// Kết hợp tất cả các điều kiện lọc
+				predicate = criteriaBuilder.and(predicate, attributePredicate);
+			}
 
-            return criteriaBuilder.conjunction();
-        };
-    }
+			return predicate;
+		};
+	}
+
+	public static Specification<Product> hasMinPrice(Long minPrice) {
+		return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.join("skus").get("price"),
+				minPrice);
+	}
+
+	public static Specification<Product> hasMaxPrice(Long maxPrice) {
+		return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.join("skus").get("price"),
+				maxPrice);
+	}
+
+	public static Specification<Product> getProductWithSkus() {
+		return (root, query, criteriaBuilder) -> {
+			root.fetch("skus", JoinType.LEFT).fetch("attributeOptionSkus", JoinType.LEFT)
+					.fetch("attributeOption", JoinType.LEFT).fetch("attribute", JoinType.LEFT);
+
+			query.distinct(true);
+
+			return criteriaBuilder.conjunction();
+		};
+	}
 
 }
