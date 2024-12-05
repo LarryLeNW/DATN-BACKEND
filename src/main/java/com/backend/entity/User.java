@@ -74,6 +74,7 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "voucher_id")
     )
+	@JsonIgnore
     List<Voucher> vouchers; 
 
 
@@ -84,6 +85,13 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Delivery> deliveries;
 
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
+    private List<Question> questions;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<QuestionReply> questionReplies;
 
 	public User(String username, String password, String email) {
 		super();
