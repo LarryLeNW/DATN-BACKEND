@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostBy{
+	String id ;
 	String username; 
 	String avatar;
 }

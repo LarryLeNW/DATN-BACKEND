@@ -9,8 +9,15 @@ import com.backend.entity.Product;
 import com.backend.entity.Question;
 import com.backend.entity.QuestionReaction;
 import com.backend.entity.QuestionReply;
+import java.util.List;
+import com.backend.entity.User;
+
 
 @Repository
 public interface QuestionReactionRepository
         extends JpaRepository<QuestionReaction, Long>, JpaSpecificationExecutor<QuestionReaction> {
+	
+	QuestionReaction findByUserAndQuestionAndReactionType(User user, Question question, String reactionType);
+
+	QuestionReaction findByUserAndId(User user, Long id);
 }

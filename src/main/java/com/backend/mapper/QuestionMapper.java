@@ -25,10 +25,12 @@ public interface QuestionMapper {
 
 	@Mapping(source = "user", target = "postBy.username", qualifiedByName = "getUsernameOrEmail")
 	@Mapping(source = "user.avatar", target = "postBy.avatar")
+	@Mapping(source = "user.id", target = "postBy.id")
 	QuestionReplyResponse toQuestionReplyResponse(QuestionReply questionReply);
 
 	@Mapping(source = "user", target = "postBy.username", qualifiedByName = "getUsernameOrEmail")
 	@Mapping(source = "user.avatar", target = "postBy.avatar")
+	@Mapping(source = "user.id", target = "postBy.id")
 	QuestionReactionResponse toQuestionReactionResponse(QuestionReaction questionReaction);
 
 	List<QuestionReplyResponse> toQuestionReplyResponses(List<QuestionReply> replies);
