@@ -37,7 +37,7 @@ public class QuestionReply {
     @Column(name = "reply_text",columnDefinition = "NVARCHAR(MAX)")
     private String replyText;
     
-    @Column(name = "images")
+    @Column(name = "images" , columnDefinition = "NVARCHAR(MAX)")
     private String images;
 
     @CreationTimestamp

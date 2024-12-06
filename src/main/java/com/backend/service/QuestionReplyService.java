@@ -26,6 +26,7 @@ import com.backend.dto.request.fqa.QuestionCreation;
 import com.backend.dto.request.fqa.QuestionReplyCreation;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.question.QuestionReplyResponse;
 import com.backend.dto.response.question.QuestionResponse;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.entity.Category;
@@ -68,7 +69,7 @@ public class QuestionReplyService {
 
 	EntityManager entityManager;
 
-	public QuestionReply create(QuestionReplyCreation request) {
+	public QuestionReplyResponse create(QuestionReplyCreation request) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 		String idUser = auth.getName();
@@ -91,7 +92,7 @@ public class QuestionReplyService {
 			questionReply.setParentReply(replyParent);
 		}
 
-		return questionReplyRepository.save(questionReply);
+		return questionMapper.toQuestionReplyResponse(questionReplyRepository.save(questionReply));
 	}
 
 	public PagedResponse<QuestionReply> getAll(Map<String, String> params) {

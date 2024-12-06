@@ -9,7 +9,8 @@ import com.backend.entity.Product;
 import com.backend.entity.Question;
 import com.backend.entity.QuestionReaction;
 import com.backend.entity.QuestionReply;
-@Repository
-public interface QuestionReactionRepository extends JpaRepository<QuestionReaction, Long>, JpaSpecificationExecutor<QuestionReaction> {
 
+@Repository
+public interface QuestionReactionRepository
+        extends JpaRepository<QuestionReaction, Long>, JpaSpecificationExecutor<QuestionReaction> {
 }
