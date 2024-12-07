@@ -22,7 +22,7 @@ public class ReplyCreationRequest {
 	
 	String userId;
 	
-	int ParentReplyId;
+	int parentReplyId;
 	
 
 }

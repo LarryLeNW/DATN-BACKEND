@@ -1,4 +1,4 @@
-package com.backend.service;
+package com.backend.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +30,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+@Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-@Service("productCategoryService")
 public class CategoryService {
 	CategoryRepository categoryRepository;
 
