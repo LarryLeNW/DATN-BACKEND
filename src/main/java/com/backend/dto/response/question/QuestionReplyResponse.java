@@ -29,7 +29,6 @@ public class QuestionReplyResponse {
 	String replyText;
 
 	String images;
-
 	LocalDateTime createdAt;
 
 	LocalDateTime updatedAt;

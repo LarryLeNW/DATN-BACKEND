@@ -41,5 +41,4 @@ public class QuestionReplyController {
 		return ApiResponse.<PagedResponse<QuestionReply>>builder().result(questionReplyService.getAll(params)).build();
 	}
 
-
 }

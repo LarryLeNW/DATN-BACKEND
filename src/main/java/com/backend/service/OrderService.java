@@ -159,7 +159,7 @@ public class OrderService {
 				put("item", new JSONArray(Arrays.asList(item)).toString());
 				put("embed_data", new JSONObject(embed_data).toString());
 				put("callback_url",
-						"https://f5aa-2402-800-629c-f6b2-e84a-d4dd-8856-98bc.ngrok-free.app/api/payment/zalo/callback");
+						"https://f66a-113-166-213-84.ngrok-free.app/api/payment/zalo/callback");
 			}
 		};
 

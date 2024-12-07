@@ -72,7 +72,8 @@ public class QuestionReactionService {
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
 		QuestionReaction questionReactionUpdated = questionReactionRepository.findByUserAndId(userAction, id);
-		if(questionReactionUpdated == null) throw new RuntimeException("Vui lòng thử lại sau...");
+		if (questionReactionUpdated == null)
+			throw new RuntimeException("Vui lòng thử lại sau...");
 		questionReactionUpdated.setReactionType(request.getReactionType());
 		questionReactionRepository.save(questionReactionUpdated);
 		return questionMapper.toQuestionReactionResponse(questionReactionUpdated);

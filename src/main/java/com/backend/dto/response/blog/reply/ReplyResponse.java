@@ -21,9 +21,13 @@ public class ReplyResponse {
            
 	int replyId;
 	String content;
+	String userComment;
+	String userName;
+	String parentReplyUserName;
+	String avatar;
 	int comment_id;
-	int user_id;
+	String user_id;
 	LocalDateTime createdAt;
 	LocalDateTime updateAt;
-	
+    List<ReplyResponse> replies; 
 }

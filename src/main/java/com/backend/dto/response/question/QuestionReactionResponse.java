@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class QuestionReactionResponse {
 	Long id;
-	
+
 	PostBy postBy;
 
 	String reactionType;

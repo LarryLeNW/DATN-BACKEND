@@ -61,8 +61,8 @@ public class QuestionService {
 	QuestionMapper questionMapper;
 
 	UserRepository userRepository;
-	
-	EntityManager entityManager; 
+
+	EntityManager entityManager;
 
 	public QuestionResponse create(QuestionCreation request) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -75,10 +75,9 @@ public class QuestionService {
 		Question question = questionMapper.toQuestion(request);
 
 		question.setUser(userAction);
-		
-		return questionMapper.toQuestionResponse(questionRepository.save(question)) ;
-	}
 
+		return questionMapper.toQuestionResponse(questionRepository.save(question));
+	}
 
 	public PagedResponse<QuestionResponse> getAll(Map<String, String> params) {
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
@@ -88,30 +87,30 @@ public class QuestionService {
 		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
 		Sort sort = Sort.by(direction, sortField);
 		Pageable pageable = PageRequest.of(page, limit, sort);
-		
+
 		Specification<Question> spec = Specification.where(null);
 		if (params.containsKey("status")) {
 			String status = params.get("status");
 			spec = spec
 					.and((root, query, builder) -> builder.equal(root.get("status"), UserStatusType.valueOf(status)));
 		}
-		
-		
+
 		Page<Question> questionPage = questionRepository.findAll(spec, pageable);
 
-	    List<QuestionResponse> questionResponses = questionPage.getContent().stream()
-	            .map(question -> {
-	                List<QuestionReplyResponse> filteredReplies = question.getReplies().stream()
-	                    .filter(reply -> reply.getParentReply() == null)  
-	                    .map(questionMapper::toQuestionReplyResponse)
-	                    .collect(Collectors.toList());
-	                QuestionResponse questionResponse = questionMapper.toQuestionResponse(question);
-	                questionResponse.setReplies(filteredReplies); 
-	                return questionResponse;
-	            })
-	            .collect(Collectors.toList());
+		List<QuestionResponse> questionResponses = questionPage.getContent().stream()
+				.map(question -> {
+					List<QuestionReplyResponse> filteredReplies = question.getReplies().stream()
+							.filter(reply -> reply.getParentReply() == null)
+							.map(questionMapper::toQuestionReplyResponse)
+							.collect(Collectors.toList());
+					QuestionResponse questionResponse = questionMapper.toQuestionResponse(question);
+					questionResponse.setReplies(filteredReplies);
+					return questionResponse;
+				})
+				.collect(Collectors.toList());
 
-		return new PagedResponse<>(questionResponses, page + 1, questionPage.getTotalPages(), questionPage.getTotalElements(),
+		return new PagedResponse<>(questionResponses, page + 1, questionPage.getTotalPages(),
+				questionPage.getTotalElements(),
 				limit);
 	}
 
