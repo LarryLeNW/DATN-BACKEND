@@ -25,6 +25,7 @@ import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.user.TopReactUser;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
@@ -33,10 +34,18 @@ import com.backend.repository.user.RoleRepository;
 import com.backend.repository.user.UserRepository;
 import com.backend.utils.Helpers;
 import com.backend.utils.UploadFile;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+
 import com.backend.constant.PredefinedRole;
 import com.backend.constant.Type.UserStatusType;
 import com.backend.entity.Cart;
 import com.backend.entity.Product;
+import com.backend.entity.QuestionReaction;
 import com.backend.entity.Role;
 import com.backend.entity.User;
 
@@ -54,7 +63,7 @@ public class UserService {
 	RoleRepository roleRepository;
 	UserMapper userMapper;
 	PasswordEncoder passwordEncoder;
-	
+	EntityManager entityManager;
 	UploadFile uploadFile;
 
 	public UserResponse createUser(UserCreationRequest request) {
@@ -193,6 +202,36 @@ public class UserService {
 		return userMapper.toUserResponse(
 				userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
 	}
+	
+	public List<TopReactUser> getTopUsersWithMostReactions() {
+        Pageable pageable = PageRequest.of(0, 10);  
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+        Root<QuestionReaction> root = cq.from(QuestionReaction.class);
+
+        cq.multiselect(root.get("user").get("id"), cb.count(root));
+        cq.groupBy(root.get("user").get("id"));
+        cq.orderBy(cb.desc(cb.count(root)));  
+
+        Query query = entityManager.createQuery(cq);
+        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<Object[]> results = query.getResultList();
+
+        return results.stream()
+            .map(result -> {
+                String userId = (String) result[0];
+                Long totalReactions = (Long) result[1] ;
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                TopReactUser response = userMapper.toTopReactUser(user);
+                response.setTotalReactions(totalReactions); 
+                return response;
+            })
+            .collect(Collectors.toList());
+    }
 	
 	public boolean changePassword(String email, String oldPassword, String newPassword) {
 	    User user = userRepository.findByEmail(email);
