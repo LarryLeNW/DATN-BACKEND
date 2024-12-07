@@ -25,6 +25,7 @@ import com.backend.dto.request.category.CategoryUpdateRequest;
 import com.backend.dto.request.fqa.QuestionCreation;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.question.QuestionReplyResponse;
 import com.backend.dto.response.question.QuestionResponse;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.entity.Category;
@@ -98,8 +99,17 @@ public class QuestionService {
 		
 		Page<Question> questionPage = questionRepository.findAll(spec, pageable);
 
-		List<QuestionResponse> questionResponses = questionPage.getContent().stream().map(questionMapper::toQuestionResponse)
-				.collect(Collectors.toList());
+	    List<QuestionResponse> questionResponses = questionPage.getContent().stream()
+	            .map(question -> {
+	                List<QuestionReplyResponse> filteredReplies = question.getReplies().stream()
+	                    .filter(reply -> reply.getParentReply() == null)  
+	                    .map(questionMapper::toQuestionReplyResponse)
+	                    .collect(Collectors.toList());
+	                QuestionResponse questionResponse = questionMapper.toQuestionResponse(question);
+	                questionResponse.setReplies(filteredReplies); 
+	                return questionResponse;
+	            })
+	            .collect(Collectors.toList());
 
 		return new PagedResponse<>(questionResponses, page + 1, questionPage.getTotalPages(), questionPage.getTotalElements(),
 				limit);
