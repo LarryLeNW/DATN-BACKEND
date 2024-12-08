@@ -71,15 +71,13 @@ public class BrandService {
 		Brand brand = brandRepository.findById(brandId)
 				.orElseThrow(() -> new AppException(ErrorCode.BRAND_NOT_EXISTED));
 
-		
-		if(request != null) {
+		if (request != null) {
 			Helpers.updateFieldEntityIfChanged(request.getName(), brand.getName(), brand::setName);
 			Helpers.updateFieldEntityIfChanged(request.getDescription(), brand.getDescription(), brand::setDescription);
 
 			if (request.getName() != null)
 				brand.setSlug(Helpers.toSlug(request.getName()));
 		}
-	
 
 		if (image != null) {
 			String imageUrl = uploadFile.saveFile(image, "brandTest");
@@ -90,7 +88,10 @@ public class BrandService {
 	}
 
 	public void deleteBrand(Long brandId) {
-		brandRepository.deleteById(brandId);
+		Brand brandFound = brandRepository.getById(brandId);
+		if (brandFound == null)
+			throw new RuntimeException("Không tìm thấy brand");
+		brandRepository.delete(brandFound);
 	}
 
 }

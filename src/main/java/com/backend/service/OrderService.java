@@ -87,6 +87,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -121,6 +122,8 @@ public class OrderService {
 	DeliveryMapper deliveryMapper;
 
 	CartRespository cartRepository;
+	
+	PaymentService paymentService; 
 
 	private static Map<String, String> stage_zalo_config = new HashMap<String, String>() {
 		{
@@ -196,7 +199,7 @@ public class OrderService {
 		return null;
 	}
 
-	public String createOrder(OrderCreationRequest request) throws ClientProtocolException, IOException {
+	public String createOrder(OrderCreationRequest requestData, HttpServletRequest request) throws ClientProtocolException, IOException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 		String idUser = auth.getName();
@@ -204,13 +207,13 @@ public class OrderService {
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 		Order order = new Order();
 		order.setUser(user);
-		order.setOrderCode(request.getCode());
-		order.setDiscountValue(request.getDiscountValue());
+		order.setOrderCode(requestData.getCode());
+		order.setDiscountValue(requestData.getDiscountValue());
 		
 		Delivery delivery;
 
-		if (request.getDelivery() != null) {
-			Delivery deliveryCreated = deliveryMapper.toDelivery(request.getDelivery());
+		if (requestData.getDelivery() != null) {
+			Delivery deliveryCreated = deliveryMapper.toDelivery(requestData.getDelivery());
 			deliveryCreated.setUser(user);
 			delivery = deliveryRepository.save(deliveryCreated);
 		} else {
@@ -219,15 +222,15 @@ public class OrderService {
 
 		order.setDelivery(delivery);
 
-		if (request.getPayment().getMethod() == PaymentMethod.COD) {
+		if (requestData.getPayment().getMethod() == PaymentMethod.COD) {
 			order.setStatus(OrderStatusType.PENDING);
 		}
 
-		order.setTotal_amount(request.getPayment().getAmount());
+		order.setTotal_amount(requestData.getPayment().getAmount());
 
 		orderRepository.save(order);
 
-		List<OrderDetail> orderDetails = Optional.ofNullable(request.getOrderDetails()).orElse(Collections.emptyList())
+		List<OrderDetail> orderDetails = Optional.ofNullable(requestData.getOrderDetails()).orElse(Collections.emptyList())
 				.stream().map(detailRequest -> {
 					OrderDetail orderDetail = new OrderDetail();
 
@@ -256,21 +259,28 @@ public class OrderService {
 
 		String app_trans_id = Helpers.getCurrentTimeString("yyMMdd") + "_" + Integer.parseInt(Helpers.handleRandom(7));
 
-		OrderStatusType orderStatus = request.getPayment().getMethod() != PaymentMethod.COD ? OrderStatusType.UNPAID
+		OrderStatusType orderStatus = requestData.getPayment().getMethod() != PaymentMethod.COD ? OrderStatusType.UNPAID
 				: OrderStatusType.PENDING;
 
 		order.setStatus(orderStatus);
 
 		orderRepository.save(order);
-		PaymentOrder(request.getPayment(), order, app_trans_id);
+		PaymentOrder(requestData.getPayment(), order, app_trans_id);
 
-		if (request.getPayment().getMethod() == PaymentMethod.ZaloPay) {
-			String url = createUrlPayment(request.getPayment().getAmount(), app_trans_id);
-			log.info(url);
+		if (requestData.getPayment().getMethod() == PaymentMethod.ZaloPay) {
+			String url = createUrlPayment(requestData.getPayment().getAmount(), app_trans_id);
 			if (url != null)
 				return url;
 		}
 
+
+		if (requestData.getPayment().getMethod() == PaymentMethod.VNPay) {
+			String url = paymentService.createVnPayUrl((int) requestData.getPayment().getAmount(),request , app_trans_id);
+			if (url != null)
+				return url;
+		}
+
+		
 		return app_trans_id;
 	}
 

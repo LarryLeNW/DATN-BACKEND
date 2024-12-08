@@ -32,6 +32,7 @@ import com.backend.entity.OrderDetail;
 import com.backend.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -60,8 +61,8 @@ public class OrderController {
 	}
 
 	@PostMapping
-	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest request) throws ClientProtocolException, IOException {
-		return ApiResponse.<String>builder().result(orderService.createOrder(request)).build();
+	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest requestData , HttpServletRequest request) throws ClientProtocolException, IOException {
+		return ApiResponse.<String>builder().result(orderService.createOrder(requestData, request)).build();
 	}
 
 	@PutMapping("/{orderId}")

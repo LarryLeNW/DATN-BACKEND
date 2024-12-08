@@ -1,6 +1,5 @@
 package com.backend.constant.Type;
 
 public enum PaymentMethod {
-	CreditCard, PayPal, COD, ZaloPay
-
+	CreditCard, PayPal, COD, ZaloPay, VNPay
 }

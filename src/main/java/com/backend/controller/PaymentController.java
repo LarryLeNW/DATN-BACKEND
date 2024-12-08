@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.constant.Type.OrderStatusType;
@@ -29,8 +30,12 @@ import com.backend.repository.order.OrderRepository;
 import com.backend.repository.order.PaymentRepository;
 import com.backend.repository.user.UserRepository;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @RestController
@@ -46,7 +51,7 @@ public class PaymentController {
 
 	@Autowired
 	PaymentRepository paymentRepository;
-	
+
 	@Autowired
 	UserRepository userRepository;
 
@@ -86,8 +91,7 @@ public class PaymentController {
 
 				result.put("return_code", 1);
 				result.put("return_message", "success");
-				
-		         
+
 			}
 		} catch (Exception ex) {
 			result.put("return_code", 0);
@@ -95,9 +99,33 @@ public class PaymentController {
 		}
 
 		log.info(result.toString());
-	
 
 		return result.toString();
+	}
+
+	@GetMapping("/vn-pay/callback")
+	public void callbackVNPay(@RequestParam Map<String, String> params, HttpServletResponse response)
+			throws IOException {
+		String txnRef = params.get("vnp_TxnRef");
+		String paymentStatus = params.get("vnp_TransactionStatus");
+
+		if ("00".equals(paymentStatus)) {
+			Payment paymentFound = paymentRepository.findByAppTransId(txnRef);
+
+			if (paymentFound != null) {
+				paymentFound.setStatus(PaymentStatus.COMPLETED);
+				paymentRepository.save(paymentFound);
+				Order orderUpdate = orderRepository.findByPayment(paymentFound);
+				orderUpdate.setStatus(OrderStatusType.PENDING); 
+				orderRepository.save(orderUpdate);
+				logger.info("Order status updated to success where app_trans_id = " + txnRef);
+			}
+		} else {
+			logger.warning("Payment failed for txnRef: " + txnRef);
+		}
+
+		String redirectUrl = "http://localhost:3000/checkout/payment/success?apptransid=" + txnRef;
+		response.sendRedirect(redirectUrl);
 	}
 
 	@GetMapping("/check/{transId}")
@@ -107,10 +135,11 @@ public class PaymentController {
 		String idUser = auth.getName();
 
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-		Payment paymentFound = paymentRepository.findByAppTransIdAndUser(transId , user);
-		
-		if(paymentFound == null) throw new RuntimeException("Not found your payment...");
-		
+		Payment paymentFound = paymentRepository.findByAppTransIdAndUser(transId, user);
+
+		if (paymentFound == null)
+			throw new RuntimeException("Not found your payment...");
+
 		return ApiResponse.<Payment>builder().result(paymentFound).build();
 	}
 
