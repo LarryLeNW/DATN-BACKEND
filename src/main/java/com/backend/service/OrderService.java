@@ -396,8 +396,17 @@ public class OrderService {
 		return orderMapper.toOrderResponse(orderFound);
 	}
 
+	
+	@Transactional
 	public void deleteOrderDetail(Integer orderDetailId) {
-        orderDetailRepository.deleteById(orderDetailId);  // Xóa OrderDetail theo id
-	}
+	    OrderDetail orderDetailFound = orderDetailRepository.findById(orderDetailId)
+	            .orElseThrow(() -> new RuntimeException("not found"));
 
+	    Order order = orderDetailFound.getOrder();
+	    if (order != null) {
+	        order.getOrderDetails().remove(orderDetailFound); 
+	    }
+
+	    orderDetailRepository.delete(orderDetailFound);
+	}
 }

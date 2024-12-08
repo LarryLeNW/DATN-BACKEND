@@ -25,6 +25,7 @@ import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.user.TopReactUser;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.entity.Cart;
 import com.backend.entity.User;
@@ -50,7 +51,7 @@ public class UserController {
 	ObjectMapper objectMapper;
 	@Autowired
 	private UploadFile uploadFile;
-	
+
 	@PostMapping
 	ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
 		return ApiResponse.<UserResponse>builder().result(userService.createUser(request)).build();
@@ -85,11 +86,11 @@ public class UserController {
 	}
 
 	@PutMapping("/{id}/info")
-	ApiResponse<UserResponse> updateInfoUser(@PathVariable String id,
-			@RequestParam(required = false) String userData,@RequestParam(required = false) MultipartFile avatar) throws JsonMappingException, JsonProcessingException {
+	ApiResponse<UserResponse> updateInfoUser(@PathVariable String id, @RequestParam(required = false) String userData,
+			@RequestParam(required = false) MultipartFile avatar) throws JsonMappingException, JsonProcessingException {
 
 		System.out.println("chạy đến updateUserInfo");
-		System.out.println("thoong tin : "+userData);
+		System.out.println("thoong tin : " + userData);
 
 		UserUpdateRequest userRequest = null;
 
@@ -98,21 +99,29 @@ public class UserController {
 		}
 		return ApiResponse.<UserResponse>builder().result(userService.updateInfoUser(id, userRequest, avatar)).build();
 	}
-	
+
 	@PutMapping("/changePassword")
 	public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
-	    try {
-	        boolean isChanged = userService.changePassword(request.getEmail(), request.getOldPassword(), request.getNewPassword());
-	        
-	        if (isChanged) {
-	            return ResponseEntity.ok("Thay đổi mật khẩu thành công");
-	        } else {
-	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mật khẩu cũ không chính xác hoặc người dùng không tồn tại");
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while changing the password");
-	    }
+		try {
+			boolean isChanged = userService.changePassword(request.getEmail(), request.getOldPassword(),
+					request.getNewPassword());
+
+			if (isChanged) {
+				return ResponseEntity.ok("Thay đổi mật khẩu thành công");
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body("Mật khẩu cũ không chính xác hoặc người dùng không tồn tại");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("An error occurred while changing the password");
+		}
+	}
+
+	@GetMapping("/top-reactions")
+	public List<TopReactUser> getTopUsersWithMostReactions() {
+		return userService.getTopUsersWithMostReactions();
 	}
 
 }

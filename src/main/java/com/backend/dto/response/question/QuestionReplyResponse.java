@@ -21,14 +21,18 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class QuestionReplyResponse {
+
+	Long id;
+
 	PostBy postBy;
 
 	String replyText;
 
 	String images;
-	
 	LocalDateTime createdAt;
 
 	LocalDateTime updatedAt;
+
+	List<QuestionReplyResponse> childReplies;
 
 }

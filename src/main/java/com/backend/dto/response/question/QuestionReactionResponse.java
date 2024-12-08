@@ -21,6 +21,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class QuestionReactionResponse {
+	Long id;
+
 	PostBy postBy;
 
 	String reactionType;

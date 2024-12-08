@@ -12,6 +12,7 @@ import com.backend.dto.request.fqa.QuestionCreation;
 import com.backend.dto.request.fqa.QuestionReplyCreation;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.question.QuestionReplyResponse;
 import com.backend.dto.response.question.QuestionResponse;
 import com.backend.entity.QuestionReply;
 import com.backend.service.QuestionReplyService;
@@ -31,14 +32,13 @@ public class QuestionReplyController {
 	QuestionReplyService questionReplyService;
 
 	@PostMapping
-	ApiResponse<QuestionReply> create(@RequestBody QuestionReplyCreation request) {
-		return ApiResponse.<QuestionReply>builder().result(questionReplyService.create(request)).build();
+	ApiResponse<QuestionReplyResponse> create(@RequestBody QuestionReplyCreation request) {
+		return ApiResponse.<QuestionReplyResponse>builder().result(questionReplyService.create(request)).build();
 	}
 
 	@GetMapping
 	ApiResponse<PagedResponse<QuestionReply>> getAll(Map<String, String> params) {
 		return ApiResponse.<PagedResponse<QuestionReply>>builder().result(questionReplyService.getAll(params)).build();
 	}
-
 
 }

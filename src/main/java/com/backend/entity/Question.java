@@ -9,8 +9,19 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.backend.constant.Type.QuestionStatusType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -30,13 +41,14 @@ public class Question {
 	@JoinColumn(name = "user_id")
 	User user;
 
-	@Column(name = "question_text")
+	@Column(name = "question_text", columnDefinition = "NVARCHAR(MAX)")
 	String questionText;
 
-	@Column(name = "images")
+	@Column(name = "images", columnDefinition = "NVARCHAR(MAX)")
 	String images;
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
 	List<QuestionReply> replies;
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

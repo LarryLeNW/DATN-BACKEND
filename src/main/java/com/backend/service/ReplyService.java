@@ -85,7 +85,7 @@ public class ReplyService {
 		return replyMapper.toReplyResponse(replyRepository.save(reply));
 	}
 
-	public void deleteReply(int replyId) {
+	public void deleteReply(Integer replyId) {
 		replyRepository.deleteById(replyId);
 	}
 

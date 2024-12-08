@@ -36,7 +36,7 @@ public class QuestionController {
 	}
 
 	@GetMapping
-	ApiResponse<PagedResponse<QuestionResponse>> getAll(Map<String, String> params) {
+	ApiResponse<PagedResponse<QuestionResponse>> getAll(@RequestParam Map<String, String> params) {
 		return ApiResponse.<PagedResponse<QuestionResponse>>builder().result(questionService.getAll(params)).build();
 	}
 
