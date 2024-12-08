@@ -51,8 +51,7 @@ public class OrderController {
 	ObjectMapper objectMapper;
 
 	@GetMapping
-	ApiResponse<PagedResponse<OrderResponse>> getAlls(
-			@RequestParam Map<String, String> params) {
+	ApiResponse<PagedResponse<OrderResponse>> getAlls(@RequestParam Map<String, String> params) {
 
 		PagedResponse<OrderResponse> pagedResponse = orderService.getOrders(params);
 
@@ -60,7 +59,8 @@ public class OrderController {
 	}
 
 	@PostMapping
-	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest request) throws ClientProtocolException, IOException {
+	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest request)
+			throws ClientProtocolException, IOException {
 		return ApiResponse.<String>builder().result(orderService.createOrder(request)).build();
 	}
 
@@ -75,11 +75,19 @@ public class OrderController {
 		return ApiResponse.<String>builder().result("delete success order with id of: " + orderId).build();
 	}
 
+	@DeleteMapping("/{orderDetailId}/orderDetail")
+	public ApiResponse<String> deleteOrderDetail(@PathVariable Integer orderDetailId) {
+		orderService.deleteOrderDetail(orderDetailId);
+		System.out.println(orderDetailId);
+		return ApiResponse.<String>builder()
+				.result("Delete thành công id:" +orderDetailId ).build();
+	}
+
 	@GetMapping("/{orderId}")
 	ApiResponse<OrderResponse> getOrderById(@PathVariable Integer orderId) {
 		return ApiResponse.<OrderResponse>builder().result(orderService.getOrderById(orderId)).build();
 	}
-	
+
 	@GetMapping("/code/{codeId}")
 	ApiResponse<OrderResponse> getOrderByCode(@PathVariable String codeId) {
 		return ApiResponse.<OrderResponse>builder().result(orderService.getOrderByCode(codeId)).build();
@@ -90,9 +98,5 @@ public class OrderController {
 		List<OrderStatusType> orderStatuses = Arrays.asList(OrderStatusType.values());
 		return ResponseEntity.ok(orderStatuses);
 	}
-	
-	
-	
-
 
 }

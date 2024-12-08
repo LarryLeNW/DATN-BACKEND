@@ -158,8 +158,7 @@ public class OrderService {
 				put("bank_code", "");
 				put("item", new JSONArray(Arrays.asList(item)).toString());
 				put("embed_data", new JSONObject(embed_data).toString());
-				put("callback_url",
-						"https://f66a-113-166-213-84.ngrok-free.app/api/payment/zalo/callback");
+				put("callback_url", "https://f66a-113-166-213-84.ngrok-free.app/api/payment/zalo/callback");
 			}
 		};
 
@@ -206,7 +205,7 @@ public class OrderService {
 		order.setUser(user);
 		order.setOrderCode(request.getCode());
 		order.setDiscountValue(request.getDiscountValue());
-		
+
 		Delivery delivery;
 
 		if (request.getDelivery() != null) {
@@ -323,10 +322,9 @@ public class OrderService {
 			if (request.getDeliveryId() != null) {
 				Delivery delivery = deliveryRepository.findById(Integer.parseInt(request.getDeliveryId()))
 						.orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
-				if (!delivery.equals(order.getDelivery())) {
-					order.setDelivery(delivery);
-				}
+				Helpers.updateFieldEntityIfChanged(delivery, order.getDelivery(), order::setDelivery);
 			}
+
 			Helpers.updateFieldEntityIfChanged(request.getTotalAmount(), order.getTotal_amount(),
 					order::setTotal_amount);
 			Helpers.updateFieldEntityIfChanged(request.getStatus(), order.getStatus(), order::setStatus);
@@ -345,22 +343,22 @@ public class OrderService {
 					OrderDetail foundOrderDetail = orderDetailRepository.findOneByOrderAndProductAndSku(order, product,
 							sku);
 
-					if (currentOrderDetail != null && foundOrderDetail.getId() != foundOrderDetail.getId()) {
-						foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
+					if (foundOrderDetail != null && !foundOrderDetail.getId().equals(currentOrderDetail.getId())) {
 
+						foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
 						orderDetailRepository.delete(currentOrderDetail);
 						currentOrderDetail = foundOrderDetail;
-
 					} else {
+
+						System.out.println("số lượng:" + detailRequest.getQuantity());
 						currentOrderDetail.setQuantity(detailRequest.getQuantity());
 						currentOrderDetail.setSku(sku);
 						currentOrderDetail.setProduct(product);
 					}
-					orderDetailRepository.save(currentOrderDetail);
 
+					orderDetailRepository.save(currentOrderDetail);
 				}
 			}
-
 		}
 
 		return orderMapper.toOrderResponse(orderRepository.save(order));
@@ -384,9 +382,9 @@ public class OrderService {
 			orderFound = orderRepository.findById(orderId)
 					.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-		if(orderFound == null)
+		if (orderFound == null)
 			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
-		
+
 		return orderMapper.toOrderResponse(orderFound);
 	}
 
@@ -396,6 +394,10 @@ public class OrderService {
 		if (orderFound == null)
 			throw new RuntimeException("Not found info this order...");
 		return orderMapper.toOrderResponse(orderFound);
+	}
+
+	public void deleteOrderDetail(Integer orderDetailId) {
+        orderDetailRepository.deleteById(orderDetailId);  // Xóa OrderDetail theo id
 	}
 
 }
