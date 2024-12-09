@@ -12,6 +12,7 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.backend.entity.rental.RentalPackage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "products")
@@ -65,7 +66,25 @@ public class Product {
     public String toString() {
         return "Product{id=" + id + ", name='" + name + "'}";
     }
+    
+    @Column(name = "can_be_rented")
+    Boolean canBeRented = false;  
 
+    @Column(name = "hourly_rent_price")
+    Long hourlyRentPrice;  
+
+    @Column(name = "daily_rent_price")
+    Long dailyRentPrice;  
+
+    @Column(name = "min_rental_quantity")
+    Long minRentalQuantity;  
+
+    @Column(name = "max_rental_quantity")
+    Long maxRentalQuantity;  
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    List<RentalPackage> rentalPackages; 
+    
     @PrePersist
     public void prePersist() {
         if (stars == null) {
