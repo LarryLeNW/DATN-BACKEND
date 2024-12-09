@@ -28,11 +28,7 @@ public class ProductCreationRequest {
 	Long brandId;
 	String description;
 	List<SKUDTO> skus;
-	Boolean canBeRented;
-	Long hourlyRentPrice;
-	Long dailyRentPrice;
-	Long minRentalQuantity;
-	Long maxRentalQuantity;
+	
 	List<RentalPackageDTO> rentalPackages;
 	
 	@Data
@@ -55,6 +51,11 @@ public class ProductCreationRequest {
 		private Long stock;
 		private Long discount;
 		private String code;
+		private Boolean canBeRented;
+		private Long hourlyRentPrice;
+		private Long dailyRentPrice;
+		private Long minRentalQuantity;
+		private Long maxRentalQuantity;
 		private HashMap<String, String> attributes;
 		private String images;
 	}

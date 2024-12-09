@@ -102,6 +102,14 @@ public class ProductService {
 		for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
 			Sku skuCreated = new Sku(productCreated, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
 					skuDTO.getDiscount(), skuDTO.getImages());
+			skuCreated.setCanBeRented(skuDTO.getCanBeRented());
+			
+			if (skuDTO.getCanBeRented()) {
+			    skuCreated.setHourlyRentPrice(skuDTO.getHourlyRentPrice());
+			    skuCreated.setDailyRentPrice(skuDTO.getDailyRentPrice());
+			    skuCreated.setMinRentalQuantity(skuDTO.getMinRentalQuantity());
+			    skuCreated.setMaxRentalQuantity(skuDTO.getMaxRentalQuantity());
+			}
 
 			skusToSave.add(skuCreated);
 
@@ -292,8 +300,8 @@ public class ProductService {
 		}
 
 		Map<String, String> attributes = params.entrySet().stream()
-				.filter(entry -> !List.of("page", "limit", "sortBy", "orderBy", "category", "brand","price", "minPrice",
-						"maxPrice", "keyword", "stars").contains(entry.getKey()))
+				.filter(entry -> !List.of("page", "limit", "sortBy", "orderBy", "category", "brand", "price",
+						"minPrice", "maxPrice", "keyword", "stars").contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (!attributes.isEmpty()) {

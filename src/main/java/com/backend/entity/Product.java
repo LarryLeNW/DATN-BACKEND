@@ -67,20 +67,7 @@ public class Product {
         return "Product{id=" + id + ", name='" + name + "'}";
     }
     
-    @Column(name = "can_be_rented")
-    Boolean canBeRented = false;  
-
-    @Column(name = "hourly_rent_price")
-    Long hourlyRentPrice;  
-
-    @Column(name = "daily_rent_price")
-    Long dailyRentPrice;  
-
-    @Column(name = "min_rental_quantity")
-    Long minRentalQuantity;  
-
-    @Column(name = "max_rental_quantity")
-    Long maxRentalQuantity;  
+  
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<RentalPackage> rentalPackages; 
