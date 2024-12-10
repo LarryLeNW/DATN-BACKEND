@@ -16,9 +16,11 @@ import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.entity.*;
+import com.backend.entity.rental.RentalPackage;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
+import com.backend.mapper.RentalPackageMapper;
 import com.backend.repository.*;
 import com.backend.repository.product.AttributeOptionRepository;
 import com.backend.repository.product.AttributeOptionSkuRepository;
@@ -36,6 +38,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,6 +73,9 @@ public class ProductService {
 
 	@Autowired
 	private ProductMapper productMapper;
+	
+	@Autowired
+	private RentalPackageMapper rentalPackageMapper;
 
 	@Autowired
 	private UploadFile uploadFile;
@@ -90,7 +96,12 @@ public class ProductService {
 		productCreated.setName(request.getName());
 		productCreated.setSlug(request.getSlug());
 		productCreated.setDescription(request.getDescription());
-
+		List<RentalPackage> rentalPackgages = rentalPackageMapper.toRentalPackages(request.getRentalPackages());
+		for (RentalPackage rentalPackage : rentalPackgages) {
+			rentalPackage.setProduct(productCreated);
+		}
+		
+		productCreated.setRentalPackages(rentalPackgages);
 		productRepository.save(productCreated);
 
 		Map<String, Attribute> attributeCache = new HashMap<>();
