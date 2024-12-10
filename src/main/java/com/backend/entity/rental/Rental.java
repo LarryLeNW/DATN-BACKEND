@@ -40,6 +40,11 @@ public class Rental {
     
     @OneToMany(mappedBy = "rental", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	List<RentalDetail> rentalDetails;
+    
+    @ManyToOne
+    @JoinColumn(name = "rental_package_id", nullable = false)
+    @JsonIgnore
+    RentalPackage rentalPackage;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

@@ -13,7 +13,9 @@ import com.backend.entity.Brand;
 import com.backend.entity.Category;
 import com.backend.entity.Sku;
 import com.backend.entity.Voucher;
+import com.backend.entity.rental.RentalPackage;
 
+import jakarta.persistence.Column;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,6 +37,7 @@ public class ProductResponse {
 	LocalDateTime updatedAt;
 	Double stars;
 	Long totalSold;
+	List<RentalPackage> rentalPackages;
 
 	private List<SKUDTO> skus;
 
@@ -47,6 +50,12 @@ public class ProductResponse {
 		Long stock;
 		Long discount;
 		String code;
+		Boolean canBeRented ;
+		Long hourlyRentPrice;
+		Long dailyRentPrice;
+		Long minRentalQuantity;
+		Long maxRentalQuantity;
+
 		String images;
 		HashMap<String, String> attributes;
 	}
