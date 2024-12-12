@@ -37,7 +37,7 @@ public class VoucherCreationRequest {
 	String code = Helpers.handleRandom(11);
 
 	@NotNull
-	@Length(min = 10, max = 16)
+	@Length(min = 10, max = 50)
 	String name;
 
 	DiscountVoucherType discount_type = DiscountVoucherType.PERCENT;
