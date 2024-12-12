@@ -260,4 +260,24 @@ public class RentalService {
 		return new PagedResponse<>(rentalResponses, page + 1, rentalPage.getTotalPages(), rentalPage.getTotalElements(),
 				limit);
 	}
+	
+	public RentalResponse getRentalById(Long orderId) {
+		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+
+		Rental orderFound = null;
+
+		if ("ROLE_USER".equals(roleUser)) {
+			User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+			orderFound = rentalRepository.findByIdAndUser(orderId, user);
+		} else
+			orderFound = rentalRepository.findById(orderId)
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê ..."));
+
+		if (orderFound == null)
+			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
+
+		return rentalMapper.toRentalResponse(orderFound);
+	}
 }

@@ -64,6 +64,12 @@ public class RentalController {
 		PagedResponse<RentalResponse> pagedResponse = rentalService.getAll(params);
 		return ApiResponse.<PagedResponse<RentalResponse>>builder().result(pagedResponse).build();
 	}
+	
+	@GetMapping("/{rentalId}")
+	ApiResponse<RentalResponse> getOrderById(@PathVariable Long rentalId) {
+		return ApiResponse.<RentalResponse>builder().result(rentalService.getRentalById(rentalId)).build();
+	}
+
 
 	
 	
