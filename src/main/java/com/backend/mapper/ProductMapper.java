@@ -53,6 +53,11 @@ public interface ProductMapper {
         skuDTO.setStock(sku.getStock());
         skuDTO.setDiscount(sku.getDiscount());
         skuDTO.setImages(sku.getImages());
+        skuDTO.setCanBeRented(sku.getCanBeRented());
+        skuDTO.setHourlyRentPrice(sku.getHourlyRentPrice());
+        skuDTO.setDailyRentPrice(sku.getDailyRentPrice());
+        skuDTO.setMinRentalQuantity(sku.getMinRentalQuantity());
+        skuDTO.setMaxRentalQuantity(sku.getMaxRentalQuantity());
 
         skuDTO.setAttributes(
                 sku.getAttributeOptionSkus().stream()

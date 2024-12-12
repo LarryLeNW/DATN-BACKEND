@@ -16,9 +16,11 @@ import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.dto.response.product.ProductResponse;
 import com.backend.entity.*;
+import com.backend.entity.rental.RentalPackage;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ProductMapper;
+import com.backend.mapper.RentalPackageMapper;
 import com.backend.repository.*;
 import com.backend.repository.product.AttributeOptionRepository;
 import com.backend.repository.product.AttributeOptionSkuRepository;
@@ -36,6 +38,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,6 +73,9 @@ public class ProductService {
 
 	@Autowired
 	private ProductMapper productMapper;
+	
+	@Autowired
+	private RentalPackageMapper rentalPackageMapper;
 
 	@Autowired
 	private UploadFile uploadFile;
@@ -90,7 +96,12 @@ public class ProductService {
 		productCreated.setName(request.getName());
 		productCreated.setSlug(request.getSlug());
 		productCreated.setDescription(request.getDescription());
-
+		List<RentalPackage> rentalPackgages = rentalPackageMapper.toRentalPackages(request.getRentalPackages());
+		for (RentalPackage rentalPackage : rentalPackgages) {
+			rentalPackage.setProduct(productCreated);
+		}
+		
+		productCreated.setRentalPackages(rentalPackgages);
 		productRepository.save(productCreated);
 
 		Map<String, Attribute> attributeCache = new HashMap<>();
@@ -102,6 +113,14 @@ public class ProductService {
 		for (ProductCreationRequest.SKUDTO skuDTO : request.getSkus()) {
 			Sku skuCreated = new Sku(productCreated, skuDTO.getCode(), skuDTO.getPrice(), skuDTO.getStock(),
 					skuDTO.getDiscount(), skuDTO.getImages());
+			skuCreated.setCanBeRented(skuDTO.getCanBeRented());
+			
+			if (skuDTO.getCanBeRented()) {
+			    skuCreated.setHourlyRentPrice(skuDTO.getHourlyRentPrice());
+			    skuCreated.setDailyRentPrice(skuDTO.getDailyRentPrice());
+			    skuCreated.setMinRentalQuantity(skuDTO.getMinRentalQuantity());
+			    skuCreated.setMaxRentalQuantity(skuDTO.getMaxRentalQuantity());
+			}
 
 			skusToSave.add(skuCreated);
 
@@ -253,8 +272,8 @@ public class ProductService {
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
 
-		String sortField = params.getOrDefault("sortBy", "id");
-		String orderBy = params.getOrDefault("orderBy", "asc");
+		String sortField = params.getOrDefault("sortBy", "updatedAt");
+		String orderBy = params.getOrDefault("orderBy", "desc");
 		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
 
 		Specification<Product> spec = Specification.where(null);
@@ -292,8 +311,8 @@ public class ProductService {
 		}
 
 		Map<String, String> attributes = params.entrySet().stream()
-				.filter(entry -> !List.of("page", "limit", "sortBy", "orderBy", "category", "brand","price", "minPrice",
-						"maxPrice", "keyword", "stars").contains(entry.getKey()))
+				.filter(entry -> !List.of("page", "limit", "sortBy", "orderBy", "category", "brand", "price",
+						"minPrice", "maxPrice", "keyword", "stars").contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (!attributes.isEmpty()) {

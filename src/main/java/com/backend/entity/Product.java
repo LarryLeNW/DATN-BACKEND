@@ -12,6 +12,7 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.backend.entity.rental.RentalPackage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "products")
@@ -65,7 +66,12 @@ public class Product {
     public String toString() {
         return "Product{id=" + id + ", name='" + name + "'}";
     }
-
+    
+  
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    List<RentalPackage> rentalPackages; 
+    
     @PrePersist
     public void prePersist() {
         if (stars == null) {
