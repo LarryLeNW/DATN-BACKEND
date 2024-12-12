@@ -5,6 +5,7 @@ import java.time.LocalTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.backend.constant.Type.RentalStatus;
 import com.backend.entity.Product;
 import com.backend.entity.Sku;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,6 +49,10 @@ public class RentalDetail {
 
 	@Column(name = "end_at")
 	LocalDateTime endAt;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	RentalStatus status;
 
 	@ManyToOne
 	@JoinColumn(name = "productId", nullable = false)

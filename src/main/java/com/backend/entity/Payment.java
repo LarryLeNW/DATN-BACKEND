@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import com.backend.constant.Type.PaymentMethod;
 import com.backend.constant.Type.PaymentStatus;
+import com.backend.entity.rental.Rental;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -32,8 +33,12 @@ public class Payment {
 	String appTransId;
 
 	@OneToOne
-	@JoinColumn(name = "orderId", nullable = false)
+	@JoinColumn(name = "orderId")
 	private Order order;
+	
+	@OneToOne
+	@JoinColumn(name = "rentalId")
+	private Rental rental;
 
 	@ManyToOne
 	@JsonIgnore

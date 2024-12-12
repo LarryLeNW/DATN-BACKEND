@@ -127,6 +127,84 @@ public class PaymentController {
 		String redirectUrl = "http://localhost:3000/checkout/payment/success?apptransid=" + txnRef;
 		response.sendRedirect(redirectUrl);
 	}
+	
+	
+	
+	
+	
+	
+	@PostMapping("/rental/zalo/callback")
+	public String callbackRentalZalo(@RequestBody String jsonStr) {
+		JSONObject result = new JSONObject();
+
+		try {
+			JSONObject cbdata = new JSONObject(jsonStr);
+			String dataStr = cbdata.getString("data");
+			String reqMac = cbdata.getString("mac");
+
+			byte[] hashBytes = HmacSHA256.doFinal(dataStr.getBytes());
+			String mac = DatatypeConverter.printHexBinary(hashBytes).toLowerCase();
+
+			if (!reqMac.equals(mac)) {
+				result.put("return_code", -1);
+				result.put("return_message", "mac not equal");
+			} else {
+				JSONObject data = new JSONObject(dataStr);
+				Payment paymentFound = paymentRepository.findByAppTransId(data.getString("app_trans_id"));
+				System.out.println(paymentFound.toString());	
+				log.info("okee"); 
+//				if (paymentFound != null) {
+//					paymentFound.setStatus(PaymentStatus.COMPLETED);
+//					paymentRepository.save(paymentFound);
+//					Order orderUpdate = orderRepository.findByPayment(paymentFound);
+//					orderUpdate.setStatus(OrderStatusType.PENDING);
+//					orderRepository.save(orderUpdate);
+//				}
+
+				logger.info("update order's status = success where app_trans_id = " + data.getString("app_trans_id"));
+
+				result.put("return_code", 1);
+				result.put("return_message", "success");
+
+			}
+		} catch (Exception ex) {
+			result.put("return_code", 0);
+			result.put("return_message", ex.getMessage());
+		}
+
+		log.info(result.toString());
+
+		return result.toString();
+	}
+
+	@GetMapping("/rental/vn-pay/callback")
+	public void callbackRentalVNPay(@RequestParam Map<String, String> params, HttpServletResponse response)
+			throws IOException {
+		String txnRef = params.get("vnp_TxnRef");
+		String paymentStatus = params.get("vnp_TransactionStatus");
+
+		if ("00".equals(paymentStatus)) {
+			Payment paymentFound = paymentRepository.findByAppTransId(txnRef);
+			log.info("oke vnpay"); 
+			System.out.println(paymentFound.toString());
+			
+//			if (paymentFound != null) {
+//				paymentFound.setStatus(PaymentStatus.COMPLETED);
+//				paymentRepository.save(paymentFound);
+//				Order orderUpdate = orderRepository.findByPayment(paymentFound);
+//				orderUpdate.setStatus(OrderStatusType.PENDING); 
+//				orderRepository.save(orderUpdate);
+//				logger.info("Order status updated to success where app_trans_id = " + txnRef);
+//			}
+		} else {
+			logger.warning("Payment failed for txnRef: " + txnRef);
+		}
+
+		String redirectUrl = "http://localhost:3000/checkout/rental/payment/success?apptransid=" + txnRef;
+		response.sendRedirect(redirectUrl);
+	}
+
+	
 
 	@GetMapping("/check/{transId}")
 	public ApiResponse<Payment> check(@PathVariable String transId) {
