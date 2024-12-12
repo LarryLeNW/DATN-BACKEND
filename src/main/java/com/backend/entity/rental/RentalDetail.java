@@ -1,5 +1,10 @@
 package com.backend.entity.rental;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.backend.entity.Product;
 import com.backend.entity.Sku;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -22,7 +27,7 @@ public class RentalDetail {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer id;
 
-	@Column(name = "quantity",nullable = false, columnDefinition = "FLOAT DEFAULT 1.0")
+	@Column(name = "quantity", nullable = false, columnDefinition = "FLOAT DEFAULT 1.0")
 	double quantity;
 
 	@Column(name = "price", nullable = false, columnDefinition = "FLOAT DEFAULT 0.0")
@@ -31,14 +36,25 @@ public class RentalDetail {
 	@ManyToOne
 	@JoinColumn(name = "rentalId", nullable = false)
 	@JsonIgnore
-	private Rental rental;
+	Rental rental;
+
+	Long hour;
+
+	Long day;
+
+	@CreationTimestamp
+	@Column(name = "start_at")
+	LocalDateTime startAt;
+
+	@Column(name = "end_at")
+	LocalDateTime endAt;
 
 	@ManyToOne
 	@JoinColumn(name = "productId", nullable = false)
-	private Product product;
+	Product product;
 
 	@ManyToOne
 	@JoinColumn(name = "skuid", nullable = false)
-	private Sku sku;
+	Sku sku;
 
 }

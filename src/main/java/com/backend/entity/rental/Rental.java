@@ -29,12 +29,6 @@ public class Rental {
     @JsonIgnore
     User user;
 
-    @Column(name = "start_date", nullable = false)
-    LocalDateTime startDate;
-
-    @Column(name = "end_date", nullable = false)
-    LocalDateTime endDate;
-
     @Column(name = "total_price", nullable = false)
     Long totalPrice;
     
