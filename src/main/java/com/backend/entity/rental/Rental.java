@@ -40,7 +40,6 @@ public class Rental {
     
     @ManyToOne
     @JoinColumn(name = "rental_package_id")
-    @JsonIgnore
     RentalPackage rentalPackage;
 
     @Enumerated(EnumType.STRING)

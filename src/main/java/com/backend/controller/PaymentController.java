@@ -19,15 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.constant.Type.OrderStatusType;
 import com.backend.constant.Type.PaymentStatus;
+import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.order.OrderResponse;
 import com.backend.entity.Order;
 import com.backend.entity.Payment;
 import com.backend.entity.User;
+import com.backend.entity.rental.Rental;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.repository.order.OrderRepository;
 import com.backend.repository.order.PaymentRepository;
+import com.backend.repository.rental.RentalRepository;
 import com.backend.repository.user.UserRepository;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -49,6 +52,9 @@ public class PaymentController {
 	@Autowired
 	OrderRepository orderRepository;
 
+	@Autowired
+	RentalRepository rentalRepository; 
+	
 	@Autowired
 	PaymentRepository paymentRepository;
 
@@ -151,15 +157,14 @@ public class PaymentController {
 			} else {
 				JSONObject data = new JSONObject(dataStr);
 				Payment paymentFound = paymentRepository.findByAppTransId(data.getString("app_trans_id"));
-				System.out.println(paymentFound.toString());	
-				log.info("okee"); 
-//				if (paymentFound != null) {
-//					paymentFound.setStatus(PaymentStatus.COMPLETED);
-//					paymentRepository.save(paymentFound);
-//					Order orderUpdate = orderRepository.findByPayment(paymentFound);
-//					orderUpdate.setStatus(OrderStatusType.PENDING);
-//					orderRepository.save(orderUpdate);
-//				}
+
+				if (paymentFound != null) {
+					paymentFound.setStatus(PaymentStatus.COMPLETED);
+					paymentRepository.save(paymentFound);
+					Rental rentalUpdate = rentalRepository.findByPayment(paymentFound);
+					rentalUpdate.setStatus(RentalStatus.PENDING);
+					rentalRepository.save(rentalUpdate);
+				}
 
 				logger.info("update order's status = success where app_trans_id = " + data.getString("app_trans_id"));
 
@@ -185,17 +190,15 @@ public class PaymentController {
 
 		if ("00".equals(paymentStatus)) {
 			Payment paymentFound = paymentRepository.findByAppTransId(txnRef);
-			log.info("oke vnpay"); 
-			System.out.println(paymentFound.toString());
+
+			if (paymentFound != null) {
+				paymentFound.setStatus(PaymentStatus.COMPLETED);
+				paymentRepository.save(paymentFound);
+				Rental rentalUpdate = rentalRepository.findByPayment(paymentFound);
+				rentalUpdate.setStatus(RentalStatus.PENDING);
+				rentalRepository.save(rentalUpdate);
+			}
 			
-//			if (paymentFound != null) {
-//				paymentFound.setStatus(PaymentStatus.COMPLETED);
-//				paymentRepository.save(paymentFound);
-//				Order orderUpdate = orderRepository.findByPayment(paymentFound);
-//				orderUpdate.setStatus(OrderStatusType.PENDING); 
-//				orderRepository.save(orderUpdate);
-//				logger.info("Order status updated to success where app_trans_id = " + txnRef);
-//			}
 		} else {
 			logger.warning("Payment failed for txnRef: " + txnRef);
 		}
