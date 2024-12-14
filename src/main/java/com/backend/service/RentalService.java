@@ -3,6 +3,10 @@ package com.backend.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -243,6 +247,13 @@ public class RentalService {
 
 		Specification<Rental> spec = Specification.where(null);
 
+		if (params.containsKey("keyword")) {
+			String keyword = params.get("keyword");
+			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.or(
+					criteriaBuilder.like(root.get("rentalCode"), "%" + keyword + "%"),
+					criteriaBuilder.like(root.join("rentalDetails").get("product").get("name"), "%" + keyword + "%")));
+		}
+
 		if (params.containsKey("status")) {
 			String status = params.get("status");
 			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status));
@@ -253,6 +264,30 @@ public class RentalService {
 					.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), idUser));
 		}
 
+		if (params.containsKey("startDate") || params.containsKey("endDate")) {
+			String startDateStr = params.get("startDate");
+			String endDateStr = params.get("endDate");
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			final LocalDateTime startDate = (startDateStr != null)
+					? LocalDate.parse(startDateStr, formatter).atStartOfDay()
+					: null;
+			final LocalDateTime endDate = (endDateStr != null)
+					? LocalDate.parse(endDateStr, formatter).atTime(LocalTime.MAX)
+					: null;
+
+			if (startDate != null && endDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt"),
+						startDate, endDate));
+			} else if (startDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+						.greaterThanOrEqualTo(root.get("createdAt"), startDate));
+			} else if (endDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+						.lessThanOrEqualTo(root.get("createdAt"), endDate));
+			}
+		}
+
 		Page<Rental> rentalPage = rentalRepository.findAll(spec, pageable);
 		List<RentalResponse> rentalResponses = rentalPage.getContent().stream().map(rentalMapper::toRentalResponse)
 				.collect(Collectors.toList());
@@ -260,7 +295,7 @@ public class RentalService {
 		return new PagedResponse<>(rentalResponses, page + 1, rentalPage.getTotalPages(), rentalPage.getTotalElements(),
 				limit);
 	}
-	
+
 	public RentalResponse getRentalById(Long orderId) {
 		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -279,5 +314,28 @@ public class RentalService {
 			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
 
 		return rentalMapper.toRentalResponse(orderFound);
+	}
+
+	public String updateStatus(Long orderId, RentalStatus status) {
+		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+
+		Rental orderFound = null;
+
+		if ("ROLE_USER".equals(roleUser)) {
+			User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+			orderFound = rentalRepository.findByIdAndUser(orderId, user);
+		} else
+			orderFound = rentalRepository.findById(orderId)
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê ..."));
+
+		if (orderFound == null)
+			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
+
+		orderFound.setStatus(status);
+		rentalRepository.save(orderFound);
+
+		return "Đã cập nhật đơn hàng";
 	}
 }

@@ -23,7 +23,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RentalResponse {
-	String id;
+	Long id;
 	double totalAmount;
 	String rentalCode; 
 	Delivery delivery;
@@ -33,4 +33,5 @@ public class RentalResponse {
 	RentalPackage rentalPackage;
 	RentalStatus status;
 	Double discountValue;
+	LocalDateTime createdAt;
 }
