@@ -30,5 +30,5 @@ public class RentailDetailReponse {
 	LocalDateTime startAt;
 	LocalDateTime endAt;
 	RentalStatus status;
-
+	Boolean isReview;
 }

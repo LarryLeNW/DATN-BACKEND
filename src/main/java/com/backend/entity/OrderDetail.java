@@ -38,5 +38,10 @@ public class OrderDetail {
 	@ManyToOne
 	@JoinColumn(name = "skuid", nullable = false)
 	private Sku sku;
+	
+	@Column(name = "is_review", nullable = false, columnDefinition = "BIT DEFAULT 0")
+	Boolean isReview;
+
+
 
 }
