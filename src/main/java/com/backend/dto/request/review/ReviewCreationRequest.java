@@ -43,7 +43,7 @@ public class ReviewCreationRequest {
 	@Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "Invalid URL format")
 	String images;
 	
-	Integer detailRentalId;
+	Long detailRentalId;
 	
 	Integer detailOrderId;
 

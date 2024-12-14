@@ -1,4 +1,4 @@
- package com.backend.entity;
+package com.backend.entity;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -31,18 +31,20 @@ public class Review {
 	@ManyToOne
 	@JsonIgnore
 	User reviewBy;
-	
+
 	@ManyToOne
 	@JsonIgnore
-	Product product; 
-	
+	Product product;
+
 	@NotNull
 	int rating;
-	
-	String review_text; 
 
-	String images; 
-	
+	@Column(name = "review_text", columnDefinition = "NVARCHAR(MAX)")
+	String review_text;
+
+	@Column(name = "images", columnDefinition = "NVARCHAR(MAX)")
+	String images;
+
 	@CreationTimestamp
 	LocalDateTime createdAt;
 

@@ -22,16 +22,20 @@ import com.backend.dto.response.order.OrderResponse;
 import com.backend.dto.response.review.ReviewResponse;
 import com.backend.entity.Cart;
 import com.backend.entity.Order;
+import com.backend.entity.OrderDetail;
 import com.backend.entity.Product;
 import com.backend.entity.Review;
 import com.backend.entity.User;
+import com.backend.entity.rental.RentalDetail;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.ReviewMapper;
 import com.backend.repository.ReviewRepository;
 import com.backend.repository.common.CustomSearchRepository;
 import com.backend.repository.common.SearchType;
+import com.backend.repository.order.OrderDetailRepository;
 import com.backend.repository.product.ProductRepository;
+import com.backend.repository.rental.RentalDetailRepository;
 import com.backend.repository.user.UserRepository;
 import com.backend.specification.CartSpecification;
 import com.backend.utils.Helpers;
@@ -52,8 +56,9 @@ public class ReviewService {
 	ReviewMapper reviewMapper;
 	UserRepository userRepository;
 	ProductRepository productRepository;
+	RentalDetailRepository rentalDetailRepository;
+	OrderDetailRepository orderDetailRepository;
 	EntityManager entityManager;
-
 
 	public PagedResponse<ReviewResponse> getAll(Map<String, String> params) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -71,19 +76,17 @@ public class ReviewService {
 
 		Specification<Review> spec = Specification.where(null);
 
-	    if (params.containsKey("productId")) {
-	        Long productId = Long.parseLong(params.get("productId"));
-	        spec = spec.and((root, query, criteriaBuilder) -> 
-	            criteriaBuilder.equal(root.get("product").get("id"), productId));
-	    }
+		if (params.containsKey("productId")) {
+			Long productId = Long.parseLong(params.get("productId"));
+			spec = spec.and(
+					(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("product").get("id"), productId));
+		}
 
-	    if (params.containsKey("stars")) {
-	        int stars = Integer.parseInt(params.get("stars"));
-	        spec = spec.and((root, query, criteriaBuilder) -> 
-	            criteriaBuilder.equal(root.get("rating"), stars));
-	    }
+		if (params.containsKey("stars")) {
+			int stars = Integer.parseInt(params.get("stars"));
+			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("rating"), stars));
+		}
 
-	    
 		Page<Review> reviwePage = reviewRepository.findAll(spec, pageable);
 		List<ReviewResponse> reviewResponses = reviwePage.getContent().stream().map(reviewMapper::toReviewResponse)
 				.collect(Collectors.toList());
@@ -92,44 +95,56 @@ public class ReviewService {
 				limit);
 	}
 
-
 	public ReviewResponse createReview(ReviewCreationRequest request) {
 		Review review = reviewMapper.toReview(request);
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 		String idUser = auth.getName();
-		
-		User user = userRepository.findById(idUser)
-				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
 		Product product = productRepository.findById(request.getProductId())
 				.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
 		review.setReviewBy(user);
 		review.setProduct(product);
-		
+
 		Review reviewCreated = reviewRepository.save(review);
-		
-	    double averageStars = calculateAverageStars(product.getId());
-	    product.setStars(averageStars); 
-	    productRepository.save(product); 
+
+		if (request.getDetailRentalId() != null) {
+			RentalDetail rentalDetailUpdated = rentalDetailRepository.findById(request.getDetailRentalId())
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê này nữa"));
+
+			rentalDetailUpdated.setIsReview(true);
+			rentalDetailRepository.save(rentalDetailUpdated);
+		}
+
+		if (request.getDetailOrderId() != null) {
+			OrderDetail orderDetailUpdated = orderDetailRepository.findById(request.getDetailOrderId())
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê này nữa"));
+
+			orderDetailUpdated.setIsReview(true);
+			orderDetailRepository.save(orderDetailUpdated);
+		}
+
+		double averageStars = calculateAverageStars(product.getId());
+		product.setStars(averageStars);
+		productRepository.save(product);
 
 		return reviewMapper.toReviewResponse(reviewCreated);
 
 	}
-	
+
 	public double calculateAverageStars(Long productId) {
-	    List<Review> reviews = reviewRepository.findByProductId(productId);
-	    
-	    if (reviews.isEmpty()) {
-	        return 5; 
-	    }
+		List<Review> reviews = reviewRepository.findByProductId(productId);
 
-	    double totalStars = reviews.stream()
-	                               .mapToInt(Review::getRating)
-	                               .sum();
+		if (reviews.isEmpty()) {
+			return 5;
+		}
 
-	    return totalStars / reviews.size();
+		double totalStars = reviews.stream().mapToInt(Review::getRating).sum();
+
+		return totalStars / reviews.size();
 	}
 
 	public ReviewResponse getReviewById(String reviewId) {
@@ -138,7 +153,7 @@ public class ReviewService {
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 
 		Review reviewFound = reviewRepository.findById(reviewId)
-					.orElseThrow(() -> new RuntimeException("Không tìm thấy review"));
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy review"));
 
 		return reviewMapper.toReviewResponse(reviewFound);
 	}
