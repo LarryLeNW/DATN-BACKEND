@@ -24,6 +24,7 @@ public class Brand {
     
     private String slug;
     
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     private String image;
