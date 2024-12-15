@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.constant.Type.OrderStatusType;
+import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.request.order.OrderCreationRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.request.rental.RentalCreation;
@@ -51,23 +52,26 @@ public class RentalController {
 
 	RentalService rentalService;
 
-
 	@PostMapping
-	ApiResponse<String> createOrder(@RequestBody RentalCreation requestData , HttpServletRequest request) throws ClientProtocolException, IOException {
+	ApiResponse<String> createOrder(@RequestBody RentalCreation requestData, HttpServletRequest request)
+			throws ClientProtocolException, IOException {
 		return ApiResponse.<String>builder().result(rentalService.create(requestData, request)).build();
 	}
 
+	@PutMapping("/{id}/{status}")
+	ApiResponse<String> createOrder(@PathVariable Long id, @PathVariable RentalStatus status) {
+		return ApiResponse.<String>builder().result(rentalService.updateStatus(id, status)).build();
+	}
 
 	@GetMapping
-	ApiResponse<PagedResponse<RentalResponse>> getAlls(
-			@RequestParam Map<String, String> params) {
+	ApiResponse<PagedResponse<RentalResponse>> getAlls(@RequestParam Map<String, String> params) {
 		PagedResponse<RentalResponse> pagedResponse = rentalService.getAll(params);
 		return ApiResponse.<PagedResponse<RentalResponse>>builder().result(pagedResponse).build();
 	}
 
-	
-	
-	
-
+	@GetMapping("/{rentalId}")
+	ApiResponse<RentalResponse> getOrderById(@PathVariable Long rentalId) {
+		return ApiResponse.<RentalResponse>builder().result(rentalService.getRentalById(rentalId)).build();
+	}
 
 }

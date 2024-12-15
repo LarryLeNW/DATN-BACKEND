@@ -42,26 +42,30 @@ public interface RentalMapper {
 	@Mapping(source = "rental.id", target = "rentalId")
 	@Mapping(source = "sku", target = "sku")
 	@Mapping(source = "quantity", target = "quantity")
-	RentailDetailReponse toRENDetailReponse(RentalDetail rentalDetail );
+	RentailDetailReponse toRENDetailReponse(RentalDetail rentalDetail);
 
 	default SKUDTO toSkuDTO(Sku sku) {
-		if (sku == null) {
+		if (sku == null)
 			return null;
-		}
-		ProductResponse.SKUDTO skuDTO = new ProductResponse.SKUDTO();
+
+		SKUDTO skuDTO = new SKUDTO();
+		skuDTO.setId(sku.getId());
+		skuDTO.setCode(sku.getCode());
 		skuDTO.setPrice(sku.getPrice());
 		skuDTO.setStock(sku.getStock());
 		skuDTO.setDiscount(sku.getDiscount());
-		skuDTO.setCode(sku.getCode());
-		skuDTO.setId(sku.getId());
 		skuDTO.setImages(sku.getImages());
+		skuDTO.setCanBeRented(sku.getCanBeRented());
+		skuDTO.setHourlyRentPrice(sku.getHourlyRentPrice());
+		skuDTO.setDailyRentPrice(sku.getDailyRentPrice());
+		skuDTO.setMinRentalQuantity(sku.getMinRentalQuantity());
+		skuDTO.setMaxRentalQuantity(sku.getMaxRentalQuantity());
 
 		skuDTO.setAttributes(sku.getAttributeOptionSkus().stream()
 				.collect(Collectors.toMap(
 						attributeOptionSku -> attributeOptionSku.getAttributeOption().getAttribute().getName(),
 						attributeOptionSku -> attributeOptionSku.getAttributeOption().getValue(),
-						(existing, replacement) -> existing, 
-						HashMap::new)));
+						(existing, replacement) -> existing, HashMap::new)));
 
 		return skuDTO;
 	}

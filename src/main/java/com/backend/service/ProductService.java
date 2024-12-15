@@ -369,7 +369,6 @@ public class ProductService {
 		}
 	}
 
-	@Transactional
 	public String delete(Long productId) {
 		productRepository.deleteById(productId);
 		return "Deleted product successfully";

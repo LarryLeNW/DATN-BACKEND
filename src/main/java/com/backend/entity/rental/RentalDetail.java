@@ -62,4 +62,8 @@ public class RentalDetail {
 	@JoinColumn(name = "skuid", nullable = false)
 	Sku sku;
 
+	@Column(name = "is_review", nullable = false, columnDefinition = "BIT DEFAULT 0")
+	Boolean isReview;
+
+
 }

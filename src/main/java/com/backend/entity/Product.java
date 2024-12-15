@@ -54,6 +54,9 @@ public class Product {
     @ManyToMany(mappedBy = "products")
     List<Voucher> vouchers;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Review> reviews;
+    
     @CreationTimestamp
     @Column(name = "created_at")
     LocalDateTime createdAt;
