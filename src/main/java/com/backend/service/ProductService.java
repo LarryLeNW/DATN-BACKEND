@@ -30,6 +30,8 @@ import com.backend.repository.product.ProductRepository;
 import com.backend.specification.ProductSpecification;
 import com.backend.utils.UploadFile;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -309,10 +311,17 @@ public class ProductService {
 			Long price = Long.parseLong(params.get("maxPrice"));
 			spec = spec.and(ProductSpecification.hasMaxPrice(price));
 		}
-
+		
+	    if (params.containsKey("canBeRented") && Boolean.parseBoolean(params.get("canBeRented"))) {
+	        spec = spec.and((root, query, criteriaBuilder) -> {
+	            Join<Product, Sku> skuJoin = root.join("skus", JoinType.RIGHT);
+	            return criteriaBuilder.equal(skuJoin.get("canBeRented"), true);
+	        });
+	    }
+	    
 		Map<String, String> attributes = params.entrySet().stream()
 				.filter(entry -> !List.of("page", "limit", "sortBy", "orderBy", "category", "brand", "price",
-						"minPrice", "maxPrice", "keyword", "stars").contains(entry.getKey()))
+						"minPrice", "maxPrice", "keyword", "stars", "canBeRented").contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		if (!attributes.isEmpty()) {

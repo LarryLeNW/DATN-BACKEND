@@ -3,6 +3,10 @@ package com.backend.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -40,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.backend.constant.Type.OrderStatusType;
 import com.backend.constant.Type.PaymentMethod;
 import com.backend.constant.Type.PaymentStatus;
+import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.request.order.OrderCreationRequest;
 import com.backend.dto.request.order.OrderDetailCreationRequest;
 import com.backend.dto.request.order.OrderDetailUpdateRequest;
@@ -61,6 +66,7 @@ import com.backend.entity.Product;
 import com.backend.entity.Reply;
 import com.backend.entity.Sku;
 import com.backend.entity.User;
+import com.backend.entity.rental.Rental;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.BlogMapper;
@@ -175,6 +181,7 @@ public class OrderService {
 					orderDetail.setQuantity(detailRequest.getQuantity());
 					orderDetail.setPrice(sku.getPrice());
 					orderDetail.setOrder(order);
+					orderDetail.setIsReview(false);
 
 					if (detailRequest.getCart() != null) {
 						cartRepository.delete(detailRequest.getCart());
@@ -235,6 +242,14 @@ public class OrderService {
 
 		Specification<Order> spec = Specification.where(null);
 
+		if (params.containsKey("keyword")) {
+		    String keyword = params.get("keyword");
+		    spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.or(
+		        criteriaBuilder.like(root.get("orderCode"), "%" + keyword + "%"),
+		        criteriaBuilder.like(root.join("orderDetails").get("product").get("name"), "%" + keyword + "%"),
+		        criteriaBuilder.like(root.get("user").get("username"), "%" + keyword + "%")));
+		}
+
 		if (params.containsKey("status")) {
 			String status = params.get("status");
 			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status));
@@ -245,6 +260,30 @@ public class OrderService {
 					.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), idUser));
 		}
 
+		if (params.containsKey("startDate") || params.containsKey("endDate")) {
+			String startDateStr = params.get("startDate");
+			String endDateStr = params.get("endDate");
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			final LocalDateTime startDate = (startDateStr != null)
+					? LocalDate.parse(startDateStr, formatter).atStartOfDay()
+					: null;
+			final LocalDateTime endDate = (endDateStr != null)
+					? LocalDate.parse(endDateStr, formatter).atTime(LocalTime.MAX)
+					: null;
+
+			if (startDate != null && endDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt"),
+						startDate, endDate));
+			} else if (startDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+						.greaterThanOrEqualTo(root.get("createdAt"), startDate));
+			} else if (endDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+						.lessThanOrEqualTo(root.get("createdAt"), endDate));
+			}
+		}
+		
 		Page<Order> orderPage = orderRepository.findAll(spec, pageable);
 		List<OrderResponse> cartResponses = orderPage.getContent().stream().map(orderMapper::toOrderResponse)
 				.collect(Collectors.toList());
@@ -385,4 +424,28 @@ public class OrderService {
 		return orderMapper.toOrderDetailResponse(orderDetail);
 
 	}
+
+	public String updateStatus(Integer orderId, OrderStatusType status) {
+		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+
+		Order orderFound = null;
+
+		if ("ROLE_USER".equals(roleUser)) {
+			User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+			orderFound = orderRepository.findByIdAndUser(orderId, user);
+		} else
+			orderFound = orderRepository.findById(orderId)
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê ..."));
+
+		if (orderFound == null)
+			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
+
+		orderFound.setStatus(status);
+		orderRepository.save(orderFound);
+
+		return "Đã cập nhật đơn hàng";
+	}
+
 }

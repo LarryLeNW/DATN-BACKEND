@@ -59,7 +59,7 @@ public class RentalController {
 	}
 
 	@PutMapping("/{id}/{status}")
-	ApiResponse<String> createOrder(@PathVariable Long id, @PathVariable RentalStatus status) {
+	ApiResponse<String> updateStatus(@PathVariable Long id, @PathVariable RentalStatus status) {
 		return ApiResponse.<String>builder().result(rentalService.updateStatus(id, status)).build();
 	}
 
