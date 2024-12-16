@@ -28,6 +28,7 @@ import com.backend.utils.UploadFile;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -86,32 +87,36 @@ public class BlogService {
 	    return blogMapper.toBlogResponse(blog);
 	}
 
+	@Transactional
 	public BlogResponse updateBlog(BlogUpdateRequest request, MultipartFile image, Integer blogId) {
-		Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
+	    Blog blog = blogRepository.findById(blogId)
+	            .orElseThrow(() -> new AppException(ErrorCode.BLOG_NOT_EXISTED));
 
-		if (request.getCategoryBlogId() != 0) {
-			CategoryBlog categoryBlog = categoryBlogRepository.findById(request.getCategoryBlogId())
-					.orElseThrow(() -> new AppException(ErrorCode.CATEGORYBLOG_NOT_EXISTED));
-			blog.setCategoryBlog(categoryBlog);
-		}
+	    if (request.getCategoryBlogId() != 0) {
+	        CategoryBlog categoryBlog = categoryBlogRepository.findById(request.getCategoryBlogId())
+	                .orElseThrow(() -> new AppException(ErrorCode.CATEGORYBLOG_NOT_EXISTED));
+	        blog.setCategoryBlog(categoryBlog);
+	    }
 
-		if (request.getUserId() != null) {
-			User user = userRepository.findById(request.getUserId())
-					.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-			blog.setUser(user);
-		}
+	    if (request.getUserId() != null) {
+	        User user = userRepository.findById(request.getUserId())
+	                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+	        blog.setUser(user);
+	    }
 
-		if (request != null) {
-			Helpers.updateFieldEntityIfChanged(request.getTitle(), blog.getTitle(), blog::setTitle);
-			Helpers.updateFieldEntityIfChanged(request.getContent(), blog.getContent(), blog::setContent);
+	    if (request != null) {
+	        Helpers.updateFieldEntityIfChanged(request.getTitle(), blog.getTitle(), blog::setTitle);
+	        Helpers.updateFieldEntityIfChanged(request.getContent(), blog.getContent(), blog::setContent);
 
-			if (image != null) {
-				String imageUrl = uploadFile.saveFile(image, "brandTest");
-				blog.setImage(imageUrl);
-			}
-		}
-		return blogMapper.toBlogResponse(blogRepository.save(blog));
+	        if (image != null) {
+	            String imageUrl = uploadFile.saveFile(image, "brandTest");
+	            blog.setImage(imageUrl);
+	        }
+	    }
+
+	    return blogMapper.toBlogResponse(blog);
 	}
+
 
 	public void deleteBlog(Integer blogId) {
 		blogRepository.deleteById(blogId);
