@@ -401,17 +401,22 @@ public class RentalService {
 
 	    LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
 	    LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
+	    
+	    LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
+	    LocalDateTime startOfMonthTime = startOfMonth.atStartOfDay();
 
 	    long todayCount = rentalRepository.countByCreatedAtBetween(startOfToday, endOfToday);
 	    long yesterdayCount = rentalRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
 	    long thisWeekCount = rentalRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
 	    long thisYearCount = rentalRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
+	    long thisMonthCount = rentalRepository.countByCreatedAtBetween(startOfMonthTime, endOfToday);
 	    long totalAllTime = rentalRepository.count();
 
 	    Map<String, Long> totals = new HashMap<>();
 	    totals.put("today", todayCount);
 	    totals.put("yesterday", yesterdayCount);
 	    totals.put("thisWeek", thisWeekCount);
+	    totals.put("thisMonth", thisMonthCount);
 	    totals.put("thisYear", thisYearCount);
 	    totals.put("allTime", totalAllTime);
 

@@ -3,6 +3,7 @@ package com.backend.service;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -275,39 +276,27 @@ public class UserService {
 		return results.stream().collect(Collectors.toMap(result -> (String) result[0], result -> (Long) result[1]));
 	}
 
-	public long getUserRegistrationsByDate(Integer day, Integer month, Integer year) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-		Root<User> root = cq.from(User.class);
+	public Map<Integer, Long> getOrdersByDayInMonth(int month, int year) {
+	    List<Object[]> results = userRepository.countOrdersByDayInMonth(month, year);
 
-		Predicate predicate = cb.conjunction();
-
-		if (year != null) {
-			predicate = cb.and(predicate, cb.equal(cb.function("YEAR", Integer.class, root.get("createdAt")), year));
-		}
-
-		if (month != null) {
-			predicate = cb.and(predicate, cb.equal(cb.function("MONTH", Integer.class, root.get("createdAt")), month));
-		}
-
-		if (day != null) {
-			predicate = cb.and(predicate, cb.equal(cb.function("DAY", Integer.class, root.get("createdAt")), day));
-		}
-
-		cq.select(cb.count(root)).where(predicate);
-		return entityManager.createQuery(cq).getSingleResult();
-	}
-
-	   public List<TopOrderUser> getTop10UsersByPaymentAmount() {
-	        List<Object[]> results = userRepository.findTop10UsersByPaymentAmount();
-
-	        return results.stream()
-	                .map(result -> new TopOrderUser(
-	                        (String) result[0],  
-	                        (String) result[1],
-	                        (Double) result[2]   
-	                ))
-	                .collect(Collectors.toList());
+	    Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
+	    for (int day = 1; day <= 31; day++) {
+	        ordersByDay.put(day, 0L);
 	    }
+
+	    for (Object[] result : results) {
+	        Integer day = (Integer) result[0];
+	        Long count = (Long) result[1];
+	        ordersByDay.put(day, count);
+	    }
+
+	    return ordersByDay;
+	}
+	public List<TopOrderUser> getTop10UsersByPaymentAmount() {
+		List<Object[]> results = userRepository.findTop10UsersByPaymentAmount();
+
+		return results.stream().map(result -> new TopOrderUser((String) result[0], (String) result[1],
+				(String) result[2], (Double) result[3], (Long) result[4])).collect(Collectors.toList());
+	}
 
 }
