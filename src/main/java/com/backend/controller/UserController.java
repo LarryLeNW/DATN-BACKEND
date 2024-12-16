@@ -25,6 +25,7 @@ import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.user.TopOrderUser;
 import com.backend.dto.response.user.TopReactUser;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.entity.Cart;
@@ -124,4 +125,28 @@ public class UserController {
 		return userService.getTopUsersWithMostReactions();
 	}
 
+	@GetMapping("/statistics/registrations")
+	public ResponseEntity<?> getUserRegistrationsStatistics(@RequestParam(required = false) Integer day,
+			@RequestParam(required = false) Integer month, @RequestParam(required = false) Integer year) {
+
+		long count = userService.getUserRegistrationsByDate(day, month, year);
+		return ResponseEntity.ok(Map.of("totalRegistrations", count));
+	}
+
+	@GetMapping("/statistics/status")
+	public ResponseEntity<?> getUserStatisticsByStatus() {
+		return ResponseEntity.ok(userService.getUserStatisticsByStatus());
+	}
+
+	@GetMapping("/statistics/roles")
+	public ResponseEntity<?> getUserStatisticsByRole() {
+		return ResponseEntity.ok(userService.getUserStatisticsByRole());
+	}
+	
+
+    @GetMapping("/statistics/payment")
+    public ResponseEntity<List<TopOrderUser>> getTop10UsersByPaymentAmount() {
+        List<TopOrderUser> topUsers = userService.getTop10UsersByPaymentAmount();
+        return ResponseEntity.ok(topUsers);
+    }
 }

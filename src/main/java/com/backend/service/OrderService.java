@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -132,8 +133,6 @@ public class OrderService {
 
 	PaymentService paymentService;
 
-	
-
 	public String createOrder(OrderCreationRequest requestData, HttpServletRequest request)
 			throws ClientProtocolException, IOException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -205,14 +204,16 @@ public class OrderService {
 		PaymentOrder(requestData.getPayment(), order, app_trans_id);
 
 		if (requestData.getPayment().getMethod() == PaymentMethod.ZaloPay) {
-			String url = paymentService.createPaymentZaloUrl(requestData.getPayment().getAmount(), app_trans_id,  "https://f66a-113-166-213-84.ngrok-free.app/api/payment/zalo/callback" , "http://localhost:3000/checkout/payment/success");
+			String url = paymentService.createPaymentZaloUrl(requestData.getPayment().getAmount(), app_trans_id,
+					"https://f66a-113-166-213-84.ngrok-free.app/api/payment/zalo/callback",
+					"http://localhost:3000/checkout/payment/success");
 			if (url != null)
 				return url;
 		}
 
 		if (requestData.getPayment().getMethod() == PaymentMethod.VNPay) {
 			String url = paymentService.createVnPayUrl((int) requestData.getPayment().getAmount(), request,
-					app_trans_id , "http://localhost:8080/api/payment/vn-pay/callback");
+					app_trans_id, "http://localhost:8080/api/payment/vn-pay/callback");
 			if (url != null)
 				return url;
 		}
@@ -243,11 +244,11 @@ public class OrderService {
 		Specification<Order> spec = Specification.where(null);
 
 		if (params.containsKey("keyword")) {
-		    String keyword = params.get("keyword");
-		    spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.or(
-		        criteriaBuilder.like(root.get("orderCode"), "%" + keyword + "%"),
-		        criteriaBuilder.like(root.join("orderDetails").get("product").get("name"), "%" + keyword + "%"),
-		        criteriaBuilder.like(root.get("user").get("username"), "%" + keyword + "%")));
+			String keyword = params.get("keyword");
+			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.or(
+					criteriaBuilder.like(root.get("orderCode"), "%" + keyword + "%"),
+					criteriaBuilder.like(root.join("orderDetails").get("product").get("name"), "%" + keyword + "%"),
+					criteriaBuilder.like(root.get("user").get("username"), "%" + keyword + "%")));
 		}
 
 		if (params.containsKey("status")) {
@@ -283,7 +284,7 @@ public class OrderService {
 						.lessThanOrEqualTo(root.get("createdAt"), endDate));
 			}
 		}
-		
+
 		Page<Order> orderPage = orderRepository.findAll(spec, pageable);
 		List<OrderResponse> cartResponses = orderPage.getContent().stream().map(orderMapper::toOrderResponse)
 				.collect(Collectors.toList());
@@ -311,10 +312,9 @@ public class OrderService {
 
 			if (request.getOrderDetails() != null) {
 				for (OrderDetailUpdateRequest detailRequest : request.getOrderDetails()) {
-					
-					System.out.println("sl: "+detailRequest.getQuantity());
 
-					
+					System.out.println("sl: " + detailRequest.getQuantity());
+
 					Product product = productRepository.findById(detailRequest.getProductId())
 							.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
@@ -324,7 +324,6 @@ public class OrderService {
 					OrderDetail currentOrderDetail = orderDetailRepository.findById(detailRequest.getId())
 							.orElseThrow(() -> new AppException(ErrorCode.ORDER_DETAIL_NOT_EXISTED));
 
-					
 					OrderDetail foundOrderDetail = orderDetailRepository.findOneByOrderAndProductAndSku(order, product,
 							sku);
 
@@ -343,7 +342,7 @@ public class OrderService {
 					}
 
 					orderDetailRepository.save(currentOrderDetail);
-					
+
 				}
 			}
 		}
@@ -420,7 +419,7 @@ public class OrderService {
 		System.out.println(sku.getPrice());
 
 		orderDetailRepository.save(orderDetail);
-		
+
 		return orderMapper.toOrderDetailResponse(orderDetail);
 
 	}
@@ -447,5 +446,99 @@ public class OrderService {
 
 		return "Đã cập nhật đơn hàng";
 	}
+
+	public Map<OrderStatusType, Long> getOrderStatistics(Map<String, String> params) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = criteriaBuilder.createQuery(Object[].class);
+		Root<Order> root = query.from(Order.class);
+
+		Predicate predicate = criteriaBuilder.conjunction();
+
+		if (params.containsKey("startDate") || params.containsKey("endDate")) {
+			String startDateStr = params.get("startDate");
+			String endDateStr = params.get("endDate");
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			final LocalDateTime startDate = (startDateStr != null)
+					? LocalDate.parse(startDateStr, formatter).atStartOfDay()
+					: null;
+			final LocalDateTime endDate = (endDateStr != null)
+					? LocalDate.parse(endDateStr, formatter).atTime(LocalTime.MAX)
+					: null;
+
+			if (startDate != null && endDate != null) {
+				predicate = criteriaBuilder.and(predicate,
+						criteriaBuilder.between(root.get("createdAt"), startDate, endDate));
+			} else if (startDate != null) {
+				predicate = criteriaBuilder.and(predicate,
+						criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), startDate));
+			} else if (endDate != null) {
+				predicate = criteriaBuilder.and(predicate,
+						criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), endDate));
+			}
+		}
+
+		query.multiselect(root.get("status"), criteriaBuilder.count(root.get("id"))).where(predicate)
+				.groupBy(root.get("status"));
+
+		List<Object[]> results = entityManager.createQuery(query).getResultList();
+
+		Map<OrderStatusType, Long> statistics = new HashMap<>();
+		for (Object[] result : results) {
+			OrderStatusType status = (OrderStatusType) result[0];
+			Long count = (Long) result[1];
+			statistics.put(status, count);
+		}
+		return statistics;
+	}
+	
+	public Map<String, Long> getOrderTotals() {
+	    LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+	    LocalDateTime endOfToday = LocalDateTime.now();
+
+	    LocalDateTime startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay();
+	    LocalDateTime endOfYesterday = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+
+	    LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+	    LocalDateTime startOfWeekTime = startOfWeek.atStartOfDay();
+	    LocalDateTime endOfWeekTime = endOfToday;
+
+	    LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
+	    LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
+
+	    long todayCount = orderRepository.countByCreatedAtBetween(startOfToday, endOfToday);
+	    long yesterdayCount = orderRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
+	    long thisWeekCount = orderRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
+	    long thisYearCount = orderRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
+	    long totalAllTime = orderRepository.count();
+
+	    Map<String, Long> totals = new HashMap<>();
+	    totals.put("today", todayCount);
+	    totals.put("yesterday", yesterdayCount);
+	    totals.put("thisWeek", thisWeekCount);
+	    totals.put("thisYear", thisYearCount);
+	    totals.put("allTime", totalAllTime);
+
+	    return totals;
+	}
+
+	
+	public Map<Integer, Long> getOrdersByDayInMonth(int month, int year) {
+	    List<Object[]> results = orderRepository.countOrdersByDayInMonth(month, year);
+
+	    Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
+	    for (int day = 1; day <= 31; day++) {
+	        ordersByDay.put(day, 0L);
+	    }
+
+	    for (Object[] result : results) {
+	        Integer day = (Integer) result[0];
+	        Long count = (Long) result[1];
+	        ordersByDay.put(day, count);
+	    }
+
+	    return ordersByDay;
+	}
+
 
 }

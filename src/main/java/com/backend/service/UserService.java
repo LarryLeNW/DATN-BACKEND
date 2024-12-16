@@ -1,5 +1,7 @@
 package com.backend.service;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,7 @@ import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.user.TopOrderUser;
 import com.backend.dto.response.user.TopReactUser;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.exception.AppException;
@@ -39,6 +42,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
 import com.backend.constant.PredefinedRole;
@@ -120,16 +124,16 @@ public class UserService {
 
 		if (avatar != null) {
 			String avatarUrl = uploadFile.saveFile(avatar, "brandTest");
-			System.out.println("hihiih,"+avatarUrl);
+			System.out.println("hihiih," + avatarUrl);
 			user.setAvatar(avatarUrl);
 		}
-		
+
 		if (request.getUsername() != null && !request.getUsername().isEmpty()) {
 			user.setUsername(request.getUsername());
 		}
 
 		if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-		    user.setPassword(passwordEncoder.encode(request.getPassword()));
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
 		}
 
 		if (request.getEmail() != null && !request.getEmail().isEmpty()) {
@@ -147,7 +151,6 @@ public class UserService {
 		if (request.getRole() != null) {
 			user.setRole(request.getRole());
 		}
-
 
 		return userMapper.toUserResponse(userRepository.save(user));
 	}
@@ -202,49 +205,109 @@ public class UserService {
 		return userMapper.toUserResponse(
 				userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
 	}
-	
+
 	public List<TopReactUser> getTopUsersWithMostReactions() {
-        Pageable pageable = PageRequest.of(0, 10);  
+		Pageable pageable = PageRequest.of(0, 10);
 
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
-        Root<QuestionReaction> root = cq.from(QuestionReaction.class);
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		Root<QuestionReaction> root = cq.from(QuestionReaction.class);
 
-        cq.multiselect(root.get("user").get("id"), cb.count(root));
-        cq.groupBy(root.get("user").get("id"));
-        cq.orderBy(cb.desc(cb.count(root)));  
+		cq.multiselect(root.get("user").get("id"), cb.count(root));
+		cq.groupBy(root.get("user").get("id"));
+		cq.orderBy(cb.desc(cb.count(root)));
 
-        Query query = entityManager.createQuery(cq);
-        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
-        query.setMaxResults(pageable.getPageSize());
+		Query query = entityManager.createQuery(cq);
+		query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+		query.setMaxResults(pageable.getPageSize());
 
-        List<Object[]> results = query.getResultList();
+		List<Object[]> results = query.getResultList();
 
-        return results.stream()
-            .map(result -> {
-                String userId = (String) result[0];
-                Long totalReactions = (Long) result[1] ;
-                User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-                TopReactUser response = userMapper.toTopReactUser(user);
-                response.setTotalReactions(totalReactions); 
-                return response;
-            })
-            .collect(Collectors.toList());
-    }
-	
-	public boolean changePassword(String email, String oldPassword, String newPassword) {
-	    User user = userRepository.findByEmail(email);
-	    
-	    if (user != null) {
-	        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
-	            user.setPassword(passwordEncoder.encode(newPassword));
-	            userRepository.save(user);
-	            return true;
-	        } else {
-	            return false;
-	        }
-	    }
-	    return false;
+		return results.stream().map(result -> {
+			String userId = (String) result[0];
+			Long totalReactions = (Long) result[1];
+			User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+			TopReactUser response = userMapper.toTopReactUser(user);
+			response.setTotalReactions(totalReactions);
+			return response;
+		}).collect(Collectors.toList());
 	}
+
+	public boolean changePassword(String email, String oldPassword, String newPassword) {
+		User user = userRepository.findByEmail(email);
+
+		if (user != null) {
+			if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+				user.setPassword(passwordEncoder.encode(newPassword));
+				userRepository.save(user);
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	public Map<UserStatusType, Long> getUserStatisticsByStatus() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		Root<User> root = cq.from(User.class);
+
+		cq.multiselect(root.get("status"), cb.count(root));
+		cq.groupBy(root.get("status"));
+
+		List<Object[]> results = entityManager.createQuery(cq).getResultList();
+
+		return results.stream()
+				.collect(Collectors.toMap(result -> (UserStatusType) result[0], result -> (Long) result[1]));
+	}
+
+	public Map<String, Long> getUserStatisticsByRole() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		Root<User> root = cq.from(User.class);
+
+		cq.multiselect(root.get("role").get("name"), cb.count(root));
+		cq.groupBy(root.get("role").get("name"));
+
+		List<Object[]> results = entityManager.createQuery(cq).getResultList();
+
+		return results.stream().collect(Collectors.toMap(result -> (String) result[0], result -> (Long) result[1]));
+	}
+
+	public long getUserRegistrationsByDate(Integer day, Integer month, Integer year) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		Root<User> root = cq.from(User.class);
+
+		Predicate predicate = cb.conjunction();
+
+		if (year != null) {
+			predicate = cb.and(predicate, cb.equal(cb.function("YEAR", Integer.class, root.get("createdAt")), year));
+		}
+
+		if (month != null) {
+			predicate = cb.and(predicate, cb.equal(cb.function("MONTH", Integer.class, root.get("createdAt")), month));
+		}
+
+		if (day != null) {
+			predicate = cb.and(predicate, cb.equal(cb.function("DAY", Integer.class, root.get("createdAt")), day));
+		}
+
+		cq.select(cb.count(root)).where(predicate);
+		return entityManager.createQuery(cq).getSingleResult();
+	}
+
+	   public List<TopOrderUser> getTop10UsersByPaymentAmount() {
+	        List<Object[]> results = userRepository.findTop10UsersByPaymentAmount();
+
+	        return results.stream()
+	                .map(result -> new TopOrderUser(
+	                        (String) result[0],  
+	                        (String) result[1],
+	                        (Double) result[2]   
+	                ))
+	                .collect(Collectors.toList());
+	    }
+
 }
