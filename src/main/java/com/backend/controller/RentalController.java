@@ -74,4 +74,25 @@ public class RentalController {
 		return ApiResponse.<RentalResponse>builder().result(rentalService.getRentalById(rentalId)).build();
 	}
 
+	@GetMapping("/statistics/status")
+	public ResponseEntity<Map<RentalStatus, Long>> getOrderStatistics(   @RequestParam Map<String, String> params) {
+	    Map<RentalStatus, Long> statistics = rentalService.getRentalStatistics(params);
+	    return ResponseEntity.ok(statistics);
+	}
+	
+	@GetMapping("/statistics/totals")
+	public ResponseEntity<Map<String, Long>> getOrderTotals() {
+	    Map<String, Long> totals = rentalService.getOrderTotals();
+	    return ResponseEntity.ok(totals);
+	}
+	
+	@GetMapping("/statistics/daily")
+	public ResponseEntity<Map<Integer, Long>> getDailyOrderStatistics(
+	        @RequestParam("month") int month,
+	        @RequestParam("year") int year) {
+	    Map<Integer, Long> dailyStatistics = rentalService.getOrdersByDayInMonth(month, year);
+	    return ResponseEntity.ok(dailyStatistics);
+	}
+
+	
 }

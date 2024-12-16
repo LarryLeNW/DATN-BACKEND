@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.backend.constant.Type.VoucherType;
 import com.backend.dto.request.brand.BrandCreationRequest;
 import com.backend.dto.request.brand.BrandUpdateRequest;
 import com.backend.dto.request.category.CategoryCreationRequest;
@@ -86,6 +87,13 @@ public class VoucherService {
 					builder.like(builder.lower(root.get("name")), "%" + keyword + "%")));
 		}
 
+		if (params.containsKey("typeVoucher")) {
+	        String typeVoucher = params.get("typeVoucher");
+	        spec = spec.and((root, query, builder) -> 
+	            builder.equal(root.get("voucher_category"), VoucherType.valueOf(typeVoucher.toUpperCase()))
+	        );
+	    }
+		
 		Page<Voucher> voucherPage = voucherRepository.findAll(spec, pageable);
 		List<VoucherResponse> voucherResponses = voucherPage.getContent().stream().map(voucherMapper::toVoucherResponse)
 				.collect(Collectors.toList());

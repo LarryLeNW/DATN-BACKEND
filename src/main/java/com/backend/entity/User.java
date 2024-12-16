@@ -1,11 +1,13 @@
 package com.backend.entity;
 
 import java.time.LocalDate;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 import java.util.Optional;
 import java.util.Set;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.backend.constant.Type.LoginType;
 import com.backend.constant.Type.UserStatusType;
@@ -101,5 +103,9 @@ public class User {
 		this.login_type = LoginType.DEFAULT;
 		this.status  = UserStatusType.INACTIVE; 
 	}
+	
+	@Column(name = "created_at", updatable = false)
+	@CreationTimestamp
+	LocalDateTime createdAt;
 
 }

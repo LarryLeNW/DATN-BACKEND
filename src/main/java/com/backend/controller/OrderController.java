@@ -112,4 +112,25 @@ public class OrderController {
 		return ResponseEntity.ok(orderStatuses);
 	}
 
+	@GetMapping("/statistics/status")
+	public ResponseEntity<Map<OrderStatusType, Long>> getOrderStatistics(   @RequestParam Map<String, String> params) {
+	    Map<OrderStatusType, Long> statistics = orderService.getOrderStatistics(params);
+	    return ResponseEntity.ok(statistics);
+	}
+	
+	@GetMapping("/statistics/totals")
+	public ResponseEntity<Map<String, Long>> getOrderTotals() {
+	    Map<String, Long> totals = orderService.getOrderTotals();
+	    return ResponseEntity.ok(totals);
+	}
+	
+	@GetMapping("/statistics/daily")
+	public ResponseEntity<Map<Integer, Long>> getDailyOrderStatistics(
+	        @RequestParam("month") int month,
+	        @RequestParam("year") int year) {
+	    Map<Integer, Long> dailyStatistics = orderService.getOrdersByDayInMonth(month, year);
+	    return ResponseEntity.ok(dailyStatistics);
+	}
+
+	
 }
