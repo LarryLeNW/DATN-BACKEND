@@ -32,6 +32,7 @@ import com.backend.repository.order.OrderRepository;
 import com.backend.repository.order.PaymentRepository;
 import com.backend.repository.rental.RentalRepository;
 import com.backend.repository.user.UserRepository;
+import com.backend.service.PaymentService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
@@ -49,6 +50,9 @@ public class PaymentController {
 	private String key2 = "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz";
 	private Mac HmacSHA256;
 
+	@Autowired
+	PaymentService paymentService;
+	
 	@Autowired
 	OrderRepository orderRepository;
 
@@ -224,4 +228,13 @@ public class PaymentController {
 		return ApiResponse.<Payment>builder().result(paymentFound).build();
 	}
 
+    @GetMapping("/statistics/{month}/{year}")
+    public Map<Integer, Map<String, Object>> getPaymentsAndRevenueByDayInMonth(@PathVariable int month, @PathVariable int year) {
+        return paymentService.getPaymentsAndRevenueByDayInMonth(month, year);
+    }
+    
+    @GetMapping("/statistics/totals")
+    public Map<String, Map<String, Long>> getPaymentTotals() {
+        return paymentService.getPaymentTotals();
+    }
 }

@@ -10,5 +10,7 @@ import lombok.NoArgsConstructor;
 public class TopOrderUser {
 	private String userId;
 	private String username;
+	private String avatar;
 	private Double totalPaymentAmount;
+	private Long totalOrder;
 }

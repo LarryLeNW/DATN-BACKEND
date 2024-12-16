@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.backend.constant.Type.UserStatusType;
@@ -27,12 +28,14 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
 
 	long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-	@Query("SELECT u.id, u.username, SUM(p.amount) " +
-		       "FROM User u JOIN Payment p ON u.id = p.user.id " +
-		       "WHERE p.status = 'COMPLETED' " +
-		       "GROUP BY u.id, u.username " +
-		       "ORDER BY SUM(p.amount) DESC")
-		List<Object[]> findTop10UsersByPaymentAmount();
+	@Query("SELECT u.id, u.username, u.avatar ,  SUM(p.amount) AS totalAmount, COUNT(p) AS paymentCount "
+			+ "FROM User u JOIN Payment p ON u.id = p.user.id " + "WHERE p.status = 'COMPLETED' "
+			+ "GROUP BY u.id, u.username , u.avatar " + "ORDER BY totalAmount DESC")
+	List<Object[]> findTop10UsersByPaymentAmount();
 
+	@Query("SELECT DAY(o.createdAt), COUNT(o) " + "FROM User o "
+			+ "WHERE MONTH(o.createdAt) = :month AND YEAR(o.createdAt) = :year " + "GROUP BY DAY(o.createdAt) "
+			+ "ORDER BY DAY(o.createdAt)")
+	List<Object[]> countOrdersByDayInMonth(@Param("month") int month, @Param("year") int year);
 
 }

@@ -125,14 +125,13 @@ public class UserController {
 		return userService.getTopUsersWithMostReactions();
 	}
 
-	@GetMapping("/statistics/registrations")
-	public ResponseEntity<?> getUserRegistrationsStatistics(@RequestParam(required = false) Integer day,
-			@RequestParam(required = false) Integer month, @RequestParam(required = false) Integer year) {
-
-		long count = userService.getUserRegistrationsByDate(day, month, year);
-		return ResponseEntity.ok(Map.of("totalRegistrations", count));
+	@GetMapping("/statistics/daily")
+	public ResponseEntity<Map<Integer, Long>> getDailyOrderStatistics(
+	        @RequestParam("month") int month,
+	        @RequestParam("year") int year) {
+	    Map<Integer, Long> dailyStatistics = userService.getOrdersByDayInMonth(month, year);
+	    return ResponseEntity.ok(dailyStatistics);
 	}
-
 	@GetMapping("/statistics/status")
 	public ResponseEntity<?> getUserStatisticsByStatus() {
 		return ResponseEntity.ok(userService.getUserStatisticsByStatus());
