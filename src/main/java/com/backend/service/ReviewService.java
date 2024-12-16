@@ -67,8 +67,8 @@ public class ReviewService {
 
 		int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) - 1 : 0;
 		int limit = params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 10;
-		String sortField = params.getOrDefault("sortBy", "id");
-		String orderBy = params.getOrDefault("orderBy", "asc");
+		String sortField = params.getOrDefault("sortBy", "createdAt");
+		String orderBy = params.getOrDefault("orderBy", "desc");
 
 		Sort.Direction direction = "desc".equalsIgnoreCase(orderBy) ? Sort.Direction.DESC : Sort.Direction.ASC;
 		Sort sort = Sort.by(direction, sortField);
@@ -143,8 +143,7 @@ public class ReviewService {
 		}
 
 		double totalStars = reviews.stream().mapToInt(Review::getRating).sum();
-
-		return totalStars / reviews.size();
+	    return Math.round(totalStars / reviews.size() * 10.0) / 10.0;
 	}
 
 	public ReviewResponse getReviewById(String reviewId) {

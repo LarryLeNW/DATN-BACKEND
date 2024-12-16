@@ -39,7 +39,7 @@ public class OrderDetail {
 	@JoinColumn(name = "skuid", nullable = false)
 	private Sku sku;
 	
-	@Column(name = "is_review", nullable = false, columnDefinition = "BIT DEFAULT 0")
+	@Column(name = "is_review", nullable = true, columnDefinition = "BIT DEFAULT 0")
 	Boolean isReview;
 
 

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.constant.Type.OrderStatusType;
+import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.request.order.OrderCreationRequest;
 import com.backend.dto.request.order.OrderDetailCreationRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
@@ -64,6 +65,11 @@ public class OrderController {
 	@PostMapping
 	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest requestData , HttpServletRequest request) throws ClientProtocolException, IOException {
 		return ApiResponse.<String>builder().result(orderService.createOrder(requestData, request)).build();
+	}
+	
+	@PutMapping("/{id}/{status}")
+	ApiResponse<String> updateStatus(@PathVariable Integer id, @PathVariable OrderStatusType status) {
+		return ApiResponse.<String>builder().result(orderService.updateStatus(id, status)).build();
 	}
 	
 	@PostMapping("/{orderDetail}")

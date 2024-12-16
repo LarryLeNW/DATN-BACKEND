@@ -191,6 +191,7 @@ public class RentalService {
 					rentalDetail.setPrice(detailRequest.getPrice());
 					rentalDetail.setRental(rental);
 					rentalDetail.setStatus(detailRequest.getStatus());
+					rentalDetail.setIsReview(false);
 
 					return rentalDetail;
 				}).collect(Collectors.toList());
@@ -251,7 +252,8 @@ public class RentalService {
 			String keyword = params.get("keyword");
 			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.or(
 					criteriaBuilder.like(root.get("rentalCode"), "%" + keyword + "%"),
-					criteriaBuilder.like(root.join("rentalDetails").get("product").get("name"), "%" + keyword + "%")));
+					criteriaBuilder.like(root.join("rentalDetails").get("product").get("name"), "%" + keyword + "%"), 
+					criteriaBuilder.like(root.get("user").get("username"), "%" + keyword + "%")));
 		}
 
 		if (params.containsKey("status")) {
