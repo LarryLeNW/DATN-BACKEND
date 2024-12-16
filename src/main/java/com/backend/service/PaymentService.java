@@ -192,6 +192,9 @@ public class PaymentService {
 
 	    LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
 	    LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
+	    
+	    LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
+	    LocalDateTime startOfMonthTime = startOfMonth.atStartOfDay();
 
 	    long todayCount = paymentRepository.countByCreatedAtBetween(startOfToday, endOfToday);
 	    long todayRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfToday, endOfToday)).orElse(0L);
@@ -202,6 +205,9 @@ public class PaymentService {
 	    long thisWeekCount = paymentRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
 	    long thisWeekRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfWeekTime, endOfWeekTime)).orElse(0L);
 
+	    long thisMonthCount = paymentRepository.countByCreatedAtBetween(startOfMonthTime, endOfToday);
+	    long thisMonthRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfMonthTime, endOfToday)).orElse(0L);
+	    
 	    long thisYearCount = paymentRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
 	    long thisYearRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfYearTime, endOfToday)).orElse(0L);
 
@@ -212,6 +218,7 @@ public class PaymentService {
 	    
 	    totals.put("today", Map.of("count", todayCount, "revenue", todayRevenue));
 	    totals.put("yesterday", Map.of("count", yesterdayCount, "revenue", yesterdayRevenue));
+	    totals.put("thisMonth", Map.of("count", thisMonthCount, "revenue", thisMonthRevenue));
 	    totals.put("thisWeek", Map.of("count", thisWeekCount, "revenue", thisWeekRevenue));
 	    totals.put("thisYear", Map.of("count", thisYearCount, "revenue", thisYearRevenue));
 	    totals.put("allTime", Map.of("count", totalAllTimeCount, "revenue", totalAllTimeRevenue));
