@@ -24,6 +24,7 @@ import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.request.order.OrderCreationRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.request.rental.RentalCreation;
+import com.backend.dto.request.rental.RentalUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.blog.BlogResponse;
 import com.backend.dto.response.common.PagedResponse;
@@ -58,6 +59,11 @@ public class RentalController {
 		return ApiResponse.<String>builder().result(rentalService.create(requestData, request)).build();
 	}
 
+	@PutMapping
+	ApiResponse<RentalResponse> update(@RequestBody RentalUpdateRequest requestData) {
+		return ApiResponse.<RentalResponse>builder().result(rentalService.update(requestData)).build();
+	}
+
 	@PutMapping("/{id}/{status}")
 	ApiResponse<String> updateStatus(@PathVariable Long id, @PathVariable RentalStatus status) {
 		return ApiResponse.<String>builder().result(rentalService.updateStatus(id, status)).build();
@@ -75,24 +81,22 @@ public class RentalController {
 	}
 
 	@GetMapping("/statistics/status")
-	public ResponseEntity<Map<RentalStatus, Long>> getOrderStatistics(   @RequestParam Map<String, String> params) {
-	    Map<RentalStatus, Long> statistics = rentalService.getRentalStatistics(params);
-	    return ResponseEntity.ok(statistics);
-	}
-	
-	@GetMapping("/statistics/totals")
-	public ResponseEntity<Map<String, Long>> getOrderTotals() {
-	    Map<String, Long> totals = rentalService.getOrderTotals();
-	    return ResponseEntity.ok(totals);
-	}
-	
-	@GetMapping("/statistics/daily")
-	public ResponseEntity<Map<Integer, Long>> getDailyOrderStatistics(
-	        @RequestParam("month") int month,
-	        @RequestParam("year") int year) {
-	    Map<Integer, Long> dailyStatistics = rentalService.getOrdersByDayInMonth(month, year);
-	    return ResponseEntity.ok(dailyStatistics);
+	public ResponseEntity<Map<RentalStatus, Long>> getOrderStatistics(@RequestParam Map<String, String> params) {
+		Map<RentalStatus, Long> statistics = rentalService.getRentalStatistics(params);
+		return ResponseEntity.ok(statistics);
 	}
 
-	
+	@GetMapping("/statistics/totals")
+	public ResponseEntity<Map<String, Long>> getOrderTotals() {
+		Map<String, Long> totals = rentalService.getOrderTotals();
+		return ResponseEntity.ok(totals);
+	}
+
+	@GetMapping("/statistics/daily")
+	public ResponseEntity<Map<Integer, Long>> getDailyOrderStatistics(@RequestParam("month") int month,
+			@RequestParam("year") int year) {
+		Map<Integer, Long> dailyStatistics = rentalService.getOrdersByDayInMonth(month, year);
+		return ResponseEntity.ok(dailyStatistics);
+	}
+
 }

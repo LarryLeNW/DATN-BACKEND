@@ -8,4 +8,5 @@ import com.backend.entity.rental.Rental;
 import com.backend.entity.rental.RentalDetail;
 
 public interface RentalDetailRepository extends JpaRepository<RentalDetail, Long> ,JpaSpecificationExecutor<RentalDetail> {
+	void deleteByRental(Rental rental);
 }
