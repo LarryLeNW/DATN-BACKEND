@@ -37,12 +37,27 @@ public class Sku {
 	@Column(name = "stock")
 	private Long stock;
 
+	@Column(name = "can_be_rented")
+	Boolean canBeRented = false;
+
+	@Column(name = "hourly_rent_price")
+	Long hourlyRentPrice;
+
+	@Column(name = "daily_rent_price")
+	Long dailyRentPrice;
+
+	@Column(name = "min_rental_quantity")
+	Long minRentalQuantity;
+
+	@Column(name = "max_rental_quantity")
+	Long maxRentalQuantity;
+
 	@Max(value = 80)
-	@Min(value = 0 )
+	@Min(value = 0)
 	@Column(name = "discount")
 	private Long discount;
 
-	@OneToMany(mappedBy = "sku" ,cascade = CascadeType.REMOVE)
+	@OneToMany(mappedBy = "sku", cascade = CascadeType.REMOVE)
 	private List<AttributeOptionSku> attributeOptionSkus;
 
 	@Column(name = "images", columnDefinition = "NVARCHAR(MAX)")

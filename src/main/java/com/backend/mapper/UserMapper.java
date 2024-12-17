@@ -6,6 +6,8 @@ import org.mapstruct.MappingTarget;
 
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
+import com.backend.dto.response.user.TopOrderUser;
+import com.backend.dto.response.user.TopReactUser;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.entity.User;
 import com.backend.service.AuthenticationService;
@@ -15,6 +17,10 @@ public interface UserMapper {
 
     User toUser(UserCreationRequest userRequest);
 
+    TopReactUser toTopReactUser(User user);
+    
+    TopOrderUser toTopOrderUser(User user);
+    
     default UserResponse toUserResponse(User user) {
         if (user == null) return null;
 

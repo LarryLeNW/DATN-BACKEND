@@ -39,7 +39,7 @@ public class Order {
 	@Enumerated(EnumType.STRING)
 	OrderStatusType status;
 
-	@OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL,orphanRemoval = false)
 	List<OrderDetail> orderDetails;
 
 	@ManyToOne

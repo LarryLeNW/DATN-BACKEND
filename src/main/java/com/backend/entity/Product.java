@@ -12,6 +12,7 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.backend.entity.rental.RentalPackage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "products")
@@ -53,6 +54,9 @@ public class Product {
     @ManyToMany(mappedBy = "products")
     List<Voucher> vouchers;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Review> reviews;
+    
     @CreationTimestamp
     @Column(name = "created_at")
     LocalDateTime createdAt;
@@ -65,7 +69,12 @@ public class Product {
     public String toString() {
         return "Product{id=" + id + ", name='" + name + "'}";
     }
-
+    
+  
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    List<RentalPackage> rentalPackages; 
+    
     @PrePersist
     public void prePersist() {
         if (stars == null) {

@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "orderDetails")
+@Table(name = "order_details")
 public class OrderDetail {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,5 +38,10 @@ public class OrderDetail {
 	@ManyToOne
 	@JoinColumn(name = "skuid", nullable = false)
 	private Sku sku;
+	
+	@Column(name = "is_review", nullable = true, columnDefinition = "BIT DEFAULT 0")
+	Boolean isReview;
+
+
 
 }

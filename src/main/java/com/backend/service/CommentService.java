@@ -73,7 +73,7 @@ public class CommentService {
 
 	}
 
-	public CommentResponse updateComment(CommentUpdateRequest request, int commentId) {
+	public CommentResponse updateComment(CommentUpdateRequest request, Integer commentId) {
 
 		Comment comment = commentRepository.findById(commentId)
 				.orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXISTED));
@@ -83,7 +83,7 @@ public class CommentService {
 		return commentMapper.toCommentResponse(commentRepository.save(comment));
 	}
 
-	public void deleteComment(int commentId) {
+	public void deleteComment(Integer commentId) {
 		commentRepository.deleteById(commentId);
 	}
 

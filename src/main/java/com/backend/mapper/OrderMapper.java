@@ -52,12 +52,11 @@ public interface OrderMapper {
 		skuDTO.setId(sku.getId());
 		skuDTO.setImages(sku.getImages());
 
-		// Map các thuộc tính từ attributeOptionSkus sang Map trong SkuDTO
 		skuDTO.setAttributes(sku.getAttributeOptionSkus().stream()
 				.collect(Collectors.toMap(
 						attributeOptionSku -> attributeOptionSku.getAttributeOption().getAttribute().getName(),
 						attributeOptionSku -> attributeOptionSku.getAttributeOption().getValue(),
-						(existing, replacement) -> existing, // xử lý trường hợp trùng lặp key
+						(existing, replacement) -> existing, 
 						HashMap::new)));
 
 		return skuDTO;

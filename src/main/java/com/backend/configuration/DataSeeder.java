@@ -30,32 +30,28 @@
 //
 //	@Autowired
 //	UserRepository userRepository;
-//	
+//
 //	@Autowired
 //	ModuleRepository moduleRepository;
 //
 //	@Autowired
 //	PasswordEncoder passwordEncoder;
 //
-//	
-//	
 //	List<Permission> permissions = new ArrayList<>(Arrays.asList(new Permission((long) 1, "CREATE"),
 //			new Permission((long) 2, "VIEWALL"), new Permission((long) 3, "VIEW"), new Permission((long) 4, "UPDATE"),
 //			new Permission((long) 5, "DELETE")));
 //
-//	List<Module> modules = new ArrayList<>(Arrays.asList(new Module((long) 1, "USER"),
-//			new Module((long) 2, "PRODUCT"),
-//			new Module((long) 3, "BLOG"),
-//			new Module((long) 4, "PRODUCT_CATEGORY")
-//			));
+//	List<Module> modules = new ArrayList<>(Arrays.asList(new Module((long) 1, "USER"), new Module((long) 2, "PRODUCT"),
+//			new Module((long) 3, "BLOG"), new Module((long) 4, "PRODUCT_CATEGORY")));
 //
-//	List<User> users = new ArrayList<>(Arrays.asList(new User("Nguyễn Văn A", "123456", "nguyenvana@gmail.com"),
-//			new User("Nguyễn Văn B", "123456", "nguyenvanb@gmail.com"),
-//			new User("Nguyễn Văn C", "123456", "nguyenvanc@gmail.com"),
-//			new User("Nguyễn Văn D", "123456", "nguyenvand@gmail.com"),
-//			new User("Nguyễn Văn E", "123456", "nguyenvane@gmail.com"),
-//			new User("Nguyễn Văn F", "123456", "nguyenvanf@gmail.com"),
-//			new User("Nguyễn Văn G", "123456", "nguyenvang@gmail.com")));
+//	List<User> users = new ArrayList<>(
+//			Arrays.asList(new User("Nguyễn Văn A", passwordEncoder.encode("123456"), "nguyenvana@gmail.com"),
+//					new User("Nguyễn Văn B", passwordEncoder.encode("123456"), "nguyenvanb@gmail.com"),
+//					new User("Nguyễn Văn C", passwordEncoder.encode("123456"), "nguyenvanc@gmail.com"),
+//					new User("Nguyễn Văn D", passwordEncoder.encode("123456"), "nguyenvand@gmail.com"),
+//					new User("Nguyễn Văn E", passwordEncoder.encode("123456"), "nguyenvane@gmail.com"),
+//					new User("Nguyễn Văn F", passwordEncoder.encode("123456"), "nguyenvanf@gmail.com"),
+//					new User("Nguyễn Văn G", passwordEncoder.encode("123456"), "nguyenvang@gmail.com")));
 //
 ////	@PostConstruct
 //	public void seed() {
@@ -66,7 +62,7 @@
 //		if (permissionRespository.count() == 0) {
 //			permissionRespository.saveAll(permissions);
 //		}
-//		
+//
 //		moduleRepository.saveAll(modules);
 //
 //		// create user role

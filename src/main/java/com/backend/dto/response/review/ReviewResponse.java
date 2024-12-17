@@ -1,6 +1,7 @@
 package com.backend.dto.response.review;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReviewResponse {
 
+	PostBy postBy;
+	
 	String id;
 	
 	int rating;
@@ -26,7 +29,8 @@ public class ReviewResponse {
 	
 	String product_id;
 
-	String image_url;
-
-	String video_url;
+	String images;
+	
+	LocalDateTime createdAt;
+	
 }

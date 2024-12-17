@@ -3,11 +3,16 @@ package com.backend.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,7 +45,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.backend.constant.Type.OrderStatusType;
 import com.backend.constant.Type.PaymentMethod;
 import com.backend.constant.Type.PaymentStatus;
+import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.request.order.OrderCreationRequest;
+import com.backend.dto.request.order.OrderDetailCreationRequest;
 import com.backend.dto.request.order.OrderDetailUpdateRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.request.order.delivery.DeliveryRequest;
@@ -60,6 +67,7 @@ import com.backend.entity.Product;
 import com.backend.entity.Reply;
 import com.backend.entity.Sku;
 import com.backend.entity.User;
+import com.backend.entity.rental.Rental;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.BlogMapper;
@@ -87,6 +95,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -122,81 +131,10 @@ public class OrderService {
 
 	CartRespository cartRepository;
 
-	private static Map<String, String> stage_zalo_config = new HashMap<String, String>() {
-		{
-			put("app_id", "2553");
-			put("key1", "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL");
-			put("key2", "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz");
-			put("endpoint", "https://sb-openapi.zalopay.vn/v2/create");
-		}
-	};
+	PaymentService paymentService;
 
-	static String createUrlPayment(double totalAmount, String app_trans_id)
+	public String createOrder(OrderCreationRequest requestData, HttpServletRequest request)
 			throws ClientProtocolException, IOException {
-
-		Map<String, Object>[] item = new Map[] { new HashMap<>() {
-			{
-				put("itemid", "item001");
-				put("itemname", "Product A");
-				put("itemprice", totalAmount);
-				put("itemquantity", 1);
-			}
-		} };
-
-		Map<String, Object> embed_data = new HashMap<>();
-		embed_data.put("merchantinfo", "Test Merchant");
-		embed_data.put("redirecturl", "http://localhost:3000/checkout/payment/success");
-
-		Map<String, Object> order = new HashMap<String, Object>() {
-			{
-				put("app_id", stage_zalo_config.get("app_id"));
-				put("app_time", System.currentTimeMillis());
-				put("app_trans_id", app_trans_id);
-				put("app_user", "datn");
-				put("amount", (int) totalAmount);
-				put("description", "Payment for the order - DATN DEV TEAM 2025 DEMO");
-				put("bank_code", "");
-				put("item", new JSONArray(Arrays.asList(item)).toString());
-				put("embed_data", new JSONObject(embed_data).toString());
-				put("callback_url",
-						"https://0f88-103-156-58-227.ngrok-free.app/api/payment/zalo/callback");
-			}
-		};
-
-		String data = order.get("app_id") + "|" + order.get("app_trans_id") + "|" + order.get("app_user") + "|"
-				+ order.get("amount") + "|" + order.get("app_time") + "|" + order.get("embed_data") + "|"
-				+ order.get("item");
-		String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, stage_zalo_config.get("key1"), data);
-		order.put("mac", mac);
-
-		CloseableHttpClient client = HttpClients.createDefault();
-		HttpPost post = new HttpPost(stage_zalo_config.get("endpoint"));
-
-		List<NameValuePair> params = new ArrayList<>();
-		for (Map.Entry<String, Object> e : order.entrySet()) {
-			params.add(new BasicNameValuePair(e.getKey(), e.getValue().toString()));
-		}
-
-		post.setEntity(new UrlEncodedFormEntity(params));
-
-		CloseableHttpResponse res = client.execute(post);
-
-		BufferedReader rd = new BufferedReader(new InputStreamReader(res.getEntity().getContent()));
-		StringBuilder resultJsonStr = new StringBuilder();
-		String line;
-		while ((line = rd.readLine()) != null) {
-			resultJsonStr.append(line);
-		}
-
-		JSONObject result = new JSONObject(resultJsonStr.toString());
-
-		if (result.has("order_url"))
-			return result.getString("order_url");
-
-		return null;
-	}
-
-	public String createOrder(OrderCreationRequest request) throws ClientProtocolException, IOException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String roleUser = auth.getAuthorities().iterator().next().toString();
 		String idUser = auth.getName();
@@ -204,13 +142,13 @@ public class OrderService {
 		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 		Order order = new Order();
 		order.setUser(user);
-		order.setOrderCode(request.getCode());
-		order.setDiscountValue(request.getDiscountValue());
-		
+		order.setOrderCode(requestData.getCode());
+		order.setDiscountValue(requestData.getDiscountValue());
+
 		Delivery delivery;
 
-		if (request.getDelivery() != null) {
-			Delivery deliveryCreated = deliveryMapper.toDelivery(request.getDelivery());
+		if (requestData.getDelivery() != null) {
+			Delivery deliveryCreated = deliveryMapper.toDelivery(requestData.getDelivery());
 			deliveryCreated.setUser(user);
 			delivery = deliveryRepository.save(deliveryCreated);
 		} else {
@@ -219,16 +157,16 @@ public class OrderService {
 
 		order.setDelivery(delivery);
 
-		if (request.getPayment().getMethod() == PaymentMethod.COD) {
+		if (requestData.getPayment().getMethod() == PaymentMethod.COD) {
 			order.setStatus(OrderStatusType.PENDING);
 		}
 
-		order.setTotal_amount(request.getPayment().getAmount());
+		order.setTotal_amount(requestData.getPayment().getAmount());
 
 		orderRepository.save(order);
 
-		List<OrderDetail> orderDetails = Optional.ofNullable(request.getOrderDetails()).orElse(Collections.emptyList())
-				.stream().map(detailRequest -> {
+		List<OrderDetail> orderDetails = Optional.ofNullable(requestData.getOrderDetails())
+				.orElse(Collections.emptyList()).stream().map(detailRequest -> {
 					OrderDetail orderDetail = new OrderDetail();
 
 					Product product = productRepository.findById(detailRequest.getProductId())
@@ -242,6 +180,7 @@ public class OrderService {
 					orderDetail.setQuantity(detailRequest.getQuantity());
 					orderDetail.setPrice(sku.getPrice());
 					orderDetail.setOrder(order);
+					orderDetail.setIsReview(false);
 
 					if (detailRequest.getCart() != null) {
 						cartRepository.delete(detailRequest.getCart());
@@ -256,17 +195,25 @@ public class OrderService {
 
 		String app_trans_id = Helpers.getCurrentTimeString("yyMMdd") + "_" + Integer.parseInt(Helpers.handleRandom(7));
 
-		OrderStatusType orderStatus = request.getPayment().getMethod() != PaymentMethod.COD ? OrderStatusType.UNPAID
+		OrderStatusType orderStatus = requestData.getPayment().getMethod() != PaymentMethod.COD ? OrderStatusType.UNPAID
 				: OrderStatusType.PENDING;
 
 		order.setStatus(orderStatus);
 
 		orderRepository.save(order);
-		PaymentOrder(request.getPayment(), order, app_trans_id);
+		PaymentOrder(requestData.getPayment(), order, app_trans_id);
 
-		if (request.getPayment().getMethod() == PaymentMethod.ZaloPay) {
-			String url = createUrlPayment(request.getPayment().getAmount(), app_trans_id);
-			log.info(url);
+		if (requestData.getPayment().getMethod() == PaymentMethod.ZaloPay) {
+			String url = paymentService.createPaymentZaloUrl(requestData.getPayment().getAmount(), app_trans_id,
+					"https://f66a-113-166-213-84.ngrok-free.app/api/payment/zalo/callback",
+					"http://localhost:3000/checkout/payment/success");
+			if (url != null)
+				return url;
+		}
+
+		if (requestData.getPayment().getMethod() == PaymentMethod.VNPay) {
+			String url = paymentService.createVnPayUrl((int) requestData.getPayment().getAmount(), request,
+					app_trans_id, "http://localhost:8080/api/payment/vn-pay/callback");
 			if (url != null)
 				return url;
 		}
@@ -296,6 +243,14 @@ public class OrderService {
 
 		Specification<Order> spec = Specification.where(null);
 
+		if (params.containsKey("keyword")) {
+			String keyword = params.get("keyword");
+			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.or(
+					criteriaBuilder.like(root.get("orderCode"), "%" + keyword + "%"),
+					criteriaBuilder.like(root.join("orderDetails").get("product").get("name"), "%" + keyword + "%"),
+					criteriaBuilder.like(root.get("user").get("username"), "%" + keyword + "%")));
+		}
+
 		if (params.containsKey("status")) {
 			String status = params.get("status");
 			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status));
@@ -304,6 +259,30 @@ public class OrderService {
 		if ("ROLE_USER".equals(roleUser)) {
 			spec = spec
 					.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), idUser));
+		}
+
+		if (params.containsKey("startDate") || params.containsKey("endDate")) {
+			String startDateStr = params.get("startDate");
+			String endDateStr = params.get("endDate");
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			final LocalDateTime startDate = (startDateStr != null)
+					? LocalDate.parse(startDateStr, formatter).atStartOfDay()
+					: null;
+			final LocalDateTime endDate = (endDateStr != null)
+					? LocalDate.parse(endDateStr, formatter).atTime(LocalTime.MAX)
+					: null;
+
+			if (startDate != null && endDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("createdAt"),
+						startDate, endDate));
+			} else if (startDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+						.greaterThanOrEqualTo(root.get("createdAt"), startDate));
+			} else if (endDate != null) {
+				spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder
+						.lessThanOrEqualTo(root.get("createdAt"), endDate));
+			}
 		}
 
 		Page<Order> orderPage = orderRepository.findAll(spec, pageable);
@@ -316,6 +295,7 @@ public class OrderService {
 
 	@Transactional
 	public OrderResponse updateOrder(Integer orderId, OrderUpdateRequest request) {
+
 		Order order = orderRepository.findById(orderId)
 				.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
@@ -323,16 +303,22 @@ public class OrderService {
 			if (request.getDeliveryId() != null) {
 				Delivery delivery = deliveryRepository.findById(Integer.parseInt(request.getDeliveryId()))
 						.orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_EXISTED));
-				if (!delivery.equals(order.getDelivery())) {
-					order.setDelivery(delivery);
-				}
+				Helpers.updateFieldEntityIfChanged(delivery, order.getDelivery(), order::setDelivery);
 			}
-			Helpers.updateFieldEntityIfChanged(request.getTotalAmount(), order.getTotal_amount(),
-					order::setTotal_amount);
+
+			double totalAmount = order.getOrderDetails().stream().mapToDouble(od -> od.getPrice() * od.getQuantity())
+					.sum();
+			order.setTotal_amount(totalAmount);
+			// Helpers.updateFieldEntityIfChanged(request.getTotalAmount(),
+			// order.getTotal_amount(),
+			// order::setTotal_amount);
 			Helpers.updateFieldEntityIfChanged(request.getStatus(), order.getStatus(), order::setStatus);
 
 			if (request.getOrderDetails() != null) {
 				for (OrderDetailUpdateRequest detailRequest : request.getOrderDetails()) {
+
+					System.out.println("sl: " + detailRequest.getQuantity());
+
 					Product product = productRepository.findById(detailRequest.getProductId())
 							.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
@@ -345,22 +331,24 @@ public class OrderService {
 					OrderDetail foundOrderDetail = orderDetailRepository.findOneByOrderAndProductAndSku(order, product,
 							sku);
 
-					if (currentOrderDetail != null && foundOrderDetail.getId() != foundOrderDetail.getId()) {
-						foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
+					if (foundOrderDetail != null && !foundOrderDetail.getId().equals(currentOrderDetail.getId())) {
 
+						foundOrderDetail.setQuantity(foundOrderDetail.getQuantity() + detailRequest.getQuantity());
 						orderDetailRepository.delete(currentOrderDetail);
 						currentOrderDetail = foundOrderDetail;
-
 					} else {
-						currentOrderDetail.setQuantity(detailRequest.getQuantity());
+
+						System.out.println("số lượng:" + detailRequest.getQuantity());
 						currentOrderDetail.setSku(sku);
 						currentOrderDetail.setProduct(product);
+						currentOrderDetail.setQuantity(detailRequest.getQuantity());
+
 					}
+
 					orderDetailRepository.save(currentOrderDetail);
 
 				}
 			}
-
 		}
 
 		return orderMapper.toOrderResponse(orderRepository.save(order));
@@ -384,9 +372,9 @@ public class OrderService {
 			orderFound = orderRepository.findById(orderId)
 					.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-		if(orderFound == null)
+		if (orderFound == null)
 			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
-		
+
 		return orderMapper.toOrderResponse(orderFound);
 	}
 
@@ -396,6 +384,175 @@ public class OrderService {
 		if (orderFound == null)
 			throw new RuntimeException("Not found info this order...");
 		return orderMapper.toOrderResponse(orderFound);
+	}
+
+	@Transactional
+	public void deleteOrderDetail(Integer orderDetailId) {
+		OrderDetail orderDetailFound = orderDetailRepository.findById(orderDetailId)
+				.orElseThrow(() -> new RuntimeException("not found"));
+
+		Order order = orderDetailFound.getOrder();
+
+		if (order != null) {
+			order.getOrderDetails().remove(orderDetailFound);
+
+			double totalAmount = order.getOrderDetails().stream().mapToDouble(od -> od.getPrice() * od.getQuantity())
+					.sum();
+			order.setTotal_amount(totalAmount);
+		}
+
+		orderDetailRepository.delete(orderDetailFound);
+	}
+
+	public OrderDetailResponse createOrderDetail(OrderDetailCreationRequest request) {
+
+		System.out.println(request);
+
+		OrderDetail orderDetail = new OrderDetail();
+
+		if (request.getOrderId() != null) {
+			Order order = orderRepository.findById(Integer.parseInt(request.getOrderId()))
+					.orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+			orderDetail.setOrder(order);
+
+			if (request.getProductId() != null) {
+				Product product = productRepository.findById((request.getProductId()))
+						.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+				orderDetail.setProduct(product);
+			}
+			Sku sku = skuRepository.findById((request.getSkuId()))
+					.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+			orderDetail.setSku(sku);
+			orderDetail.setPrice(sku.getPrice());
+			orderDetail.setQuantity(request.getQuantity());
+			orderDetail.setIsReview(false);
+			System.out.println(sku.getPrice());
+
+			orderDetailRepository.save(orderDetail);
+
+			double totalAmount = order.getOrderDetails().stream().mapToDouble(od -> od.getPrice() * od.getQuantity())
+					.sum();
+			order.setTotal_amount(totalAmount);
+
+			orderRepository.save(order);
+		}
+		return orderMapper.toOrderDetailResponse(orderDetail);
+
+	}
+
+	public String updateStatus(Integer orderId, OrderStatusType status) {
+		String idUser = SecurityContextHolder.getContext().getAuthentication().getName();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+
+		Order orderFound = null;
+
+		if ("ROLE_USER".equals(roleUser)) {
+			User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+			orderFound = orderRepository.findByIdAndUser(orderId, user);
+		} else
+			orderFound = orderRepository.findById(orderId)
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê ..."));
+
+		if (orderFound == null)
+			throw new AppException(ErrorCode.ORDER_NOT_EXISTED);
+
+		orderFound.setStatus(status);
+		orderRepository.save(orderFound);
+
+		return "Đã cập nhật đơn hàng";
+	}
+
+	public Map<OrderStatusType, Long> getOrderStatistics(Map<String, String> params) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = criteriaBuilder.createQuery(Object[].class);
+		Root<Order> root = query.from(Order.class);
+
+		Predicate predicate = criteriaBuilder.conjunction();
+
+		if (params.containsKey("startDate") || params.containsKey("endDate")) {
+			String startDateStr = params.get("startDate");
+			String endDateStr = params.get("endDate");
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			final LocalDateTime startDate = (startDateStr != null)
+					? LocalDate.parse(startDateStr, formatter).atStartOfDay()
+					: null;
+			final LocalDateTime endDate = (endDateStr != null)
+					? LocalDate.parse(endDateStr, formatter).atTime(LocalTime.MAX)
+					: null;
+
+			if (startDate != null && endDate != null) {
+				predicate = criteriaBuilder.and(predicate,
+						criteriaBuilder.between(root.get("createdAt"), startDate, endDate));
+			} else if (startDate != null) {
+				predicate = criteriaBuilder.and(predicate,
+						criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), startDate));
+			} else if (endDate != null) {
+				predicate = criteriaBuilder.and(predicate,
+						criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), endDate));
+			}
+		}
+
+		query.multiselect(root.get("status"), criteriaBuilder.count(root.get("id"))).where(predicate)
+				.groupBy(root.get("status"));
+
+		List<Object[]> results = entityManager.createQuery(query).getResultList();
+
+		Map<OrderStatusType, Long> statistics = new HashMap<>();
+		for (Object[] result : results) {
+			OrderStatusType status = (OrderStatusType) result[0];
+			Long count = (Long) result[1];
+			statistics.put(status, count);
+		}
+		return statistics;
+	}
+
+	public Map<String, Long> getOrderTotals() {
+		LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+		LocalDateTime endOfToday = LocalDateTime.now();
+
+		LocalDateTime startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay();
+		LocalDateTime endOfYesterday = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+
+		LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+		LocalDateTime startOfWeekTime = startOfWeek.atStartOfDay();
+		LocalDateTime endOfWeekTime = endOfToday;
+
+		LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
+		LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
+
+		long todayCount = orderRepository.countByCreatedAtBetween(startOfToday, endOfToday);
+		long yesterdayCount = orderRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
+		long thisWeekCount = orderRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
+		long thisYearCount = orderRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
+		long totalAllTime = orderRepository.count();
+
+		Map<String, Long> totals = new HashMap<>();
+		totals.put("today", todayCount);
+		totals.put("yesterday", yesterdayCount);
+		totals.put("thisWeek", thisWeekCount);
+		totals.put("thisYear", thisYearCount);
+		totals.put("allTime", totalAllTime);
+
+		return totals;
+	}
+
+	public Map<Integer, Long> getOrdersByDayInMonth(int month, int year) {
+		List<Object[]> results = orderRepository.countOrdersByDayInMonth(month, year);
+
+		Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
+		for (int day = 1; day <= 31; day++) {
+			ordersByDay.put(day, 0L);
+		}
+
+		for (Object[] result : results) {
+			Integer day = (Integer) result[0];
+			Long count = (Long) result[1];
+			ordersByDay.put(day, count);
+		}
+
+		return ordersByDay;
 	}
 
 }

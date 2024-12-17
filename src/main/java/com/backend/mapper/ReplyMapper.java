@@ -15,5 +15,9 @@ public interface ReplyMapper {
 	
 	@Mapping(source = "comment.commentId", target = "comment_id")
 	@Mapping(source = "user.id", target = "user_id")
+	@Mapping(source = "user.username", target = "userName")
+	@Mapping(source = "comment.user.username", target = "userComment")
+	@Mapping(source = "parentReply.user.username", target = "parentReplyUserName")
+	@Mapping(source = "user.avatar",target = "avatar")
 	ReplyResponse toReplyResponse(Reply reply);
 }

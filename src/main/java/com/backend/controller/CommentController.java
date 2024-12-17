@@ -19,12 +19,14 @@ import com.backend.dto.request.blog.comment.CommentCreationRequest;
 import com.backend.dto.request.blog.comment.CommentUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.blog.comment.CommentResponse;
+import com.backend.dto.response.blog.reply.ReplyResponse;
 import com.backend.dto.response.common.PagedResponse;
 import com.backend.entity.Category;
 import com.backend.entity.Comment;
 import com.backend.mapper.CommentMapper;
 import com.backend.service.CategoryService;
 import com.backend.service.CommentService;
+import com.backend.service.ReplyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.constraints.Min;
@@ -41,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CommentController {
 
 	CommentService commentService;
+	ReplyService replyService;
 
     private final CommentMapper commentMapper;  // Inject the CommentMapper
 
@@ -72,15 +75,23 @@ public class CommentController {
 		return ApiResponse.<PagedResponse<Comment>>builder().result(pagedResponse).build();
 	}
 	
-    @GetMapping("/blog/{blogId}")
-    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Integer blogId) {
-        List<Comment> comments = commentService.getCommentsByBlogId(blogId);
+	@GetMapping("/blog/{blogId}")
+	public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Integer blogId) {
+	    List<Comment> comments = commentService.getCommentsByBlogId(blogId);
 
-        List<CommentResponse> commentResponses = comments.stream()
-            .map(commentMapper::toCommentResponse)  
-            .collect(Collectors.toList());
+	    // Map comments to responses and add nested replies for each reply
+	    List<CommentResponse> commentResponses = comments.stream()
+	        .map(comment -> {
+	            CommentResponse commentResponse = commentMapper.toCommentResponse(comment);
+	            List<ReplyResponse> replies = replyService.getRepliesByCommentId(comment.getCommentId());
 
-        return ResponseEntity.ok(commentResponses);
-    }
+	            // Set the replies (including nested ones)
+	            commentResponse.setReplyResponse(replies);
+	            return commentResponse;
+	        })
+	        .collect(Collectors.toList());
+
+	    return ResponseEntity.ok(commentResponses);
+	}
 
 }

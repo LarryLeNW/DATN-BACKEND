@@ -1,12 +1,16 @@
 package com.backend.service;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,21 +22,35 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.backend.dto.request.user.UserCreationRequest;
 import com.backend.dto.request.user.UserUpdateRequest;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
+import com.backend.dto.response.user.TopOrderUser;
+import com.backend.dto.response.user.TopReactUser;
 import com.backend.dto.response.user.UserResponse;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.mapper.UserMapper;
 import com.backend.repository.user.RoleRepository;
 import com.backend.repository.user.UserRepository;
+import com.backend.utils.Helpers;
+import com.backend.utils.UploadFile;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+
 import com.backend.constant.PredefinedRole;
 import com.backend.constant.Type.UserStatusType;
 import com.backend.entity.Cart;
 import com.backend.entity.Product;
+import com.backend.entity.QuestionReaction;
 import com.backend.entity.Role;
 import com.backend.entity.User;
 
@@ -50,6 +68,8 @@ public class UserService {
 	RoleRepository roleRepository;
 	UserMapper userMapper;
 	PasswordEncoder passwordEncoder;
+	EntityManager entityManager;
+	UploadFile uploadFile;
 
 	public UserResponse createUser(UserCreationRequest request) {
 
@@ -96,6 +116,42 @@ public class UserService {
 
 		if (request.getPassword() != null)
 			user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+		return userMapper.toUserResponse(userRepository.save(user));
+	}
+
+	public UserResponse updateInfoUser(String userId, UserUpdateRequest request, MultipartFile avatar) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+		if (avatar != null) {
+			String avatarUrl = uploadFile.saveFile(avatar, "brandTest");
+			System.out.println("hihiih," + avatarUrl);
+			user.setAvatar(avatarUrl);
+		}
+
+		if (request.getUsername() != null && !request.getUsername().isEmpty()) {
+			user.setUsername(request.getUsername());
+		}
+
+		if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+			user.setPassword(passwordEncoder.encode(request.getPassword()));
+		}
+
+		if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+			User existingUser = userRepository.findByEmail(request.getEmail());
+			if (existingUser != null && !existingUser.getId().equals(user.getId())) {
+				throw new RuntimeException("Email has already been used.");
+			}
+			user.setEmail(request.getEmail());
+		}
+
+		if (request.getPhone_number() != null && !request.getPhone_number().isEmpty()) {
+			user.setPhone_number(request.getPhone_number());
+		}
+
+		if (request.getRole() != null) {
+			user.setRole(request.getRole());
+		}
 
 		return userMapper.toUserResponse(userRepository.save(user));
 	}
@@ -150,4 +206,97 @@ public class UserService {
 		return userMapper.toUserResponse(
 				userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
 	}
+
+	public List<TopReactUser> getTopUsersWithMostReactions() {
+		Pageable pageable = PageRequest.of(0, 10);
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		Root<QuestionReaction> root = cq.from(QuestionReaction.class);
+
+		cq.multiselect(root.get("user").get("id"), cb.count(root));
+		cq.groupBy(root.get("user").get("id"));
+		cq.orderBy(cb.desc(cb.count(root)));
+
+		Query query = entityManager.createQuery(cq);
+		query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+		query.setMaxResults(pageable.getPageSize());
+
+		List<Object[]> results = query.getResultList();
+
+		return results.stream().map(result -> {
+			String userId = (String) result[0];
+			Long totalReactions = (Long) result[1];
+			User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+			TopReactUser response = userMapper.toTopReactUser(user);
+			response.setTotalReactions(totalReactions);
+			return response;
+		}).collect(Collectors.toList());
+	}
+
+	public boolean changePassword(String email, String oldPassword, String newPassword) {
+		User user = userRepository.findByEmail(email);
+
+		if (user != null) {
+			if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+				user.setPassword(passwordEncoder.encode(newPassword));
+				userRepository.save(user);
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	public Map<UserStatusType, Long> getUserStatisticsByStatus() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		Root<User> root = cq.from(User.class);
+
+		cq.multiselect(root.get("status"), cb.count(root));
+		cq.groupBy(root.get("status"));
+
+		List<Object[]> results = entityManager.createQuery(cq).getResultList();
+
+		return results.stream()
+				.collect(Collectors.toMap(result -> (UserStatusType) result[0], result -> (Long) result[1]));
+	}
+
+	public Map<String, Long> getUserStatisticsByRole() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+		Root<User> root = cq.from(User.class);
+
+		cq.multiselect(root.get("role").get("name"), cb.count(root));
+		cq.groupBy(root.get("role").get("name"));
+
+		List<Object[]> results = entityManager.createQuery(cq).getResultList();
+
+		return results.stream().collect(Collectors.toMap(result -> (String) result[0], result -> (Long) result[1]));
+	}
+
+	public Map<Integer, Long> getOrdersByDayInMonth(int month, int year) {
+	    List<Object[]> results = userRepository.countOrdersByDayInMonth(month, year);
+
+	    Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
+	    for (int day = 1; day <= 31; day++) {
+	        ordersByDay.put(day, 0L);
+	    }
+
+	    for (Object[] result : results) {
+	        Integer day = (Integer) result[0];
+	        Long count = (Long) result[1];
+	        ordersByDay.put(day, count);
+	    }
+
+	    return ordersByDay;
+	}
+	public List<TopOrderUser> getTop10UsersByPaymentAmount() {
+		List<Object[]> results = userRepository.findTop10UsersByPaymentAmount();
+
+		return results.stream().map(result -> new TopOrderUser((String) result[0], (String) result[1],
+				(String) result[2], (Double) result[3], (Long) result[4])).collect(Collectors.toList());
+	}
+
 }

@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.constant.Type.OrderStatusType;
+import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.request.order.OrderCreationRequest;
+import com.backend.dto.request.order.OrderDetailCreationRequest;
 import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.blog.BlogResponse;
@@ -29,9 +31,11 @@ import com.backend.dto.response.order.OrderDetailResponse;
 import com.backend.dto.response.order.OrderResponse;
 import com.backend.entity.Order;
 import com.backend.entity.OrderDetail;
+import com.backend.repository.order.OrderDetailRepository;
 import com.backend.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +55,7 @@ public class OrderController {
 	ObjectMapper objectMapper;
 
 	@GetMapping
-	ApiResponse<PagedResponse<OrderResponse>> getAlls(
-			@RequestParam Map<String, String> params) {
+	ApiResponse<PagedResponse<OrderResponse>> getAlls(@RequestParam Map<String, String> params) {
 
 		PagedResponse<OrderResponse> pagedResponse = orderService.getOrders(params);
 
@@ -60,8 +63,18 @@ public class OrderController {
 	}
 
 	@PostMapping
-	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest request) throws ClientProtocolException, IOException {
-		return ApiResponse.<String>builder().result(orderService.createOrder(request)).build();
+	ApiResponse<String> createOrder(@RequestBody OrderCreationRequest requestData , HttpServletRequest request) throws ClientProtocolException, IOException {
+		return ApiResponse.<String>builder().result(orderService.createOrder(requestData, request)).build();
+	}
+	
+	@PutMapping("/{id}/{status}")
+	ApiResponse<String> updateStatus(@PathVariable Integer id, @PathVariable OrderStatusType status) {
+		return ApiResponse.<String>builder().result(orderService.updateStatus(id, status)).build();
+	}
+	
+	@PostMapping("/{orderDetail}")
+	ApiResponse<OrderDetailResponse> createOrderDetail(@RequestBody OrderDetailCreationRequest request) {
+		return ApiResponse.<OrderDetailResponse>builder().result(orderService.createOrderDetail(request)).build();
 	}
 
 	@PutMapping("/{orderId}")
@@ -75,11 +88,19 @@ public class OrderController {
 		return ApiResponse.<String>builder().result("delete success order with id of: " + orderId).build();
 	}
 
+	@DeleteMapping("/{orderDetailId}/orderDetail")
+	public ApiResponse<String> deleteOrderDetail(@PathVariable Integer orderDetailId) {
+		orderService.deleteOrderDetail(orderDetailId);
+		System.out.println(orderDetailId);
+		return ApiResponse.<String>builder()
+				.result("Delete thành công id:" +orderDetailId ).build();
+	}
+
 	@GetMapping("/{orderId}")
 	ApiResponse<OrderResponse> getOrderById(@PathVariable Integer orderId) {
 		return ApiResponse.<OrderResponse>builder().result(orderService.getOrderById(orderId)).build();
 	}
-	
+
 	@GetMapping("/code/{codeId}")
 	ApiResponse<OrderResponse> getOrderByCode(@PathVariable String codeId) {
 		return ApiResponse.<OrderResponse>builder().result(orderService.getOrderByCode(codeId)).build();
@@ -90,9 +111,26 @@ public class OrderController {
 		List<OrderStatusType> orderStatuses = Arrays.asList(OrderStatusType.values());
 		return ResponseEntity.ok(orderStatuses);
 	}
-	
-	
-	
 
+	@GetMapping("/statistics/status")
+	public ResponseEntity<Map<OrderStatusType, Long>> getOrderStatistics(   @RequestParam Map<String, String> params) {
+	    Map<OrderStatusType, Long> statistics = orderService.getOrderStatistics(params);
+	    return ResponseEntity.ok(statistics);
+	}
+	
+	@GetMapping("/statistics/totals")
+	public ResponseEntity<Map<String, Long>> getOrderTotals() {
+	    Map<String, Long> totals = orderService.getOrderTotals();
+	    return ResponseEntity.ok(totals);
+	}
+	
+	@GetMapping("/statistics/daily")
+	public ResponseEntity<Map<Integer, Long>> getDailyOrderStatistics(
+	        @RequestParam("month") int month,
+	        @RequestParam("year") int year) {
+	    Map<Integer, Long> dailyStatistics = orderService.getOrdersByDayInMonth(month, year);
+	    return ResponseEntity.ok(dailyStatistics);
+	}
 
+	
 }

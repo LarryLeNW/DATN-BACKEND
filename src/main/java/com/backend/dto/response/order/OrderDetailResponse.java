@@ -23,4 +23,5 @@ public class OrderDetailResponse {
 	SKUDTO sku;
 	double price;
 	ProductResponse product;
+	Boolean isReview;
 }

@@ -32,6 +32,11 @@ public class Reply {
 	@JoinColumn(name = "commentId")
 	@JsonIgnore
 	private Comment comment;
+	
+
+    @ManyToOne
+    @JoinColumn(name = "parentReplyId")
+    private Reply parentReply;
 
 	@ManyToOne
 	@JoinColumn(name = "userId")
