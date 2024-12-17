@@ -43,7 +43,7 @@ public class Voucher {
 	@Column(name = "code",nullable = false,unique = true)
 	String code;
 
-	@Column(name = "name", nullable = false,unique = true)
+	@Column(name = "name", nullable = false,unique = true, columnDefinition = "NVARCHAR(MAX)")
 	String name;
 	
 	@Column(name = "discount_type", nullable = false)

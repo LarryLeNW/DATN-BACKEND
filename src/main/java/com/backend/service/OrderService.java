@@ -308,10 +308,13 @@ public class OrderService {
 
 			double totalAmount = order.getOrderDetails().stream().mapToDouble(od -> od.getPrice() * od.getQuantity())
 					.sum();
+
 			order.setTotal_amount(totalAmount);
 //			Helpers.updateFieldEntityIfChanged(request.getTotalAmount(), order.getTotal_amount(),
 //					order::setTotal_amount);
-			Helpers.updateFieldEntityIfChanged(request.getStatus(), order.getStatus(), order::setStatus);
+			if (request.getStatus() != null && !request.getStatus().equals(order.getStatus())) {
+				updatePaymentStatus(order, request.getStatus());
+			}
 
 			if (request.getOrderDetails() != null) {
 				for (OrderDetailUpdateRequest detailRequest : request.getOrderDetails()) {
@@ -353,6 +356,29 @@ public class OrderService {
 		return orderMapper.toOrderResponse(orderRepository.save(order));
 	}
 
+	private void updatePaymentStatus(Order order, OrderStatusType orderStatus) {
+		Payment payment = paymentRepository.findByOrderId(order.getId());
+
+		PaymentStatus newStatus = UpdateStatusPayment(orderStatus);
+		payment.setStatus(newStatus);
+		paymentRepository.save(payment);
+	}
+
+	private PaymentStatus UpdateStatusPayment(OrderStatusType orderStatus) {
+		switch (orderStatus) {
+		case PENDING:
+			return PaymentStatus.PENDING;
+		case CONFIRMED:
+		case SHIPPED:
+		case DELIVERED:
+			return PaymentStatus.COMPLETED;
+		case CANCELLED:
+			return PaymentStatus.FAILED;
+		default:
+			throw new AppException(ErrorCode.PAYMENT_NOT_EXISTED);
+		}
+	}
+
 	public void deleteOrder(Integer orderId) {
 		orderRepository.deleteById(orderId);
 	}
@@ -391,13 +417,12 @@ public class OrderService {
 				.orElseThrow(() -> new RuntimeException("not found"));
 
 		Order order = orderDetailFound.getOrder();
-		
-		
-		
+
 		if (order != null) {
 			order.getOrderDetails().remove(orderDetailFound);
-			
-			double totalAmount = order.getOrderDetails().stream().mapToDouble(od -> od.getPrice() * od.getQuantity()).sum();
+
+			double totalAmount = order.getOrderDetails().stream().mapToDouble(od -> od.getPrice() * od.getQuantity())
+					.sum();
 			order.setTotal_amount(totalAmount);
 		}
 
@@ -507,54 +532,52 @@ public class OrderService {
 		}
 		return statistics;
 	}
-	
+
 	public Map<String, Long> getOrderTotals() {
-	    LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
-	    LocalDateTime endOfToday = LocalDateTime.now();
+		LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+		LocalDateTime endOfToday = LocalDateTime.now();
 
-	    LocalDateTime startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay();
-	    LocalDateTime endOfYesterday = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+		LocalDateTime startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay();
+		LocalDateTime endOfYesterday = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
 
-	    LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
-	    LocalDateTime startOfWeekTime = startOfWeek.atStartOfDay();
-	    LocalDateTime endOfWeekTime = endOfToday;
+		LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+		LocalDateTime startOfWeekTime = startOfWeek.atStartOfDay();
+		LocalDateTime endOfWeekTime = endOfToday;
 
-	    LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
-	    LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
+		LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
+		LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
 
-	    long todayCount = orderRepository.countByCreatedAtBetween(startOfToday, endOfToday);
-	    long yesterdayCount = orderRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
-	    long thisWeekCount = orderRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
-	    long thisYearCount = orderRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
-	    long totalAllTime = orderRepository.count();
+		long todayCount = orderRepository.countByCreatedAtBetween(startOfToday, endOfToday);
+		long yesterdayCount = orderRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
+		long thisWeekCount = orderRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
+		long thisYearCount = orderRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
+		long totalAllTime = orderRepository.count();
 
-	    Map<String, Long> totals = new HashMap<>();
-	    totals.put("today", todayCount);
-	    totals.put("yesterday", yesterdayCount);
-	    totals.put("thisWeek", thisWeekCount);
-	    totals.put("thisYear", thisYearCount);
-	    totals.put("allTime", totalAllTime);
+		Map<String, Long> totals = new HashMap<>();
+		totals.put("today", todayCount);
+		totals.put("yesterday", yesterdayCount);
+		totals.put("thisWeek", thisWeekCount);
+		totals.put("thisYear", thisYearCount);
+		totals.put("allTime", totalAllTime);
 
-	    return totals;
+		return totals;
 	}
 
-	
 	public Map<Integer, Long> getOrdersByDayInMonth(int month, int year) {
-	    List<Object[]> results = orderRepository.countOrdersByDayInMonth(month, year);
+		List<Object[]> results = orderRepository.countOrdersByDayInMonth(month, year);
 
-	    Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
-	    for (int day = 1; day <= 31; day++) {
-	        ordersByDay.put(day, 0L);
-	    }
+		Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
+		for (int day = 1; day <= 31; day++) {
+			ordersByDay.put(day, 0L);
+		}
 
-	    for (Object[] result : results) {
-	        Integer day = (Integer) result[0];
-	        Long count = (Long) result[1];
-	        ordersByDay.put(day, count);
-	    }
+		for (Object[] result : results) {
+			Integer day = (Integer) result[0];
+			Long count = (Long) result[1];
+			ordersByDay.put(day, count);
+		}
 
-	    return ordersByDay;
+		return ordersByDay;
 	}
-
 
 }

@@ -31,4 +31,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
 	@Query("SELECT SUM(p.amount) FROM Payment p WHERE p.status = 'COMPLETED'")
 	Long sumAmount();
+	
+    Payment findByOrderId(Integer orderId);
+
 }
