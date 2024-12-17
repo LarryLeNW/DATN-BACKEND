@@ -186,28 +186,25 @@ public class PaymentService {
 	    LocalDateTime startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay();
 	    LocalDateTime endOfYesterday = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
 
-	    LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
-	    LocalDateTime startOfWeekTime = startOfWeek.atStartOfDay();
-	    LocalDateTime endOfWeekTime = endOfToday;
+	    LocalDateTime startOfWeekTime = LocalDate.now().with(java.time.DayOfWeek.MONDAY).atStartOfDay();
+	    LocalDateTime endOfWeekTime = LocalDateTime.now(); 
 
-	    LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
-	    LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
-	    
-	    LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
-	    LocalDateTime startOfMonthTime = startOfMonth.atStartOfDay();
+	    LocalDateTime startOfMonthTime = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+
+	    LocalDateTime startOfYearTime = LocalDate.now().withDayOfYear(1).atStartOfDay();
 
 	    long todayCount = paymentRepository.countByCreatedAtBetween(startOfToday, endOfToday);
 	    long todayRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfToday, endOfToday)).orElse(0L);
 
-	    long yesterdayCount = paymentRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
-	    long yesterdayRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfYesterday, endOfYesterday)).orElse(0L);
+	    long yesterdayCount = paymentRepository.countByCreatedAtBetween(startOfYesterday, endOfToday);
+	    long yesterdayRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfYesterday, endOfToday)).orElse(0L);
 
 	    long thisWeekCount = paymentRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
 	    long thisWeekRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfWeekTime, endOfWeekTime)).orElse(0L);
 
 	    long thisMonthCount = paymentRepository.countByCreatedAtBetween(startOfMonthTime, endOfToday);
 	    long thisMonthRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfMonthTime, endOfToday)).orElse(0L);
-	    
+
 	    long thisYearCount = paymentRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
 	    long thisYearRevenue = Optional.ofNullable(paymentRepository.sumAmountByCreatedAtBetween(startOfYearTime, endOfToday)).orElse(0L);
 

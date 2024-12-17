@@ -22,11 +22,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 			+ "GROUP BY DAY(p.createdAt) " + "ORDER BY DAY(p.createdAt)")
 	List<Object[]> countPaymentsAndRevenueByDayInMonth(@Param("month") int month, @Param("year") int year);
 
-	long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+	@Query("SELECT COUNT(p) FROM Payment p WHERE p.createdAt BETWEEN :startDate AND :endDate AND p.status = 'COMPLETED'")
+	long countByCreatedAtBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
 
 	@Query("SELECT SUM(p.amount) FROM Payment p WHERE p.createdAt BETWEEN :startDate AND :endDate AND p.status = 'COMPLETED'")
-	Long sumAmountByCreatedAtBetween(@Param("startDate") LocalDateTime startDate,
-			@Param("endDate") LocalDateTime endDate);
+	Long sumAmountByCreatedAtBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
 	@Query("SELECT SUM(p.amount) FROM Payment p WHERE p.status = 'COMPLETED'")
 	Long sumAmount();
