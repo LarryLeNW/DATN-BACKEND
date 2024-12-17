@@ -52,6 +52,7 @@ import com.backend.dto.request.order.OrderUpdateRequest;
 import com.backend.dto.request.order.delivery.DeliveryRequest;
 import com.backend.dto.request.order.payment.PaymentRequest;
 import com.backend.dto.request.rental.RentalCreation;
+import com.backend.dto.request.rental.RentalUpdateRequest;
 import com.backend.dto.response.blog.BlogResponse;
 import com.backend.dto.response.cart.CartDetailResponse;
 import com.backend.dto.response.common.PagedResponse;
@@ -225,6 +226,79 @@ public class RentalService {
 
 		return app_trans_id;
 	}
+	
+	
+	@Transactional
+	public RentalResponse update(RentalUpdateRequest requestData) {
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    String idUser = auth.getName();
+	    User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+	    log.info(requestData.toString());
+	    String roleUser = auth.getAuthorities().iterator().next().toString();
+	    log.info(roleUser);
+	    Rental rental = rentalRepository.findById(requestData.getId())
+	            .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê này"));
+
+	    if (!rental.getUser().getId().equals(idUser) && !roleUser.equals("ROLE_SUPERADMIN") ) {
+	        throw new RuntimeException("Bạn không có quyền");
+	    }
+
+	    if (requestData.getDiscountValue() != null) {
+	        rental.setDiscountValue(requestData.getDiscountValue());
+	    }
+	    if (requestData.getRentalPackage() != null) {
+	        rental.setRentalPackage(requestData.getRentalPackage());
+	    }
+
+	    if (requestData.getDelivery() != null) {
+	    	rental.setDelivery(deliveryMapper.toDelivery(requestData.getDelivery()));
+	    } 
+	    
+	    if (requestData.getTotalAmount() != null) {
+	        rental.setTotalAmount(requestData.getTotalAmount());
+	    }
+	    
+	    if (requestData.getStatus() != null) {
+	        rental.setStatus(requestData.getStatus());
+	    }
+
+	    rentalRepository.save(rental);
+
+	    if(requestData.getDetailRentals() != null) {
+	        rentalDetailRepository.deleteByRental(rental);
+
+		    List<RentalDetail> rentalDetails = Optional.ofNullable(requestData.getDetailRentals())
+		            .orElse(Collections.emptyList()).stream().map(detailRequest -> {
+		                RentalDetail rentalDetail = new RentalDetail();
+		                Product product = productRepository.findById(detailRequest.getProductId())
+		                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+		                rentalDetail.setProduct(product);
+
+		                Sku sku = skuRepository.findById(detailRequest.getSkuId())
+		                        .orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
+
+		                rentalDetail.setSku(sku);
+		                rentalDetail.setQuantity(detailRequest.getQuantity());
+		                rentalDetail.setDay(detailRequest.getDay());
+		                rentalDetail.setHour(detailRequest.getHour());
+		                rentalDetail.setPrice(detailRequest.getPrice());
+		                rentalDetail.setRental(rental);
+		                rentalDetail.setStatus(detailRequest.getStatus());
+		                rentalDetail.setIsReview(false);
+
+		                return rentalDetail;
+		            }).collect(Collectors.toList());
+
+		    rentalDetailRepository.saveAll(rentalDetails);
+		    rental.setRentalDetails(rentalDetails);
+	    }
+	    
+	
+
+	    return rentalMapper.toRentalResponse(rentalRepository.save(rental));
+	}
+
+	
 
 	private void PaymentRental(PaymentRequest paymentRequest, Rental rental, String app_trans_id) {
 		Payment payment = Payment.builder().amount(paymentRequest.getAmount()).method(paymentRequest.getMethod())
