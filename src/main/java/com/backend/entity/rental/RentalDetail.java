@@ -43,7 +43,6 @@ public class RentalDetail {
 
 	Long day;
 
-	@CreationTimestamp
 	@Column(name = "start_at")
 	LocalDateTime startAt;
 

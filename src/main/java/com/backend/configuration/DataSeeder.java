@@ -35,7 +35,7 @@
 //	ModuleRepository moduleRepository;
 //
 //	@Autowired
-//	PasswordEncoder passwordEncoder;
+//	PasswordEncoder passwordEncoder  ;
 //
 //	List<Permission> permissions = new ArrayList<>(Arrays.asList(new Permission((long) 1, "CREATE"),
 //			new Permission((long) 2, "VIEWALL"), new Permission((long) 3, "VIEW"), new Permission((long) 4, "UPDATE"),
@@ -53,7 +53,7 @@
 //					new User("Nguyễn Văn F", passwordEncoder.encode("123456"), "nguyenvanf@gmail.com"),
 //					new User("Nguyễn Văn G", passwordEncoder.encode("123456"), "nguyenvang@gmail.com")));
 //
-////	@PostConstruct
+//	@PostConstruct
 //	public void seed() {
 //		log.info("Start generate data");
 //

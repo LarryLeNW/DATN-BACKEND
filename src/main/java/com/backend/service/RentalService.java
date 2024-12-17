@@ -226,79 +226,74 @@ public class RentalService {
 
 		return app_trans_id;
 	}
-	
-	
+
 	@Transactional
 	public RentalResponse update(RentalUpdateRequest requestData) {
-	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    String idUser = auth.getName();
-	    User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-	    log.info(requestData.toString());
-	    String roleUser = auth.getAuthorities().iterator().next().toString();
-	    log.info(roleUser);
-	    Rental rental = rentalRepository.findById(requestData.getId())
-	            .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê này"));
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String idUser = auth.getName();
+		User user = userRepository.findById(idUser).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		log.info(requestData.toString());
+		String roleUser = auth.getAuthorities().iterator().next().toString();
+		log.info(roleUser);
+		Rental rental = rentalRepository.findById(requestData.getId())
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy đơn thuê này"));
 
-	    if (!rental.getUser().getId().equals(idUser) && !roleUser.equals("ROLE_SUPERADMIN") ) {
-	        throw new RuntimeException("Bạn không có quyền");
-	    }
+		if (!rental.getUser().getId().equals(idUser) && !roleUser.equals("ROLE_SUPERADMIN")) {
+			throw new RuntimeException("Bạn không có quyền");
+		}
 
-	    if (requestData.getDiscountValue() != null) {
-	        rental.setDiscountValue(requestData.getDiscountValue());
-	    }
-	    if (requestData.getRentalPackage() != null) {
-	        rental.setRentalPackage(requestData.getRentalPackage());
-	    }
+		if (requestData.getDiscountValue() != null) {
+			rental.setDiscountValue(requestData.getDiscountValue());
+		}
+		if (requestData.getRentalPackage() != null) {
+			rental.setRentalPackage(requestData.getRentalPackage());
+		}
 
-	    if (requestData.getDelivery() != null) {
-	    	rental.setDelivery(deliveryMapper.toDelivery(requestData.getDelivery()));
-	    } 
-	    
-	    if (requestData.getTotalAmount() != null) {
-	        rental.setTotalAmount(requestData.getTotalAmount());
-	    }
-	    
-	    if (requestData.getStatus() != null) {
-	        rental.setStatus(requestData.getStatus());
-	    }
+		if (requestData.getDelivery() != null) {
+			rental.setDelivery(deliveryMapper.toDelivery(requestData.getDelivery()));
+		}
 
-	    rentalRepository.save(rental);
+		if (requestData.getTotalAmount() != null) {
+			rental.setTotalAmount(requestData.getTotalAmount());
+		}
 
-	    if(requestData.getDetailRentals() != null) {
-	        rentalDetailRepository.deleteByRental(rental);
+		if (requestData.getStatus() != null) {
+			rental.setStatus(requestData.getStatus());
+		}
 
-		    List<RentalDetail> rentalDetails = Optional.ofNullable(requestData.getDetailRentals())
-		            .orElse(Collections.emptyList()).stream().map(detailRequest -> {
-		                RentalDetail rentalDetail = new RentalDetail();
-		                Product product = productRepository.findById(detailRequest.getProductId())
-		                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
-		                rentalDetail.setProduct(product);
+		rentalRepository.save(rental);
 
-		                Sku sku = skuRepository.findById(detailRequest.getSkuId())
-		                        .orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
+		if (requestData.getDetailRentals() != null) {
+			rentalDetailRepository.deleteByRental(rental);
 
-		                rentalDetail.setSku(sku);
-		                rentalDetail.setQuantity(detailRequest.getQuantity());
-		                rentalDetail.setDay(detailRequest.getDay());
-		                rentalDetail.setHour(detailRequest.getHour());
-		                rentalDetail.setPrice(detailRequest.getPrice());
-		                rentalDetail.setRental(rental);
-		                rentalDetail.setStatus(detailRequest.getStatus());
-		                rentalDetail.setIsReview(false);
+			List<RentalDetail> rentalDetails = Optional.ofNullable(requestData.getDetailRentals())
+					.orElse(Collections.emptyList()).stream().map(detailRequest -> {
+						RentalDetail rentalDetail = new RentalDetail();
+						Product product = productRepository.findById(detailRequest.getProductId())
+								.orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+						rentalDetail.setProduct(product);
 
-		                return rentalDetail;
-		            }).collect(Collectors.toList());
+						Sku sku = skuRepository.findById(detailRequest.getSkuId())
+								.orElseThrow(() -> new AppException(ErrorCode.SKU_NOT_FOUND));
 
-		    rentalDetailRepository.saveAll(rentalDetails);
-		    rental.setRentalDetails(rentalDetails);
-	    }
-	    
-	
+						rentalDetail.setSku(sku);
+						rentalDetail.setQuantity(detailRequest.getQuantity());
+						rentalDetail.setDay(detailRequest.getDay());
+						rentalDetail.setHour(detailRequest.getHour());
+						rentalDetail.setPrice(detailRequest.getPrice());
+						rentalDetail.setRental(rental);
+						rentalDetail.setStatus(detailRequest.getStatus());
+						rentalDetail.setIsReview(false);
 
-	    return rentalMapper.toRentalResponse(rentalRepository.save(rental));
+						return rentalDetail;
+					}).collect(Collectors.toList());
+
+			rentalDetailRepository.saveAll(rentalDetails);
+			rental.setRentalDetails(rentalDetails);
+		}
+
+		return rentalMapper.toRentalResponse(rentalRepository.save(rental));
 	}
-
-	
 
 	private void PaymentRental(PaymentRequest paymentRequest, Rental rental, String app_trans_id) {
 		Payment payment = Payment.builder().amount(paymentRequest.getAmount()).method(paymentRequest.getMethod())
@@ -327,7 +322,7 @@ public class RentalService {
 			String keyword = params.get("keyword");
 			spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.or(
 					criteriaBuilder.like(root.get("rentalCode"), "%" + keyword + "%"),
-					criteriaBuilder.like(root.join("rentalDetails").get("product").get("name"), "%" + keyword + "%"), 
+					criteriaBuilder.like(root.join("rentalDetails").get("product").get("name"), "%" + keyword + "%"),
 					criteriaBuilder.like(root.get("user").get("username"), "%" + keyword + "%")));
 		}
 
@@ -415,8 +410,25 @@ public class RentalService {
 
 		return "Đã cập nhật đơn hàng";
 	}
-	
-	
+
+	public void updateRentalStatusToRented(Long rentalId) {
+		Rental rental = rentalRepository.findById(rentalId).orElseThrow(() -> new RuntimeException("Rental not found"));
+
+		rental.setStatus(RentalStatus.RENTED);
+
+		for (RentalDetail rentalDetail : rental.getRentalDetails()) {
+			LocalDateTime startAt = LocalDateTime.now();
+			rentalDetail.setStartAt(startAt);
+
+			LocalDateTime endAt = startAt.plusDays(rentalDetail.getDay()).plusHours(rentalDetail.getHour());
+			rentalDetail.setEndAt(endAt);
+
+			rentalDetailRepository.save(rentalDetail);
+		}
+
+		rentalRepository.save(rental);
+	}
+
 	public Map<RentalStatus, Long> getRentalStatistics(Map<String, String> params) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Object[]> query = criteriaBuilder.createQuery(Object[].class);
@@ -461,59 +473,57 @@ public class RentalService {
 		}
 		return statistics;
 	}
-	
+
 	public Map<String, Long> getOrderTotals() {
-	    LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
-	    LocalDateTime endOfToday = LocalDateTime.now();
+		LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+		LocalDateTime endOfToday = LocalDateTime.now();
 
-	    LocalDateTime startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay();
-	    LocalDateTime endOfYesterday = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+		LocalDateTime startOfYesterday = LocalDate.now().minusDays(1).atStartOfDay();
+		LocalDateTime endOfYesterday = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
 
-	    LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
-	    LocalDateTime startOfWeekTime = startOfWeek.atStartOfDay();
-	    LocalDateTime endOfWeekTime = endOfToday;
+		LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+		LocalDateTime startOfWeekTime = startOfWeek.atStartOfDay();
+		LocalDateTime endOfWeekTime = endOfToday;
 
-	    LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
-	    LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
-	    
-	    LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
-	    LocalDateTime startOfMonthTime = startOfMonth.atStartOfDay();
+		LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
+		LocalDateTime startOfYearTime = startOfYear.atStartOfDay();
 
-	    long todayCount = rentalRepository.countByCreatedAtBetween(startOfToday, endOfToday);
-	    long yesterdayCount = rentalRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
-	    long thisWeekCount = rentalRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
-	    long thisYearCount = rentalRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
-	    long thisMonthCount = rentalRepository.countByCreatedAtBetween(startOfMonthTime, endOfToday);
-	    long totalAllTime = rentalRepository.count();
+		LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
+		LocalDateTime startOfMonthTime = startOfMonth.atStartOfDay();
 
-	    Map<String, Long> totals = new HashMap<>();
-	    totals.put("today", todayCount);
-	    totals.put("yesterday", yesterdayCount);
-	    totals.put("thisWeek", thisWeekCount);
-	    totals.put("thisMonth", thisMonthCount);
-	    totals.put("thisYear", thisYearCount);
-	    totals.put("allTime", totalAllTime);
+		long todayCount = rentalRepository.countByCreatedAtBetween(startOfToday, endOfToday);
+		long yesterdayCount = rentalRepository.countByCreatedAtBetween(startOfYesterday, endOfYesterday);
+		long thisWeekCount = rentalRepository.countByCreatedAtBetween(startOfWeekTime, endOfWeekTime);
+		long thisYearCount = rentalRepository.countByCreatedAtBetween(startOfYearTime, endOfToday);
+		long thisMonthCount = rentalRepository.countByCreatedAtBetween(startOfMonthTime, endOfToday);
+		long totalAllTime = rentalRepository.count();
 
-	    return totals;
+		Map<String, Long> totals = new HashMap<>();
+		totals.put("today", todayCount);
+		totals.put("yesterday", yesterdayCount);
+		totals.put("thisWeek", thisWeekCount);
+		totals.put("thisMonth", thisMonthCount);
+		totals.put("thisYear", thisYearCount);
+		totals.put("allTime", totalAllTime);
+
+		return totals;
 	}
 
-	
 	public Map<Integer, Long> getOrdersByDayInMonth(int month, int year) {
-	    List<Object[]> results = rentalRepository.countRentalsByDayInMonth(month, year);
+		List<Object[]> results = rentalRepository.countRentalsByDayInMonth(month, year);
 
+		Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
+		for (int day = 1; day <= 31; day++) {
+			ordersByDay.put(day, 0L);
+		}
 
-	    Map<Integer, Long> ordersByDay = new LinkedHashMap<>();
-	    for (int day = 1; day <= 31; day++) {
-	        ordersByDay.put(day, 0L);
-	    }
+		for (Object[] result : results) {
+			Integer day = (Integer) result[0];
+			Long count = (Long) result[1];
+			ordersByDay.put(day, count);
+		}
 
-	    for (Object[] result : results) {
-	        Integer day = (Integer) result[0];
-	        Long count = (Long) result[1];
-	        ordersByDay.put(day, count);
-	    }
-
-	    return ordersByDay;
+		return ordersByDay;
 	}
 
 }

@@ -99,4 +99,9 @@ public class RentalController {
 		return ResponseEntity.ok(dailyStatistics);
 	}
 
+    @PutMapping("/{rentalId}/rented")
+    public ResponseEntity<?> updateRentalStatus(@PathVariable Long rentalId) {
+            rentalService.updateRentalStatusToRented(rentalId);
+            return ResponseEntity.ok("Rental status updated to RENTED successfully.");
+    }
 }
