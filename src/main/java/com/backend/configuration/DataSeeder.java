@@ -57,6 +57,7 @@
 //			new User("Nguyễn Văn F", "123456", "nguyenvanf@gmail.com"),
 //			new User("Nguyễn Văn G", "123456", "nguyenvang@gmail.com")));
 //
+////	@PostConstruct
 //	public void seed() {
 //		log.info("Start generate data");
 //
@@ -87,7 +88,7 @@
 //		User admin = new User();
 //		admin.setEmail("superadmin@gmail.com");
 //		admin.setUsername("Superadmin");
-//		admin.setPassword(passwordEncoder.encode("superadmin2025"));
+//		admin.setPassword(passwordEncoder.encode("123456"));
 //		admin.setStatus(UserStatusType.ACTIVED);
 //		admin.setRole(adminRole);
 //		userRepository.save(admin);
