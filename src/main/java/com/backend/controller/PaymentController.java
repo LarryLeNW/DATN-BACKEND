@@ -23,13 +23,16 @@ import com.backend.constant.Type.RentalStatus;
 import com.backend.dto.response.ApiResponse;
 import com.backend.dto.response.order.OrderResponse;
 import com.backend.entity.Order;
+import com.backend.entity.OrderDetail;
 import com.backend.entity.Payment;
+import com.backend.entity.Product;
 import com.backend.entity.User;
 import com.backend.entity.rental.Rental;
 import com.backend.exception.AppException;
 import com.backend.exception.ErrorCode;
 import com.backend.repository.order.OrderRepository;
 import com.backend.repository.order.PaymentRepository;
+import com.backend.repository.product.ProductRepository;
 import com.backend.repository.rental.RentalRepository;
 import com.backend.repository.user.UserRepository;
 import com.backend.service.PaymentService;
@@ -40,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @RestController
@@ -64,6 +68,9 @@ public class PaymentController {
 
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	ProductRepository productRepository; 
 
 	public PaymentController() throws Exception {
 		HmacSHA256 = Mac.getInstance("HmacSHA256");
@@ -93,6 +100,13 @@ public class PaymentController {
 					paymentFound.setStatus(PaymentStatus.COMPLETED);
 					paymentRepository.save(paymentFound);
 					Order orderUpdate = orderRepository.findByPayment(paymentFound);
+					for(OrderDetail orderDetail : orderUpdate.getOrderDetails()) {
+						Optional<Product> productUpdated = productRepository.findById(orderDetail.getProduct().getId());
+						if(productUpdated != null) {
+								productUpdated.get().setTotalSold(productUpdated.get().getTotalSold() + (long) orderDetail.getQuantity());
+								productRepository.save(productUpdated.get());
+						}
+					}
 					orderUpdate.setStatus(OrderStatusType.PENDING);
 					orderRepository.save(orderUpdate);
 				}
@@ -126,6 +140,13 @@ public class PaymentController {
 				paymentFound.setStatus(PaymentStatus.COMPLETED);
 				paymentRepository.save(paymentFound);
 				Order orderUpdate = orderRepository.findByPayment(paymentFound);
+				for(OrderDetail orderDetail : orderUpdate.getOrderDetails()) {
+					Optional<Product> productUpdated = productRepository.findById(orderDetail.getProduct().getId());
+					if(productUpdated != null) {
+							productUpdated.get().setTotalSold(productUpdated.get().getTotalSold() + (long) orderDetail.getQuantity());
+							productRepository.save(productUpdated.get());
+					}
+				}
 				orderUpdate.setStatus(OrderStatusType.PENDING); 
 				orderRepository.save(orderUpdate);
 				logger.info("Order status updated to success where app_trans_id = " + txnRef);
